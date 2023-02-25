@@ -1,0 +1,12 @@
+[package]
+name = "rust_test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.69"
+bytemuck = { version = "1.13.0", features = ["derive"] }
+image = { version = "0.24.5", features = ["png", "jpeg"], default-features = false }
+pollster = "0.3.0"
+wgpu = "0.15.1"
+winit = "0.28.1"
