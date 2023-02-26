@@ -27,7 +27,7 @@ impl CameraUniform {
     }
 
     fn update_view_proj(&mut self, camera: &Camera) {
-        self.view_proj = (OPENGL_TO_WGPU_MATRIX * camera.build_view_projection_matrix()).into();
+        self.view_proj = (OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
     }
 }
 

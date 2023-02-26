@@ -12,15 +12,18 @@ async fn run() {
         .build(&event_loop).unwrap();
     let mut state = State::new(window).await;
 
+    let mut last_render_time = instant::Instant::now();
     event_loop.run(move |event, _, flow| {
         *flow = ControlFlow::Poll;
+        let time_delta = instant::Instant::now() - last_render_time;
+        last_render_time = instant::Instant::now();
 
         match event {
             Event::DeviceEvent {
                 event: DeviceEvent::MouseMotion { delta, },
                 ..
             } => {
-                state.camera_controller.process_mouse_movement(delta);
+                state.camera_controller.process_mouse_movement(delta, time_delta.as_secs_f32());
             },
 
             Event::WindowEvent {
@@ -33,8 +36,8 @@ async fn run() {
                         button,
                         ..
                     } => {
-                        let pressed = *btn_state == ElementState::Pressed;
-                        state.camera_controller.process_mouse_button(*button, pressed);
+                        let down = *btn_state == ElementState::Pressed;
+                        state.camera_controller.process_mouse_button(*button, down);
                     }
 
                     WindowEvent::KeyboardInput {
