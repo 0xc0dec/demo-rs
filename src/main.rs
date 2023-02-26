@@ -20,15 +20,31 @@ async fn run() {
             ref event,
             window_id,
         } if window_id == state.window().id() => match event {
-            WindowEvent::CloseRequested | WindowEvent::KeyboardInput {
-                input:
-                KeyboardInput {
+            WindowEvent::KeyboardInput {
+                input: KeyboardInput {
                     state: ElementState::Pressed,
-                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                    virtual_keycode: Some(keycode),
                     ..
                 },
                 ..
-            } => *control_flow = ControlFlow::Exit,
+            } => {
+                match keycode {
+                    VirtualKeyCode::W | VirtualKeyCode::Up => {
+                        println!("Up is pressed");
+                    }
+                    VirtualKeyCode::A | VirtualKeyCode::Left => {
+                        println!("Left is pressed");
+                    }
+                    VirtualKeyCode::S | VirtualKeyCode::Down => {
+                        println!("Back is pressed");
+                    }
+                    VirtualKeyCode::D | VirtualKeyCode::Right => {
+                        println!("Right is pressed");
+                    }
+                    VirtualKeyCode::Escape => *control_flow = ControlFlow::Exit,
+                    _ => ()
+                }
+            }
 
             WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
 
