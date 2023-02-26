@@ -1,4 +1,4 @@
-use winit::event::{VirtualKeyCode};
+use winit::event::{MouseButton, VirtualKeyCode};
 
 pub struct Camera {
     pub eye: cgmath::Point3<f32>,
@@ -58,6 +58,10 @@ impl CameraController {
     }
 
     pub fn process_mouse_movement(&self, _delta: (f64, f64)) {
+        // TODO
+    }
+
+    pub fn process_mouse_button(&self, button: MouseButton, pressed: bool) {
         // TODO
     }
 

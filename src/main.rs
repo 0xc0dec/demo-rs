@@ -28,6 +28,15 @@ async fn run() {
                 window_id,
             } if window_id == state.window().id() => {
                 match event {
+                    WindowEvent::MouseInput {
+                        state: btn_state,
+                        button,
+                        ..
+                    } => {
+                        let pressed = *btn_state == ElementState::Pressed;
+                        state.camera_controller.process_mouse_button(*button, pressed);
+                    }
+
                     WindowEvent::KeyboardInput {
                         input: KeyboardInput {
                             state: key_state,
