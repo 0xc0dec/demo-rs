@@ -1063,6 +1063,7 @@ dependencies = [
  "bytemuck",
  "cgmath",
  "image",
+ "instant",
  "pollster",
  "wgpu",
  "winit",
