@@ -19,43 +19,36 @@ async fn run() {
         Event::WindowEvent {
             ref event,
             window_id,
-        } if window_id == state.window().id() => match event {
-            WindowEvent::KeyboardInput {
-                input: KeyboardInput {
-                    state: ElementState::Pressed,
-                    virtual_keycode: Some(keycode),
+        } if window_id == state.window().id() => {
+            state.input(&event);
+
+            match event {
+                WindowEvent::KeyboardInput {
+                    input: KeyboardInput {
+                        state: ElementState::Pressed,
+                        virtual_keycode: Some(keycode),
+                        ..
+                    },
                     ..
-                },
-                ..
-            } => {
-                match keycode {
-                    VirtualKeyCode::W | VirtualKeyCode::Up => {
-                        println!("Up is pressed");
+                } => {
+                    match keycode {
+                        VirtualKeyCode::Escape => *control_flow = ControlFlow::Exit,
+                        _ => ()
                     }
-                    VirtualKeyCode::A | VirtualKeyCode::Left => {
-                        println!("Left is pressed");
-                    }
-                    VirtualKeyCode::S | VirtualKeyCode::Down => {
-                        println!("Back is pressed");
-                    }
-                    VirtualKeyCode::D | VirtualKeyCode::Right => {
-                        println!("Right is pressed");
-                    }
-                    VirtualKeyCode::Escape => *control_flow = ControlFlow::Exit,
-                    _ => ()
                 }
+
+                WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
+
+                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                    state.resize(Some(**new_inner_size))
+                }
+
+                _ => {}
             }
-
-            WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
-
-            WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                state.resize(Some(**new_inner_size))
-            }
-
-            _ => {}
         }
 
         Event::RedrawRequested(window_id) if window_id == state.window().id() => {
+            state.update();
             match state.render() {
                 Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
                 Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
