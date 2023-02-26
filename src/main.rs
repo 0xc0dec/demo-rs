@@ -1,6 +1,7 @@
 mod state;
 mod texture;
 mod camera;
+mod transform;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use state::State;
@@ -15,15 +16,13 @@ async fn run() {
     let mut last_render_time = instant::Instant::now();
     event_loop.run(move |event, _, flow| {
         *flow = ControlFlow::Poll;
-        let time_delta = instant::Instant::now() - last_render_time;
-        last_render_time = instant::Instant::now();
 
         match event {
             Event::DeviceEvent {
                 event: DeviceEvent::MouseMotion { delta, },
                 ..
             } => {
-                state.camera_controller.process_mouse_movement(delta, time_delta.as_secs_f32());
+                state.camera.process_mouse_movement(delta);
             },
 
             Event::WindowEvent {
@@ -37,7 +36,7 @@ async fn run() {
                         ..
                     } => {
                         let down = *btn_state == ElementState::Pressed;
-                        state.camera_controller.process_mouse_button(*button, down);
+                        state.camera.process_mouse_button(*button, down);
                     }
 
                     WindowEvent::KeyboardInput {
@@ -48,7 +47,7 @@ async fn run() {
                         },
                         ..
                     } => {
-                        state.camera_controller.process_keyboard(
+                        state.camera.process_keyboard(
                             *keycode,
                             *key_state == ElementState::Pressed
                         );
@@ -70,7 +69,11 @@ async fn run() {
             }
 
             Event::RedrawRequested(window_id) if window_id == state.window().id() => {
-                state.update();
+                let time_delta = instant::Instant::now() - last_render_time;
+                last_render_time = instant::Instant::now();
+
+                state.update(time_delta.as_secs_f32());
+
                 match state.render() {
                     Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
                     Err(wgpu::SurfaceError::OutOfMemory) => *flow = ControlFlow::Exit,

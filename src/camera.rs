@@ -1,132 +1,107 @@
-use cgmath::{InnerSpace, Zero};
+use cgmath::{InnerSpace, Matrix4, Rad, Vector3, Zero};
 use winit::event::{MouseButton, VirtualKeyCode};
+use crate::transform::{Transform, TransformSpace};
 
 pub struct Camera {
-    eye: cgmath::Point3<f32>,
-    target: cgmath::Point3<f32>,
-    dir: cgmath::Vector3<f32>,
-    up: cgmath::Vector3<f32>,
     aspect: f32,
     fovy: f32,
     znear: f32,
     zfar: f32,
-    horiz_rot_angle: cgmath::Rad<f32>,
-    vert_rot_angle: cgmath::Rad<f32>,
-}
-
-impl Camera {
-    pub fn new(eye: cgmath::Point3<f32>, target: cgmath::Point3<f32>, canvas_width: f32, canvas_height: f32) -> Self {
-        Self {
-            eye,
-            target,
-            dir: (target - eye).normalize(),
-            up: cgmath::Vector3::unit_y(),
-            aspect: canvas_width / canvas_height,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-            horiz_rot_angle: cgmath::Rad::zero(),
-            vert_rot_angle: cgmath::Rad::zero(),
-        }
-    }
-
-    pub fn view_proj_matrix(&self) -> cgmath::Matrix4<f32> {
-        let view = cgmath::Matrix4::from_angle_y(self.horiz_rot_angle)
-            * cgmath::Matrix4::from_axis_angle(self.dir.cross(cgmath::Vector3::unit_y()).normalize(), self.vert_rot_angle)
-            * cgmath::Matrix4::look_to_rh(self.eye, self.dir, self.up);
-        let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
-        return proj * view;
-    }
-}
-
-pub struct CameraController {
-    speed: f32,
     forward_pressed: bool,
     backward_pressed: bool,
     left_pressed: bool,
     right_pressed: bool,
-    lmb_down: bool,
-    horiz_rot_angle: cgmath::Rad<f32>,
-    vert_rot_angle: cgmath::Rad<f32>,
+    up_pressed: bool,
+    down_pressed: bool,
+    rmb_down: bool,
+    transform: Transform,
+    mouse_delta_x: f32,
+    mouse_delta_y: f32,
 }
 
-impl CameraController {
-    pub fn new(speed: f32) -> Self {
-        Self {
-            speed,
+impl Camera {
+    pub fn new(eye: Vector3<f32>, target: Vector3<f32>, canvas_width: f32, canvas_height: f32) -> Self {
+        let mut cam = Self {
+            aspect: canvas_width / canvas_height,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+            transform: Transform::new(),
             forward_pressed: false,
             backward_pressed: false,
             left_pressed: false,
             right_pressed: false,
-            lmb_down: false,
-            horiz_rot_angle: cgmath::Rad::zero(),
-            vert_rot_angle: cgmath::Rad::zero(),
-        }
+            up_pressed: false,
+            down_pressed: false,
+            rmb_down: false,
+            mouse_delta_x: 0.0,
+            mouse_delta_y: 0.0
+        };
+        cam.transform.look_at(eye, target);
+        cam
     }
 
-    pub fn process_mouse_movement(&mut self, _delta: (f64, f64), _time_delta: f32) {
-        if !self.lmb_down { return }
+    pub fn view_proj_matrix(&self) -> Matrix4<f32> {
+        let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
+        return proj * self.transform.matrix();
+    }
 
-        self.horiz_rot_angle += cgmath::Rad(_delta.0 as f32 * _time_delta) * 20000.0;
-        self.vert_rot_angle += cgmath::Rad(_delta.1 as f32 * _time_delta) * 20000.0;
+    pub fn process_mouse_movement(&mut self, delta: (f64, f64)) {
+        self.mouse_delta_x = delta.0 as f32;
+        self.mouse_delta_y = delta.1 as f32;
     }
 
     pub fn process_mouse_button(&mut self, button: MouseButton, down: bool) {
-        if button == MouseButton::Left {
-            self.lmb_down = down;
+        if button == MouseButton::Right {
+            self.rmb_down = down;
         }
     }
 
     pub fn process_keyboard(&mut self, keycode: VirtualKeyCode, pressed: bool) {
         match keycode {
-            VirtualKeyCode::W | VirtualKeyCode::Up => {
-                self.forward_pressed = pressed;
-            }
-            VirtualKeyCode::A | VirtualKeyCode::Left => {
-                self.left_pressed = pressed;
-            }
-            VirtualKeyCode::S | VirtualKeyCode::Down => {
-                self.backward_pressed = pressed;
-            }
-            VirtualKeyCode::D | VirtualKeyCode::Right => {
-                self.right_pressed = pressed;
-            }
+            VirtualKeyCode::W => self.forward_pressed = pressed,
+            VirtualKeyCode::A => self.left_pressed = pressed,
+            VirtualKeyCode::S => self.backward_pressed = pressed,
+            VirtualKeyCode::D => self.right_pressed = pressed,
+            VirtualKeyCode::E => self.up_pressed = pressed,
+            VirtualKeyCode::Q => self.down_pressed = pressed,
             _ => (),
         }
     }
 
-    pub fn update_camera(&self, camera: &mut Camera) {
-        let forward = camera.target - camera.eye;
-        let forward_norm = forward.normalize();
-        let forward_mag = forward.magnitude();
+    pub fn update(&mut self, dt: f32) {
+        if self.rmb_down {
+            let horiz_angle = Rad(self.mouse_delta_x as f32 * dt) * 1.0;
+            self.transform.rotate_around_axis(Vector3::unit_y(), horiz_angle, TransformSpace::World);
 
-        // Prevents glitching when camera gets too close to the
-        // center of the scene.
-        if self.forward_pressed && forward_mag > self.speed {
-            camera.eye += forward_norm * self.speed;
+            let vert_angle = Rad(self.mouse_delta_y as f32 * dt) * 1.0;
+            self.transform.rotate_around_axis(Vector3::unit_x(), vert_angle, TransformSpace::Local);
+        }
+
+        let mut movement: Vector3<f32> = Vector3::zero();
+        if self.forward_pressed {
+            movement += Vector3::unit_z();
         }
         if self.backward_pressed {
-            camera.eye -= forward_norm * self.speed;
+            movement -= Vector3::unit_z();
         }
-
-        let right = forward_norm.cross(camera.up);
-
-        // Redo radius calc in case the forward/backward is pressed.
-        let forward = camera.target - camera.eye;
-        let forward_mag = forward.magnitude();
-
         if self.right_pressed {
-            // Rescale the distance between the target and eye so
-            // that it doesn't change. The eye therefore still
-            // lies on the circle made by the target and eye.
-            camera.eye = camera.target - (forward + right * self.speed).normalize() * forward_mag;
+            movement -= Vector3::unit_x();
         }
         if self.left_pressed {
-            camera.eye = camera.target - (forward - right * self.speed).normalize() * forward_mag;
+            movement += Vector3::unit_x();
+        }
+        if self.up_pressed {
+            movement -= Vector3::unit_y();
+        }
+        if self.down_pressed {
+            movement += Vector3::unit_y();
+        }
+        if !movement.is_zero() {
+            self.transform.translate(movement.normalize() * dt * 10.0);
         }
 
-        camera.dir = (camera.target - camera.eye).normalize();
-        camera.horiz_rot_angle = self.horiz_rot_angle;
-        camera.vert_rot_angle = self.vert_rot_angle;
+        self.mouse_delta_x = 0.0;
+        self.mouse_delta_y = 0.0;
     }
 }

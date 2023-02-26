@@ -1,11 +1,12 @@
 use std::iter;
+use cgmath::{Matrix4, Vector3};
 use wgpu::util::DeviceExt;
 use winit::window::Window;
-use crate::camera::{Camera, CameraController};
+use crate::camera::Camera;
 use crate::texture::Texture;
 
 #[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
+pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
     1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 0.5, 0.0,
@@ -22,7 +23,7 @@ impl CameraUniform {
     fn new() -> Self {
         use cgmath::SquareMatrix;
         Self {
-            view_proj: cgmath::Matrix4::identity().into(),
+            view_proj: Matrix4::identity().into(),
         }
     }
 
@@ -98,8 +99,7 @@ pub struct State {
     #[allow(dead_code)]
     diffuse_texture: Texture,
     diffuse_bind_group: wgpu::BindGroup,
-    camera: Camera,
-    pub camera_controller: CameraController,
+    pub camera: Camera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
@@ -197,8 +197,8 @@ impl State {
         });
 
         let camera = Camera::new(
-            (0.0, 1.0, 2.0).into(),
-            (0.0, 0.0, 0.0).into(),
+            Vector3::new(0.0, 0.0, 5.0),
+            Vector3::new(0.0, 0.5, 0.0),
             size.width as f32, size.height as f32
         );
 
@@ -270,7 +270,7 @@ impl State {
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 unclipped_depth: false,
                 conservative: false
@@ -296,8 +296,6 @@ impl State {
         });
         let index_count = INDICES.len() as u32;
 
-        let camera_controller = CameraController::new(0.2);
-
         Self {
             surface,
             device,
@@ -312,15 +310,14 @@ impl State {
             diffuse_texture,
             diffuse_bind_group,
             camera,
-            camera_controller,
             camera_buffer,
             camera_uniform,
             camera_bind_group
         }
     }
 
-    pub fn update(&mut self) {
-        self.camera_controller.update_camera(&mut self.camera);
+    pub fn update(&mut self, dt: f32) {
+        self.camera.update(dt);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
