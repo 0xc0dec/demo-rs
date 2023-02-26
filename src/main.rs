@@ -1,5 +1,6 @@
 mod state;
 mod texture;
+mod camera;
 
 use winit::{
     event::*,
