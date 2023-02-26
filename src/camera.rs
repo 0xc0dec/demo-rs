@@ -1,4 +1,4 @@
-use cgmath::InnerSpace;
+use cgmath::{InnerSpace, Zero};
 use winit::event::{MouseButton, VirtualKeyCode};
 
 pub struct Camera {
@@ -10,6 +10,8 @@ pub struct Camera {
     fovy: f32,
     znear: f32,
     zfar: f32,
+    horiz_rot_angle: cgmath::Rad<f32>,
+    vert_rot_angle: cgmath::Rad<f32>,
 }
 
 impl Camera {
@@ -23,11 +25,15 @@ impl Camera {
             fovy: 45.0,
             znear: 0.1,
             zfar: 100.0,
+            horiz_rot_angle: cgmath::Rad::zero(),
+            vert_rot_angle: cgmath::Rad::zero(),
         }
     }
 
     pub fn view_proj_matrix(&self) -> cgmath::Matrix4<f32> {
-        let view = cgmath::Matrix4::look_to_rh(self.eye, self.dir, self.up);
+        let view = cgmath::Matrix4::from_angle_y(self.horiz_rot_angle)
+            * cgmath::Matrix4::from_axis_angle(self.dir.cross(cgmath::Vector3::unit_y()).normalize(), self.vert_rot_angle)
+            * cgmath::Matrix4::look_to_rh(self.eye, self.dir, self.up);
         let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
         return proj * view;
     }
@@ -40,6 +46,8 @@ pub struct CameraController {
     left_pressed: bool,
     right_pressed: bool,
     lmb_down: bool,
+    horiz_rot_angle: cgmath::Rad<f32>,
+    vert_rot_angle: cgmath::Rad<f32>,
 }
 
 impl CameraController {
@@ -50,14 +58,17 @@ impl CameraController {
             backward_pressed: false,
             left_pressed: false,
             right_pressed: false,
-            lmb_down: false
+            lmb_down: false,
+            horiz_rot_angle: cgmath::Rad::zero(),
+            vert_rot_angle: cgmath::Rad::zero(),
         }
     }
 
-    pub fn process_mouse_movement(&self, _delta: (f64, f64), _time_delta: f32) {
+    pub fn process_mouse_movement(&mut self, _delta: (f64, f64), _time_delta: f32) {
         if !self.lmb_down { return }
 
-        // TODO
+        self.horiz_rot_angle += cgmath::Rad(_delta.0 as f32 * _time_delta) * 20000.0;
+        self.vert_rot_angle += cgmath::Rad(_delta.1 as f32 * _time_delta) * 20000.0;
     }
 
     pub fn process_mouse_button(&mut self, button: MouseButton, down: bool) {
@@ -115,5 +126,7 @@ impl CameraController {
         }
 
         camera.dir = (camera.target - camera.eye).normalize();
+        camera.horiz_rot_angle = self.horiz_rot_angle;
+        camera.vert_rot_angle = self.vert_rot_angle;
     }
 }
