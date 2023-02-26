@@ -1,6 +1,5 @@
 use std::iter;
 use wgpu::util::DeviceExt;
-use winit::event::{WindowEvent};
 use winit::window::Window;
 use crate::camera::{Camera, CameraController};
 use crate::texture::Texture;
@@ -92,7 +91,7 @@ pub struct State {
     diffuse_texture: Texture,
     diffuse_bind_group: wgpu::BindGroup,
     camera: Camera,
-    camera_controller: CameraController,
+    pub camera_controller: CameraController,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
@@ -318,10 +317,6 @@ impl State {
             camera_uniform,
             camera_bind_group
         }
-    }
-
-    pub fn input(&mut self, event: &WindowEvent) {
-        self.camera_controller.process_events(event);
     }
 
     pub fn update(&mut self) {

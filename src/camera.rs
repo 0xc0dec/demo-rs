@@ -1,4 +1,4 @@
-use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
+use winit::event::{VirtualKeyCode};
 
 pub struct Camera {
     pub eye: cgmath::Point3<f32>,
@@ -45,38 +45,25 @@ impl CameraController {
         }
     }
 
-    pub fn process_events(&mut self, event: &WindowEvent) -> bool {
-        match event {
-            WindowEvent::KeyboardInput {
-                input: KeyboardInput {
-                    state,
-                    virtual_keycode: Some(keycode),
-                    ..
-                },
-                ..
-            } => {
-                let is_pressed = *state == ElementState::Pressed;
-                match keycode {
-                    VirtualKeyCode::W | VirtualKeyCode::Up => {
-                        self.is_forward_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::A | VirtualKeyCode::Left => {
-                        self.is_left_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::S | VirtualKeyCode::Down => {
-                        self.is_backward_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::D | VirtualKeyCode::Right => {
-                        self.is_right_pressed = is_pressed;
-                        true
-                    }
-                    _ => false,
-                }
+    pub fn process_mouse_movement(&self, _delta: (f64, f64)) {
+        // TODO
+    }
+
+    pub fn process_keyboard(&mut self, keycode: VirtualKeyCode, pressed: bool) {
+        match keycode {
+            VirtualKeyCode::W | VirtualKeyCode::Up => {
+                self.is_forward_pressed = pressed;
             }
-            _ => false,
+            VirtualKeyCode::A | VirtualKeyCode::Left => {
+                self.is_left_pressed = pressed;
+            }
+            VirtualKeyCode::S | VirtualKeyCode::Down => {
+                self.is_backward_pressed = pressed;
+            }
+            VirtualKeyCode::D | VirtualKeyCode::Right => {
+                self.is_right_pressed = pressed;
+            }
+            _ => (),
         }
     }
 

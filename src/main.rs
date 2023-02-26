@@ -2,11 +2,7 @@ mod state;
 mod texture;
 mod camera;
 
-use winit::{
-    event::*,
-    event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
-};
+use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use state::State;
 
 async fn run() {
@@ -16,52 +12,66 @@ async fn run() {
         .build(&event_loop).unwrap();
     let mut state = State::new(window).await;
 
-    event_loop.run(move |event, _, control_flow| match event {
-        Event::WindowEvent {
-            ref event,
-            window_id,
-        } if window_id == state.window().id() => {
-            state.input(&event);
+    event_loop.run(move |event, _, flow| {
+        *flow = ControlFlow::Poll;
 
-            match event {
-                WindowEvent::KeyboardInput {
-                    input: KeyboardInput {
-                        state: ElementState::Pressed,
-                        virtual_keycode: Some(keycode),
+        match event {
+            Event::DeviceEvent {
+                event: DeviceEvent::MouseMotion { delta, },
+                ..
+            } => {
+                state.camera_controller.process_mouse_movement(delta);
+            },
+
+            Event::WindowEvent {
+                ref event,
+                window_id,
+            } if window_id == state.window().id() => {
+                match event {
+                    WindowEvent::KeyboardInput {
+                        input: KeyboardInput {
+                            state: key_state,
+                            virtual_keycode: Some(keycode),
+                            ..
+                        },
                         ..
-                    },
-                    ..
-                } => {
-                    match keycode {
-                        VirtualKeyCode::Escape => *control_flow = ControlFlow::Exit,
-                        _ => ()
+                    } => {
+                        state.camera_controller.process_keyboard(
+                            *keycode,
+                            *key_state == ElementState::Pressed
+                        );
+
+                        match keycode {
+                            VirtualKeyCode::Escape => *flow = ControlFlow::Exit,
+                            _ => ()
+                        }
                     }
+
+                    WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
+
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        state.resize(Some(**new_inner_size))
+                    }
+
+                    _ => {}
                 }
+            }
 
-                WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
-
-                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    state.resize(Some(**new_inner_size))
+            Event::RedrawRequested(window_id) if window_id == state.window().id() => {
+                state.update();
+                match state.render() {
+                    Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
+                    Err(wgpu::SurfaceError::OutOfMemory) => *flow = ControlFlow::Exit,
+                    _ => {}
                 }
-
-                _ => {}
             }
-        }
 
-        Event::RedrawRequested(window_id) if window_id == state.window().id() => {
-            state.update();
-            match state.render() {
-                Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
-                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                _ => {}
+            Event::RedrawEventsCleared => {
+                state.window().request_redraw();
             }
-        }
 
-        Event::RedrawEventsCleared => {
-            state.window().request_redraw();
+            _ => {}
         }
-
-        _ => {}
     })
 }
 
