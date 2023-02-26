@@ -188,19 +188,11 @@ impl State {
             source: wgpu::ShaderSource::Wgsl(include_str!("../assets/shader.wgsl").into())
         });
 
-        let camera = Camera {
-            // position the camera one unit up and 2 units back
-            // +z is out of the screen
-            eye: (0.0, 1.0, 2.0).into(),
-            // have it look at the origin
-            target: (0.0, 0.0, 0.0).into(),
-            // which way is "up"
-            up: cgmath::Vector3::unit_y(),
-            aspect: size.width as f32 / size.height as f32,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-        };
+        let camera = Camera::new(
+            (0.0, 1.0, 2.0).into(),
+            (0.0, 0.0, 0.0).into(),
+            size.width as f32, size.height as f32
+        );
 
         let mut camera_uniform = CameraUniform::new();
         camera_uniform.update_view_proj(&camera);

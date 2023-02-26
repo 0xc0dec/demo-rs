@@ -19,6 +19,18 @@ pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
 );
 
 impl Camera {
+    pub fn new(eye: cgmath::Point3<f32>, target: cgmath::Point3<f32>, canvas_width: f32, canvas_height: f32) -> Self {
+        Self {
+            eye,
+            target,
+            up: cgmath::Vector3::unit_y(),
+            aspect: canvas_width / canvas_height,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        }
+    }
+
     pub fn build_view_projection_matrix(&self) -> cgmath::Matrix4<f32> {
         let view = cgmath::Matrix4::look_at_rh(self.eye, self.target, self.up);
         let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
