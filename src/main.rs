@@ -26,7 +26,6 @@ async fn run() {
         input.process_event(&event, &state.window().id());
 
         match event {
-            // TODO Use MainEventsCleared, see docs
             // TODO Use NewEvents, see docs
 
             Event::WindowEvent {
@@ -55,23 +54,6 @@ async fn run() {
                     _ => {}
                 }
             }
-
-            // Event::RedrawRequested(window_id) if window_id == state.window().id() => {
-            //     let dt = instant::Instant::now() - last_render_time;
-            //     last_render_time = instant::Instant::now();
-            //
-            //     state.update(&input, dt.as_secs_f32());
-            //
-            //     match state.render() {
-            //         Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
-            //         Err(wgpu::SurfaceError::OutOfMemory) => *flow = ControlFlow::Exit,
-            //         _ => {}
-            //     }
-            // }
-
-            // Event::RedrawEventsCleared => {
-            //     state.window().request_redraw();
-            // }
 
             _ => {}
         }
