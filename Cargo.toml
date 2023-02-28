@@ -10,5 +10,6 @@ cgmath = "0.18.0"
 image = { version = "0.24.5", features = ["png", "jpeg"], default-features = false }
 instant = "0.1.12"
 pollster = "0.3.0"
+tobj = { version = "3.2.4", features = ["async"] }
 wgpu = "0.15.1"
 winit = "0.28.1"

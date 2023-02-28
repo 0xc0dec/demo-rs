@@ -4,7 +4,8 @@ use wgpu::util::DeviceExt;
 use winit::window::Window;
 use crate::camera::Camera;
 use crate::input::Input;
-use crate::model::{ModelVertex, Vertex};
+use crate::model;
+use crate::model::{DrawModel, load_model, ModelVertex, Vertex};
 use crate::texture::Texture;
 
 #[rustfmt::skip]
@@ -49,6 +50,7 @@ pub struct State {
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+    obj_model: model::Model,
 }
 
 impl State {
@@ -136,6 +138,13 @@ impl State {
             ],
             label: None,
         });
+
+        let obj_model = load_model(
+            "cube.obj",
+            &device,
+            &queue,
+            &texture_bind_group_layout,
+        ).await.unwrap();
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
@@ -243,7 +252,8 @@ impl State {
             camera,
             camera_buffer,
             camera_uniform,
-            camera_bind_group
+            camera_bind_group,
+            obj_model,
         }
     }
 
@@ -297,6 +307,7 @@ impl State {
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+            render_pass.draw_mesh(&self.obj_model.meshes[0])
         }
 
         self.queue.submit(iter::once(encoder.finish()));
