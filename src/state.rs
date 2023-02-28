@@ -4,8 +4,7 @@ use wgpu::util::DeviceExt;
 use winit::window::Window;
 use crate::camera::Camera;
 use crate::input::Input;
-use crate::{model, texture};
-use crate::model::{DrawModel, load_model, ModelVertex, Vertex};
+use crate::model::{self, DrawModel, load_model, ModelVertex, Vertex};
 use crate::texture::Texture;
 
 #[rustfmt::skip]
@@ -101,7 +100,7 @@ impl State {
         };
         surface.configure(&device, &surface_config);
 
-        let diffuse_bytes = include_bytes!("../assets/happy-tree.png");
+        let diffuse_bytes = include_bytes!("../res/happy-tree.png");
         let diffuse_texture = Texture::from_bytes(&device, &queue, diffuse_bytes).unwrap();
         let texture_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -149,12 +148,12 @@ impl State {
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(include_str!("../assets/shader.wgsl").into())
+            source: wgpu::ShaderSource::Wgsl(include_str!("../res/shader.wgsl").into())
         });
 
         let camera = Camera::new(
-            Vector3::new(0.0, 0.0, 5.0),
-            Vector3::new(0.0, 0.5, 0.0),
+            Vector3::new(5.0, 5.0, 5.0),
+            Vector3::new(0.0, 0.0, 0.0),
             size.width as f32, size.height as f32
         );
 

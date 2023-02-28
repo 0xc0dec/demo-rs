@@ -120,7 +120,7 @@ impl Texture {
 }
 
 pub async fn load_binary(file_name: &str) -> Result<Vec<u8>> {
-    let path = std::path::Path::new("./assets").join(file_name);
+    let path = std::path::Path::new("./res").join(file_name);
     let data = std::fs::read(path)?;
     Ok(data)
 }

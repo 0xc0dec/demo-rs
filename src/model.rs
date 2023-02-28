@@ -63,7 +63,7 @@ pub struct Mesh {
 }
 
 pub async fn load_string(file_name: &str) -> anyhow::Result<String> {
-    let path = std::path::Path::new("./assets").join(file_name);
+    let path = std::path::Path::new("./res").join(file_name);
     Ok(std::fs::read_to_string(path)?)
 }
 
