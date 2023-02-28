@@ -38,11 +38,15 @@ impl Transform {
         self.local_mat = t * self.local_mat;
     }
 
+    pub fn forward(&self) -> Vector3<f32> {
+        self.local_mat.z.truncate()
+    }
+
     pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: Rad<f32>, space: TransformSpace) {
         let axis = match space {
-            TransformSpace::World => self.local_mat.transform_vector(axis), // TODO or inverse?
-            _ => axis
+            TransformSpace::Local => axis,
+            TransformSpace::World => self.local_mat.transform_vector(axis), // TODO why not inverse?
         };
-        self.local_mat = Matrix4::from(Quaternion::from_axis_angle(axis, angle)) * self.local_mat;
+        self.local_mat = Matrix4::from_axis_angle(axis, angle) * self.local_mat;
     }
 }

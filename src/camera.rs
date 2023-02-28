@@ -1,4 +1,5 @@
-use cgmath::{InnerSpace, Matrix4, Rad, Vector3, Zero};
+use std::cmp::max;
+use cgmath::{AbsDiffEq, InnerSpace, Matrix4, Rad, Vector3, Zero};
 use winit::event::{MouseButton, VirtualKeyCode};
 use crate::transform::{Transform, TransformSpace};
 
@@ -71,11 +72,22 @@ impl Camera {
 
     pub fn update(&mut self, dt: f32) {
         if self.rmb_down {
-            let horiz_angle = Rad(self.mouse_delta_x as f32 * dt) * 1.0;
-            self.transform.rotate_around_axis(Vector3::unit_y(), horiz_angle, TransformSpace::World);
+            let hdelta = self.mouse_delta_x as f32 * dt;
+            self.transform.rotate_around_axis(Vector3::unit_y(), Rad(hdelta), TransformSpace::World);
 
-            let vert_angle = Rad(self.mouse_delta_y as f32 * dt) * 1.0;
-            self.transform.rotate_around_axis(Vector3::unit_x(), vert_angle, TransformSpace::Local);
+            let forward = self.transform.forward();
+            let angle_to_up = forward.angle(Vector3::unit_y()).0;
+            let mut vdelta = self.mouse_delta_y as f32 * dt;
+            // TODO Fix, this does not work, e.g. when moving upward the angle usually doesn't even approach zero,
+            // maybe the angle calculation doesn't work.
+            if vdelta < 0.0 { // Moving up
+                if angle_to_up + vdelta <= 0.1 {
+                    vdelta = -(angle_to_up - 0.1);
+                }
+            } else if angle_to_up + vdelta >= 3.04 {
+                vdelta = 3.04 - angle_to_up;
+            }
+            self.transform.rotate_around_axis(Vector3::unit_x(), Rad(vdelta), TransformSpace::Local);
         }
 
         let mut movement: Vector3<f32> = Vector3::zero();
