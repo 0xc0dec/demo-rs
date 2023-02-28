@@ -1,8 +1,8 @@
 use std::io::{BufReader, Cursor};
-use std::ops::Range;
 use wgpu::util::DeviceExt;
 use crate::{texture};
-use crate::resources::load_texture;
+use crate::resources::load_string;
+use crate::texture::Texture;
 
 pub trait Vertex {
     fn desc<'a>() -> wgpu::VertexBufferLayout<'a>;
@@ -50,7 +50,7 @@ pub struct Model {
 
 pub struct Material {
     pub name: String,
-    pub diffuse_texture: texture::Texture,
+    pub diffuse_texture: Texture,
     pub bind_group: wgpu::BindGroup,
 }
 
@@ -60,11 +60,6 @@ pub struct Mesh {
     pub index_buffer: wgpu::Buffer,
     pub num_elements: u32,
     pub material: usize,
-}
-
-pub async fn load_string(file_name: &str) -> anyhow::Result<String> {
-    let path = std::path::Path::new("./res").join(file_name);
-    Ok(std::fs::read_to_string(path)?)
 }
 
 pub async fn load_model(
@@ -93,7 +88,7 @@ pub async fn load_model(
 
     let mut materials = Vec::new();
     for m in obj_materials? {
-        let diffuse_texture = load_texture(&m.diffuse_texture, device, queue).await?;
+        let diffuse_texture = Texture::from_file(&m.diffuse_texture, device, queue).await?;
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout,
             entries: &[

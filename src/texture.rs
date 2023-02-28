@@ -2,6 +2,7 @@ use std::num::NonZeroU32;
 
 use anyhow::*;
 use image::GenericImageView;
+use crate::resources::load_binary;
 
 pub struct Texture {
     pub texture: wgpu::Texture,
@@ -115,5 +116,10 @@ impl Texture {
             view,
             sampler,
         }
+    }
+
+    pub async fn from_file(file_name: &str, device: &wgpu::Device, queue: &wgpu::Queue) -> Result<Self> {
+        let data = load_binary(file_name).await?;
+        Texture::from_bytes(device, queue, &data)
     }
 }
