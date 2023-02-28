@@ -36,8 +36,8 @@ impl Camera {
             let forward = self.transform.forward();
             let angle_to_up = forward.angle(Vector3::unit_y()).0;
             let mut vdelta = input.mouse_delta.1 as f32 * dt;
-            // TODO Fix, this does not work, e.g. when moving upward the angle usually doesn't even approach zero,
-            // maybe the angle calculation doesn't work.
+            // TODO Fix, this does not work: when moving upward the angle usually doesn't even approach zero,
+            // maybe the angle calculation is off.
             if vdelta < 0.0 { // Moving up
                 if angle_to_up + vdelta <= 0.1 {
                     vdelta = -(angle_to_up - 0.1);
