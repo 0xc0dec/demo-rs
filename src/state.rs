@@ -3,6 +3,7 @@ use cgmath::{Matrix4, Vector3};
 use wgpu::util::DeviceExt;
 use winit::window::Window;
 use crate::camera::Camera;
+use crate::input::Input;
 use crate::texture::Texture;
 
 #[rustfmt::skip]
@@ -316,8 +317,8 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, dt: f32) {
-        self.camera.update(dt);
+    pub fn update(&mut self, input: &Input, dt: f32) {
+        self.camera.update(input, dt);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
