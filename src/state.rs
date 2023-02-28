@@ -43,8 +43,6 @@ pub struct State {
     window: Window,
     render_pipeline: wgpu::RenderPipeline,
     #[allow(dead_code)]
-    diffuse_texture: Texture,
-    diffuse_bind_group: wgpu::BindGroup,
     pub camera: Camera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -100,8 +98,6 @@ impl State {
         };
         surface.configure(&device, &surface_config);
 
-        let diffuse_bytes = include_bytes!("../res/happy-tree.png");
-        let diffuse_texture = Texture::from_bytes(&device, &queue, diffuse_bytes).unwrap();
         let texture_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 entries: &[
@@ -124,20 +120,6 @@ impl State {
                 ],
                 label: None,
             });
-        let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &texture_bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                },
-            ],
-            label: None,
-        });
 
         let obj_model = load_model(
             "cube.obj",
@@ -255,8 +237,6 @@ impl State {
             size,
             window,
             render_pipeline,
-            diffuse_texture,
-            diffuse_bind_group,
             camera,
             camera_buffer,
             camera_uniform,
@@ -322,8 +302,6 @@ impl State {
             });
 
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
-            render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
             render_pass.draw_model(&self.obj_model, &self.camera_bind_group);
         }
 
