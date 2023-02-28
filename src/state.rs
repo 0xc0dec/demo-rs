@@ -324,7 +324,7 @@ impl State {
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-            render_pass.draw_mesh(&self.obj_model.meshes[0])
+            render_pass.draw_model(&self.obj_model, &self.camera_bind_group);
         }
 
         self.queue.submit(iter::once(encoder.finish()));

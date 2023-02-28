@@ -25,8 +25,7 @@ impl Texture {
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
             format: Self::DEPTH_FORMAT,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT
-                | wgpu::TextureUsages::TEXTURE_BINDING,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[Self::DEPTH_FORMAT],
         };
         let texture = device.create_texture(&desc);
@@ -117,19 +116,4 @@ impl Texture {
             sampler,
         }
     }
-}
-
-pub async fn load_binary(file_name: &str) -> Result<Vec<u8>> {
-    let path = std::path::Path::new("./res").join(file_name);
-    let data = std::fs::read(path)?;
-    Ok(data)
-}
-
-pub async fn load_texture(
-    file_name: &str,
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
-) -> Result<Texture> {
-    let data = load_binary(file_name).await?;
-    Texture::from_bytes(device, queue, &data)
 }
