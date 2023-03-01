@@ -1,4 +1,4 @@
-use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
+use winit::{event::*};
 use winit::window::WindowId;
 
 pub struct Input {

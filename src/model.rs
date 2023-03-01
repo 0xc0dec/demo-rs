@@ -1,6 +1,5 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
-use crate::{texture};
 use crate::resources::load_string;
 use crate::texture::Texture;
 

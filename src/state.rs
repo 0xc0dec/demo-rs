@@ -43,7 +43,7 @@ pub struct State {
     window: Window,
     render_pipeline: wgpu::RenderPipeline,
     #[allow(dead_code)]
-    pub camera: Camera,
+    camera: Camera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
