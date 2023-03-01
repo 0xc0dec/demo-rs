@@ -1,14 +1,17 @@
-use wgpu::{BindGroupLayout, ShaderModule};
+use wgpu::{BindGroup, BindGroupLayout, ShaderModule};
 use crate::renderer::Renderer;
 use crate::resources::load_string;
+use crate::texture::Texture;
 
 pub struct Material {
     shader: ShaderModule,
     texture_bind_group_layout: BindGroupLayout,
+    texture_bind_group: BindGroup,
 }
 
 pub struct MaterialParams {
     pub shader_file_name: &'static str,
+    pub texture: Texture,
 }
 
 impl Material {
@@ -43,9 +46,25 @@ impl Material {
                 label: None,
             });
 
+        let texture_bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &texture_bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&params.texture.view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler),
+                },
+            ],
+            label: None,
+        });
+
         Self {
             shader,
-            texture_bind_group_layout
+            texture_bind_group_layout,
+            texture_bind_group,
         }
     }
 

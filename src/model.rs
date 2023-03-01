@@ -87,7 +87,7 @@ pub async fn load_model(
 
     let mut materials = Vec::new();
     for m in obj_materials? {
-        let diffuse_texture = Texture::from_file(&m.diffuse_texture, renderer.device(), renderer.queue()).await?;
+        let diffuse_texture = Texture::from_file(&m.diffuse_texture, renderer).await?;
         let bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
             layout,
             entries: &[

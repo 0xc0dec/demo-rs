@@ -41,7 +41,7 @@ impl Texture {
                 mag_filter: wgpu::FilterMode::Linear,
                 min_filter: wgpu::FilterMode::Linear,
                 mipmap_filter: wgpu::FilterMode::Nearest,
-                compare: Some(wgpu::CompareFunction::LessEqual), // 5.
+                compare: Some(wgpu::CompareFunction::LessEqual),
                 lod_min_clamp: 0.0,
                 lod_max_clamp: 100.0,
                 ..Default::default()
@@ -51,20 +51,12 @@ impl Texture {
         Self { texture, view, sampler }
     }
 
-    pub fn from_bytes(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        bytes: &[u8],
-    ) -> Result<Self> {
+    pub fn from_bytes(renderer: &Renderer, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
-        Ok(Self::from_image(device, queue, &img))
+        Ok(Self::from_image(renderer, &img))
     }
 
-    pub fn from_image(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        img: &image::DynamicImage,
-    ) -> Self {
+    pub fn from_image(renderer: &Renderer, img: &image::DynamicImage) -> Self {
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
 
@@ -74,7 +66,7 @@ impl Texture {
             depth_or_array_layers: 1,
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
+        let texture = renderer.device().create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -85,7 +77,7 @@ impl Texture {
             view_formats: &[],
         });
 
-        queue.write_texture(
+        renderer.queue().write_texture(
             wgpu::ImageCopyTexture {
                 aspect: wgpu::TextureAspect::All,
                 texture: &texture,
@@ -102,7 +94,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = renderer.device().create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -119,8 +111,8 @@ impl Texture {
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &wgpu::Device, queue: &wgpu::Queue) -> Result<Self> {
+    pub async fn from_file(file_name: &str, renderer: &Renderer) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Texture::from_bytes(device, queue, &data)
+        Texture::from_bytes(renderer, &data)
     }
 }

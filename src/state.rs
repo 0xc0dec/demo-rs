@@ -48,8 +48,11 @@ pub struct State {
 
 impl State {
     pub async fn new(renderer: &Renderer) -> State {
+        let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
+
         let material = Material::new(renderer, MaterialParams {
-            shader_file_name: "shader.wgsl"
+            shader_file_name: "shader.wgsl",
+            texture
         }).await;
 
         let obj_model = load_model("cube.obj", renderer, material.texture_bind_group_layout()).await.unwrap();
