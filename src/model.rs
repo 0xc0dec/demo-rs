@@ -1,5 +1,6 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
+use crate::renderer::Renderer;
 use crate::resources::load_string;
 use crate::texture::Texture;
 
@@ -63,8 +64,7 @@ pub struct Mesh {
 
 pub async fn load_model(
     file_name: &str,
-    device: &wgpu::Device,
-    queue: &wgpu::Queue,
+    renderer: &Renderer,
     layout: &wgpu::BindGroupLayout,
 ) -> anyhow::Result<Model> {
     let obj_text = load_string(file_name).await?;
@@ -87,8 +87,8 @@ pub async fn load_model(
 
     let mut materials = Vec::new();
     for m in obj_materials? {
-        let diffuse_texture = Texture::from_file(&m.diffuse_texture, device, queue).await?;
-        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        let diffuse_texture = Texture::from_file(&m.diffuse_texture, renderer.device(), renderer.queue()).await?;
+        let bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
             layout,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -129,12 +129,12 @@ pub async fn load_model(
                 })
                 .collect::<Vec<_>>();
 
-            let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            let vertex_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: Some(&format!("{:?} Vertex Buffer", file_name)),
                 contents: bytemuck::cast_slice(&vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             });
-            let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            let index_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: Some(&format!("{:?} Index Buffer", file_name)),
                 contents: bytemuck::cast_slice(&m.mesh.indices),
                 usage: wgpu::BufferUsages::INDEX,

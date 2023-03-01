@@ -48,39 +48,11 @@ pub struct State {
 
 impl State {
     pub async fn new(renderer: &Renderer) -> State {
-        let texture_bind_group_layout =
-            renderer.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        },
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
-                    },
-                ],
-                label: None,
-            });
-
-        let obj_model = load_model(
-            "cube.obj",
-            renderer.device(),
-            renderer.queue(),
-            &texture_bind_group_layout,
-        ).await.unwrap();
-
         let material = Material::new(renderer, MaterialParams {
             shader_file_name: "shader.wgsl"
         }).await;
+
+        let obj_model = load_model("cube.obj", renderer, material.texture_bind_group_layout()).await.unwrap();
 
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
@@ -131,7 +103,7 @@ impl State {
         let render_pipeline_layout = renderer.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[
-                &texture_bind_group_layout,
+                material.texture_bind_group_layout(),
                 &camera_bind_group_layout
             ],
             push_constant_ranges: &[]
