@@ -53,7 +53,7 @@ async fn run() {
                 let dt = instant::Instant::now() - time;
                 time = instant::Instant::now();
 
-                state.update(&input, dt.as_secs_f32(), &renderer);
+                state.update(&input, dt.as_secs_f32());
                 input.clear();
 
                 match state.render(&renderer) {

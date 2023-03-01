@@ -189,11 +189,8 @@ impl State {
         }
     }
 
-    // TODO Remove renderer here - the buffer update should be done once before rendering
-    pub fn update(&mut self, input: &Input, dt: f32, renderer: &Renderer) {
+    pub fn update(&mut self, input: &Input, dt: f32) {
         self.camera.update(input, dt);
-        self.camera_uniform.update_view_proj(&self.camera);
-        renderer.queue().write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
     pub fn resize(&mut self, renderer: &Renderer) {
@@ -206,6 +203,9 @@ impl State {
 
     // TODO Don't pass Renderer
     pub fn render(&mut self, renderer: &Renderer) -> Result<(), wgpu::SurfaceError> {
+        self.camera_uniform.update_view_proj(&self.camera);
+        renderer.queue().write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+
         let output = renderer.surface().get_current_texture()?;
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
