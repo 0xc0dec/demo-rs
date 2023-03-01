@@ -2,6 +2,7 @@ use std::num::NonZeroU32;
 
 use anyhow::*;
 use image::GenericImageView;
+use crate::renderer::Renderer;
 use crate::resources::load_binary;
 
 pub struct Texture {
@@ -13,14 +14,14 @@ pub struct Texture {
 impl Texture {
     pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
-    pub fn new_depth_texture(device: &wgpu::Device, size: (u32, u32), label: &str) -> Self {
+    pub fn new_depth_texture(renderer: &Renderer) -> Self {
         let size = wgpu::Extent3d {
-            width: size.0,
-            height: size.1,
+            width: renderer.canvas_size().width,
+            height: renderer.canvas_size().height,
             depth_or_array_layers: 1,
         };
         let desc = wgpu::TextureDescriptor {
-            label: Some(label),
+            label: None,
             size,
             mip_level_count: 1,
             sample_count: 1,
@@ -29,10 +30,10 @@ impl Texture {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[Self::DEPTH_FORMAT],
         };
-        let texture = device.create_texture(&desc);
+        let texture = renderer.device().create_texture(&desc);
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = device.create_sampler(
+        let sampler = renderer.device().create_sampler(
             &wgpu::SamplerDescriptor {
                 address_mode_u: wgpu::AddressMode::ClampToEdge,
                 address_mode_v: wgpu::AddressMode::ClampToEdge,

@@ -3,7 +3,7 @@ use winit::dpi::PhysicalSize;
 use winit::window::Window;
 
 pub struct Renderer {
-    canvas_size: PhysicalSize<u32>,
+    surface_size: PhysicalSize<u32>,
     surface: wgpu::Surface,
     device: Device,
     queue: Queue,
@@ -58,7 +58,7 @@ impl Renderer {
         surface.configure(&device, &surface_config);
 
         Renderer {
-            canvas_size,
+            surface_size: canvas_size,
             surface,
             device,
             queue,
@@ -67,9 +67,9 @@ impl Renderer {
     }
 
     pub fn resize(&mut self, new_size: Option<PhysicalSize<u32>>) {
-        let size = new_size.unwrap_or(self.canvas_size);
+        let size = new_size.unwrap_or(self.surface_size);
         if size.width > 0 && size.height > 0 {
-            self.canvas_size = size;
+            self.surface_size = size;
             self.surface_config.width = size.width;
             self.surface_config.height = size.height;
             self.surface.configure(&self.device, &self.surface_config);
@@ -80,5 +80,5 @@ impl Renderer {
     pub fn surface_texture_format(&self) -> TextureFormat { self.surface_config.format }
     pub fn device(&self) -> &Device { &self.device }
     pub fn queue(&self) -> &Queue { &self.queue }
-    pub fn canvas_size(&self) -> PhysicalSize<u32> { self.canvas_size }
+    pub fn canvas_size(&self) -> PhysicalSize<u32> { self.surface_size }
 }

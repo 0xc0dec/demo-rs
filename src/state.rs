@@ -126,7 +126,7 @@ impl State {
             label: None,
         });
 
-        let depth_texture = Texture::new_depth_texture(renderer.device(), renderer.canvas_size().into(), "depth_texture");
+        let depth_texture = Texture::new_depth_texture(renderer);
 
         let render_pipeline_layout = renderer.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
@@ -194,11 +194,7 @@ impl State {
     }
 
     pub fn resize(&mut self, renderer: &Renderer) {
-        self.depth_texture = Texture::new_depth_texture(
-            renderer.device(),
-            renderer.canvas_size().into(),
-            "depth_texture"
-        );
+        self.depth_texture = Texture::new_depth_texture(renderer);
     }
 
     // TODO Don't pass Renderer
