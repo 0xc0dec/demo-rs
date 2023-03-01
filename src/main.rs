@@ -16,14 +16,14 @@ async fn run() {
         .with_title("Testy Test")
         .build(&event_loop).unwrap();
 
-    let mut state = State::new(window).await;
+    let mut state = State::new(&window).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();
 
     event_loop.run(move |event, _, flow| {
         *flow = ControlFlow::Poll;
 
-        input.process_event(&event, &state.window().id());
+        input.process_event(&event, &window.id());
 
         match event {
             // TODO Use NewEvents, see docs
@@ -31,7 +31,7 @@ async fn run() {
             Event::WindowEvent {
                 ref event,
                 window_id,
-            } if window_id == state.window().id() => {
+            } if window_id == window.id() => {
                 match event {
                     WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {

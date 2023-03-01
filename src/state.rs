@@ -40,7 +40,6 @@ pub struct State {
     device: wgpu::Device,
     queue: wgpu::Queue,
     surface_config: wgpu::SurfaceConfiguration,
-    window: Window,
     render_pipeline: wgpu::RenderPipeline,
     #[allow(dead_code)]
     camera: Camera,
@@ -52,7 +51,7 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(window: Window) -> Self {
+    pub async fn new(window: &Window) -> Self {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -235,7 +234,6 @@ impl State {
             queue,
             surface_config,
             size,
-            window,
             render_pipeline,
             camera,
             camera_buffer,
@@ -250,10 +248,6 @@ impl State {
         self.camera.update(input, dt);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
-    }
-
-    pub fn window(&self) -> &Window {
-        &self.window
     }
 
     pub fn resize(&mut self, new_size: Option<winit::dpi::PhysicalSize<u32>>) {
