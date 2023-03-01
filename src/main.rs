@@ -5,10 +5,13 @@ mod transform;
 mod input;
 mod model;
 mod resources;
+mod renderer;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
+
 use state::State;
 use crate::input::Input;
+use crate::renderer::Renderer;
 
 async fn run() {
     let event_loop = EventLoop::new();
@@ -16,7 +19,8 @@ async fn run() {
         .with_title("Testy Test")
         .build(&event_loop).unwrap();
 
-    let mut state = State::new(&window).await;
+    let mut renderer = Renderer::new(&window).await;
+    let mut state = State::new(&renderer).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();
 
@@ -33,9 +37,13 @@ async fn run() {
                 window_id,
             } if window_id == window.id() => {
                 match event {
-                    WindowEvent::Resized(new_size) => state.resize(Some(*new_size)),
+                    WindowEvent::Resized(new_size) => {
+                        renderer.resize(Some(*new_size));
+                        state.resize(&renderer);
+                    },
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        state.resize(Some(**new_inner_size))
+                        renderer.resize(Some(**new_inner_size));
+                        state.resize(&renderer);
                     }
                     _ => {}
                 }
@@ -45,11 +53,14 @@ async fn run() {
                 let dt = instant::Instant::now() - time;
                 time = instant::Instant::now();
 
-                state.update(&input, dt.as_secs_f32());
+                state.update(&input, dt.as_secs_f32(), &renderer);
                 input.clear();
 
-                match state.render() {
-                    Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => state.resize(None),
+                match state.render(&renderer) {
+                    Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
+                        renderer.resize(None);
+                        state.resize(&renderer);
+                    },
                     Err(wgpu::SurfaceError::OutOfMemory) => *flow = ControlFlow::Exit,
                     _ => {}
                 }
@@ -61,7 +72,7 @@ async fn run() {
         if input.escape_down {
             *flow = ControlFlow::Exit;
         }
-    })
+    });
 }
 
 fn main() {

@@ -1,10 +1,10 @@
 use std::iter;
 use cgmath::{Matrix4, Vector3};
 use wgpu::util::DeviceExt;
-use winit::window::Window;
 use crate::camera::Camera;
 use crate::input::Input;
 use crate::model::{self, DrawModel, load_model, ModelVertex, Vertex};
+use crate::renderer::Renderer;
 use crate::texture::Texture;
 
 #[rustfmt::skip]
@@ -35,11 +35,6 @@ impl CameraUniform {
 }
 
 pub struct State {
-    size: winit::dpi::PhysicalSize<u32>,
-    surface: wgpu::Surface,
-    device: wgpu::Device,
-    queue: wgpu::Queue,
-    surface_config: wgpu::SurfaceConfiguration,
     render_pipeline: wgpu::RenderPipeline,
     #[allow(dead_code)]
     camera: Camera,
@@ -51,54 +46,9 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(window: &Window) -> Self {
-        let size = window.inner_size();
-
-        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::all(),
-            dx12_shader_compiler: Default::default()
-        });
-
-        let surface = unsafe { instance.create_surface(&window) }.unwrap();
-
-        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::default(),
-            compatible_surface: Some(&surface),
-            force_fallback_adapter: false
-        }).await.unwrap();
-
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                label: None,
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default()
-            },
-            None,
-        ).await.unwrap();
-
-        let surface_config = {
-            let caps = surface.get_capabilities(&adapter);
-
-            let format = caps.formats.iter()
-                .copied()
-                .filter(|f| f.describe().srgb)
-                .next()
-                .unwrap_or(caps.formats[0]);
-
-            wgpu::SurfaceConfiguration {
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-                format,
-                width: size.width,
-                height: size.height,
-                present_mode: caps.present_modes[0],
-                alpha_mode: caps.alpha_modes[0],
-                view_formats: vec![],
-            }
-        };
-        surface.configure(&device, &surface_config);
-
+    pub async fn new(renderer: &Renderer) -> State {
         let texture_bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            renderer.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 entries: &[
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
@@ -122,12 +72,12 @@ impl State {
 
         let obj_model = load_model(
             "cube.obj",
-            &device,
-            &queue,
+            renderer.device(),
+            renderer.queue(),
             &texture_bind_group_layout,
         ).await.unwrap();
 
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        let shader = renderer.device().create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(include_str!("../res/shader.wgsl").into())
         });
@@ -135,13 +85,13 @@ impl State {
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
             Vector3::new(0.0, 0.0, 0.0),
-            size.width as f32, size.height as f32
+            renderer.canvas_size().into()
         );
 
         let mut camera_uniform = CameraUniform::new();
         camera_uniform.update_view_proj(&camera);
 
-        let camera_buffer = device.create_buffer_init(
+        let camera_buffer = renderer.device().create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: Some("Camera Buffer"),
                 contents: bytemuck::cast_slice(&[camera_uniform]),
@@ -149,7 +99,7 @@ impl State {
             }
         );
 
-        let camera_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let camera_bind_group_layout = renderer.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -165,7 +115,7 @@ impl State {
             label: None,
         });
 
-        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        let camera_bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &camera_bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -176,9 +126,9 @@ impl State {
             label: None,
         });
 
-        let depth_texture = Texture::new_depth_texture(&device, size.into(), "depth_texture");
+        let depth_texture = Texture::new_depth_texture(renderer.device(), renderer.canvas_size().into(), "depth_texture");
 
-        let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let render_pipeline_layout = renderer.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[
                 &texture_bind_group_layout,
@@ -187,7 +137,7 @@ impl State {
             push_constant_ranges: &[]
         });
 
-        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let render_pipeline = renderer.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
@@ -199,7 +149,7 @@ impl State {
                 module: &shader,
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: surface_config.format,
+                    format: renderer.surface_texture_format(),
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL
                 })]
@@ -229,11 +179,6 @@ impl State {
         });
 
         Self {
-            surface,
-            device,
-            queue,
-            surface_config,
-            size,
             render_pipeline,
             camera,
             camera_buffer,
@@ -244,28 +189,27 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, input: &Input, dt: f32) {
+    // TODO Remove renderer here - the buffer update should be done once before rendering
+    pub fn update(&mut self, input: &Input, dt: f32, renderer: &Renderer) {
         self.camera.update(input, dt);
         self.camera_uniform.update_view_proj(&self.camera);
-        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+        renderer.queue().write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
-    pub fn resize(&mut self, new_size: Option<winit::dpi::PhysicalSize<u32>>) {
-        let size = new_size.unwrap_or(self.size);
-        if size.width > 0 && size.height > 0 {
-            self.size = size;
-            self.surface_config.width = size.width;
-            self.surface_config.height = size.height;
-            self.surface.configure(&self.device, &self.surface_config);
-            self.depth_texture = Texture::new_depth_texture(&self.device, size.into(), "depth_texture");
-        }
+    pub fn resize(&mut self, renderer: &Renderer) {
+        self.depth_texture = Texture::new_depth_texture(
+            renderer.device(),
+            renderer.canvas_size().into(),
+            "depth_texture"
+        );
     }
 
-    pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-        let output = self.surface.get_current_texture()?;
+    // TODO Don't pass Renderer
+    pub fn render(&mut self, renderer: &Renderer) -> Result<(), wgpu::SurfaceError> {
+        let output = renderer.surface().get_current_texture()?;
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+        let mut encoder = renderer.device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: None
         });
 
@@ -299,7 +243,7 @@ impl State {
             render_pass.draw_model(&self.obj_model, &self.camera_bind_group);
         }
 
-        self.queue.submit(iter::once(encoder.finish()));
+        renderer.queue().submit(iter::once(encoder.finish()));
         output.present();
 
         Ok(())

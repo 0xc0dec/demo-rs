@@ -11,9 +11,9 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(eye: Vector3<f32>, target: Vector3<f32>, canvas_width: f32, canvas_height: f32) -> Self {
+    pub fn new(eye: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
         let mut cam = Self {
-            aspect: canvas_width / canvas_height,
+            aspect: canvas_size.0 / canvas_size.1,
             fovy: 45.0,
             znear: 0.1,
             zfar: 100.0,
