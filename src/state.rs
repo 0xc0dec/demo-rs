@@ -3,6 +3,7 @@ use cgmath::{Matrix4, Vector3};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::input::Input;
+use crate::material::{Material, MaterialParams};
 use crate::model::{self, DrawModel, load_model, ModelVertex, Vertex};
 use crate::renderer::Renderer;
 use crate::texture::Texture;
@@ -35,8 +36,8 @@ impl CameraUniform {
 }
 
 pub struct State {
+    material: Material,
     render_pipeline: wgpu::RenderPipeline,
-    #[allow(dead_code)]
     camera: Camera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -77,10 +78,9 @@ impl State {
             &texture_bind_group_layout,
         ).await.unwrap();
 
-        let shader = renderer.device().create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(include_str!("../res/shader.wgsl").into())
-        });
+        let material = Material::new(renderer, MaterialParams {
+            shader_file_name: "shader.wgsl"
+        }).await;
 
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
@@ -93,7 +93,7 @@ impl State {
 
         let camera_buffer = renderer.device().create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
-                label: Some("Camera Buffer"),
+                label: None,
                 contents: bytemuck::cast_slice(&[camera_uniform]),
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             }
@@ -141,12 +141,12 @@ impl State {
             label: None,
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
-                module: &shader,
+                module: material.shader(),
                 entry_point: "vs_main",
                 buffers: &[ModelVertex::desc()]
             },
             fragment: Some(wgpu::FragmentState {
-                module: &shader,
+                module: material.shader(),
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
                     format: renderer.surface_texture_format(),
@@ -179,6 +179,7 @@ impl State {
         });
 
         Self {
+            material,
             render_pipeline,
             camera,
             camera_buffer,

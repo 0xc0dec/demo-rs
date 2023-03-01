@@ -6,6 +6,7 @@ mod input;
 mod model;
 mod resources;
 mod renderer;
+mod material;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
