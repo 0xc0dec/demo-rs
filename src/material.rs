@@ -10,13 +10,12 @@ pub struct Material {
 }
 
 pub struct MaterialParams {
-    pub shader_file_name: &'static str,
     pub texture: Texture,
 }
 
 impl Material {
-    pub async fn new(renderer: &Renderer, params: MaterialParams) -> Self {
-        let shader_src = load_string(params.shader_file_name).await.unwrap();
+    pub async fn diffuse(renderer: &Renderer, params: MaterialParams) -> Self {
+        let shader_src = load_string("diffuse.wgsl").await.unwrap();
 
         let shader = renderer.device().create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,

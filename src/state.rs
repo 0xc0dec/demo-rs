@@ -50,8 +50,7 @@ impl State {
     pub async fn new(renderer: &Renderer) -> State {
         let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
 
-        let material = Material::new(renderer, MaterialParams {
-            shader_file_name: "shader.wgsl",
+        let material = Material::diffuse(renderer, MaterialParams {
             texture
         }).await;
 
