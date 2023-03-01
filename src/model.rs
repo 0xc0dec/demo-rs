@@ -116,23 +116,22 @@ pub async fn load_model(file_name: &str, renderer: &Renderer) -> anyhow::Result<
 }
 
 pub trait DrawModel<'a> {
-    fn draw_mesh(&mut self, mesh: &'a Mesh, material: &'a Material, camera_bind_group: &'a wgpu::BindGroup);
-    fn draw_model(&mut self, model: &'a Model, material: &'a Material, camera_bind_group: &'a wgpu::BindGroup);
+    fn draw_mesh(&mut self, mesh: &'a Mesh);
+    fn draw_model(&mut self, model: &'a Model);
 }
+
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
     where 'b: 'a,
 {
-    fn draw_mesh(&mut self, mesh: &'b Mesh, material: &'b Material, camera_bind_group: &'b wgpu::BindGroup) {
+    fn draw_mesh(&mut self, mesh: &'b Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.set_bind_group(0, &material.texture_bind_group(), &[]);
-        self.set_bind_group(1, camera_bind_group, &[]);
         self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
-    fn draw_model(&mut self, model: &'b Model, material: &'b Material, camera_bind_group: &'b wgpu::BindGroup) {
+    fn draw_model(&mut self, model: &'b Model) {
         for mesh in &model.meshes {
-            self.draw_mesh(mesh, material, camera_bind_group);
+            self.draw_mesh(mesh);
         }
     }
 }
