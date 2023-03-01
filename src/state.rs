@@ -55,7 +55,7 @@ impl State {
             texture
         }).await;
 
-        let obj_model = load_model("cube.obj", renderer, material.texture_bind_group_layout()).await.unwrap();
+        let obj_model = load_model("cube.obj", renderer).await.unwrap();
 
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
@@ -212,7 +212,7 @@ impl State {
             });
 
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw_model(&self.obj_model, &self.camera_bind_group);
+            render_pass.draw_model(&self.obj_model, &self.material, &self.camera_bind_group);
         }
 
         renderer.queue().submit(iter::once(encoder.finish()));

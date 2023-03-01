@@ -70,4 +70,5 @@ impl Material {
 
     pub fn shader(&self) -> &ShaderModule { &self.shader }
     pub fn texture_bind_group_layout(&self) -> &BindGroupLayout { &self.texture_bind_group_layout }
+    pub fn texture_bind_group(&self) -> &BindGroup { &self.texture_bind_group }
 }

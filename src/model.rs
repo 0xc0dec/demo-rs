@@ -1,8 +1,8 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
+use crate::material::Material;
 use crate::renderer::Renderer;
 use crate::resources::load_string;
-use crate::texture::Texture;
 
 pub trait Vertex {
     fn desc<'a>() -> wgpu::VertexBufferLayout<'a>;
@@ -45,13 +45,6 @@ impl Vertex for ModelVertex {
 
 pub struct Model {
     pub meshes: Vec<Mesh>,
-    pub materials: Vec<Material>,
-}
-
-pub struct Material {
-    pub name: String,
-    pub diffuse_texture: Texture,
-    pub bind_group: wgpu::BindGroup,
 }
 
 pub struct Mesh {
@@ -59,19 +52,14 @@ pub struct Mesh {
     pub vertex_buffer: wgpu::Buffer,
     pub index_buffer: wgpu::Buffer,
     pub num_elements: u32,
-    pub material: usize,
 }
 
-pub async fn load_model(
-    file_name: &str,
-    renderer: &Renderer,
-    layout: &wgpu::BindGroupLayout,
-) -> anyhow::Result<Model> {
+pub async fn load_model(file_name: &str, renderer: &Renderer) -> anyhow::Result<Model> {
     let obj_text = load_string(file_name).await?;
     let obj_cursor = Cursor::new(obj_text);
     let mut obj_reader = BufReader::new(obj_cursor);
 
-    let (models, obj_materials) = tobj::load_obj_buf_async(
+    let (models, _) = tobj::load_obj_buf_async(
         &mut obj_reader,
         &tobj::LoadOptions {
             triangulate: true,
@@ -84,31 +72,6 @@ pub async fn load_model(
         },
     )
         .await?;
-
-    let mut materials = Vec::new();
-    for m in obj_materials? {
-        let diffuse_texture = Texture::from_file(&m.diffuse_texture, renderer).await?;
-        let bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
-            layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                },
-            ],
-            label: None,
-        });
-
-        materials.push(Material {
-            name: m.name,
-            diffuse_texture,
-            bind_group,
-        })
-    }
 
     let meshes = models
         .into_iter()
@@ -145,17 +108,16 @@ pub async fn load_model(
                 vertex_buffer,
                 index_buffer,
                 num_elements: m.mesh.indices.len() as u32,
-                material: m.mesh.material_id.unwrap_or(0),
             }
         })
         .collect::<Vec<_>>();
 
-    Ok(Model { meshes, materials })
+    Ok(Model { meshes })
 }
 
 pub trait DrawModel<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh, material: &'a Material, camera_bind_group: &'a wgpu::BindGroup);
-    fn draw_model(&mut self, model: &'a Model, camera_bind_group: &'a wgpu::BindGroup);
+    fn draw_model(&mut self, model: &'a Model, material: &'a Material, camera_bind_group: &'a wgpu::BindGroup);
 }
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
     where 'b: 'a,
@@ -163,14 +125,13 @@ impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
     fn draw_mesh(&mut self, mesh: &'b Mesh, material: &'b Material, camera_bind_group: &'b wgpu::BindGroup) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.set_bind_group(0, &material.bind_group, &[]);
+        self.set_bind_group(0, &material.texture_bind_group(), &[]);
         self.set_bind_group(1, camera_bind_group, &[]);
         self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
-    fn draw_model(&mut self, model: &'b Model, camera_bind_group: &'b wgpu::BindGroup) {
+    fn draw_model(&mut self, model: &'b Model, material: &'b Material, camera_bind_group: &'b wgpu::BindGroup) {
         for mesh in &model.meshes {
-            let material = &model.materials[mesh.material];
             self.draw_mesh(mesh, material, camera_bind_group);
         }
     }
