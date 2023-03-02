@@ -12,7 +12,7 @@ pub struct Renderer {
 
 impl Renderer {
     pub async fn new(window: &Window) -> Renderer {
-        let canvas_size = window.inner_size();
+        let surface_size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
@@ -48,8 +48,8 @@ impl Renderer {
             wgpu::SurfaceConfiguration {
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
                 format,
-                width: canvas_size.width,
-                height: canvas_size.height,
+                width: surface_size.width,
+                height: surface_size.height,
                 present_mode: caps.present_modes[0],
                 alpha_mode: caps.alpha_modes[0],
                 view_formats: vec![],
@@ -58,7 +58,7 @@ impl Renderer {
         surface.configure(&device, &surface_config);
 
         Renderer {
-            surface_size: canvas_size,
+            surface_size,
             surface,
             device,
             queue,

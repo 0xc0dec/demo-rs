@@ -4,6 +4,7 @@ use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
 use crate::model::{self, DrawModel, load_model};
+use crate::render_target::RenderTarget;
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
@@ -11,15 +12,13 @@ pub struct State {
     material: Material,
     camera: Camera,
     model: model::Model,
-    depth_texture: Texture,
+    render_target: RenderTarget,
 }
 
 impl State {
     pub async fn new(renderer: &Renderer) -> State {
         let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
-        let material = Material::diffuse(renderer, MaterialParams {
-            texture
-        }).await;
+        let material = Material::diffuse(renderer, MaterialParams { texture }).await;
 
         let model = load_model("cube.obj", renderer).await.unwrap();
 
@@ -29,13 +28,13 @@ impl State {
             renderer.canvas_size().into()
         );
 
-        let depth_texture = Texture::new_depth_texture(renderer);
+        let render_target = RenderTarget::new(renderer);
 
         Self {
             material,
             camera,
             model,
-            depth_texture
+            render_target
         }
     }
 
@@ -44,7 +43,7 @@ impl State {
     }
 
     pub fn resize(&mut self, renderer: &Renderer) {
-        self.depth_texture = Texture::new_depth_texture(renderer);
+        self.render_target.resize(renderer);
     }
 
     // TODO Don't pass Renderer
@@ -60,26 +59,26 @@ impl State {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color {
-                        r: 0.0,
-                        g: 0.5,
-                        b: 0.0,
-                        a: 1.0,
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.0,
+                            g: 0.5,
+                            b: 0.0,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    }
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.render_target.depth_texture().view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: true,
                     }),
-                    store: true,
-                }
-            })],
-            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                view: &self.depth_texture.view,
-                depth_ops: Some(wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(1.0),
-                    store: true,
-                }),
-                stencil_ops: None,
-            })
+                    stencil_ops: None,
+                })
             });
 
             render_pass.apply_material(renderer, &mut self.material, &self.camera);
