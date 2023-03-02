@@ -1,5 +1,5 @@
 use cgmath::Matrix4;
-use wgpu::{BindGroup, BindGroupLayout, RenderPass, RenderPipeline, ShaderModule};
+use wgpu::{BindGroup, RenderPass, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
@@ -35,7 +35,6 @@ impl CameraUniform {
 }
 
 pub struct Material {
-    shader: ShaderModule,
     texture_bind_group: BindGroup,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -182,7 +181,6 @@ impl Material {
         });
 
         Self {
-            shader,
             texture_bind_group,
             camera_uniform,
             camera_buffer,

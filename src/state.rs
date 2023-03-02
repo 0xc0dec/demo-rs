@@ -3,7 +3,7 @@ use cgmath::{Vector3};
 use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
-use crate::model::{self, DrawModel, load_model, Vertex};
+use crate::model::{self, DrawModel, load_model};
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
