@@ -34,7 +34,9 @@ async fn run() {
         input.process_event(&event, &window.id());
 
         match event {
-            // TODO Use NewEvents, see docs
+            Event::NewEvents(_) => {
+                input.clear();
+            }
 
             Event::WindowEvent {
                 ref event,
@@ -58,7 +60,6 @@ async fn run() {
                 time = instant::Instant::now();
 
                 scene.update(&input, dt.as_secs_f32());
-                input.clear();
 
                 driver.render_frame(&render_target, &mut scene);
 
