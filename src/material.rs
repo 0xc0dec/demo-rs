@@ -87,11 +87,11 @@ impl Material {
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&params.texture.view),
+                    resource: wgpu::BindingResource::TextureView(params.texture.view()),
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler),
+                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler()),
                 },
             ],
             label: None,

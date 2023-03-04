@@ -104,7 +104,7 @@ impl Driver {
                     }
                 })],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: &target.depth_texture().view,
+                    view: target.depth_texture().view(),
                     depth_ops: Some(wgpu::Operations {
                         load: wgpu::LoadOp::Clear(1.0),
                         store: true,

@@ -14,6 +14,9 @@ pub struct Texture {
 impl Texture {
     pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
+    pub fn view(&self) -> &wgpu::TextureView { &self.view }
+    pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
+
     pub fn depth(driver: &Driver) -> Self {
         let size = wgpu::Extent3d {
             width: driver.canvas_size().width,
