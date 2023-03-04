@@ -11,12 +11,12 @@ use crate::transform::{Transform, TransformSpace};
 struct SceneNode {
     model: Model,
     transform: Transform,
-    material: Material
+    material: Material,
 }
 
 pub struct Scene {
     camera: Camera,
-    nodes: Vec<SceneNode>
+    nodes: Vec<SceneNode>,
 }
 
 impl Scene {
@@ -24,7 +24,7 @@ impl Scene {
         let camera = Camera::new(
             Vector3::new(0.0, 0.0, -10.0),
             Vector3::new(0.0, 0.0, 0.0),
-            device.surface_size().into()
+            device.surface_size().into(),
         );
 
         Self {
@@ -36,7 +36,7 @@ impl Scene {
                     material: {
                         let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await
-                    }
+                    },
                 },
                 // TODO Avoid duplicate loading
                 SceneNode {
@@ -45,9 +45,9 @@ impl Scene {
                     material: {
                         let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await
-                    }
+                    },
                 },
-            ]
+            ],
         }
     }
 

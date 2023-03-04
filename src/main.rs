@@ -67,7 +67,7 @@ async fn run() {
 
                 scene.update(&input, dt.as_secs_f32());
 
-                driver.render_frame(&render_target, &mut scene);
+                driver.render_frame(&mut scene, &render_target);
 
                 // TODO Restore
                 // match state.render(&renderer) {

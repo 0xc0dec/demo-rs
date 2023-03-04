@@ -79,7 +79,7 @@ impl Driver {
         }
     }
 
-    pub fn render_frame(&self, target: &RenderTarget, scene: &mut Scene) {
+    pub fn render_frame(&self, scene: &mut Scene, target: &RenderTarget) {
         let output = self.surface.get_current_texture().expect("Missing surface texture");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
