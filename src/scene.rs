@@ -3,14 +3,14 @@ use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
-use crate::model::{self, DrawModel, Model};
+use crate::model::{DrawModel, Model};
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
 pub struct Scene {
-    pub material: Material,
-    pub camera: Camera,
-    model: model::Model,
+    material: Material,
+    camera: Camera,
+    model: Model,
 }
 
 impl Scene {

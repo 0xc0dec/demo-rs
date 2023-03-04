@@ -43,24 +43,23 @@ impl Vertex for ModelVertex {
 }
 
 pub struct Model {
-    pub meshes: Vec<Mesh>,
+    meshes: Vec<Mesh>,
 }
 
 pub struct Mesh {
-    pub name: String,
-    pub vertex_buffer: wgpu::Buffer,
-    pub index_buffer: wgpu::Buffer,
-    pub num_elements: u32,
+    vertex_buffer: wgpu::Buffer,
+    index_buffer: wgpu::Buffer,
+    num_elements: u32,
 }
 
 impl Model {
     pub async fn from_file(file_name: &str, renderer: &Renderer) -> anyhow::Result<Model> {
-        let obj_text = load_string(file_name).await?;
-        let obj_cursor = Cursor::new(obj_text);
-        let mut obj_reader = BufReader::new(obj_cursor);
+        let text = load_string(file_name).await?;
+        let cursor = Cursor::new(text);
+        let mut reader = BufReader::new(cursor);
 
         let (models, _) = tobj::load_obj_buf_async(
-            &mut obj_reader,
+            &mut reader,
             &tobj::LoadOptions {
                 triangulate: true,
                 single_index: true,
@@ -92,18 +91,17 @@ impl Model {
                     .collect::<Vec<_>>();
 
                 let vertex_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some(&format!("{:?} Vertex Buffer", file_name)),
+                    label: None,
                     contents: bytemuck::cast_slice(&vertices),
                     usage: wgpu::BufferUsages::VERTEX,
                 });
                 let index_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some(&format!("{:?} Index Buffer", file_name)),
+                    label: None,
                     contents: bytemuck::cast_slice(&m.mesh.indices),
                     usage: wgpu::BufferUsages::INDEX,
                 });
 
                 Mesh {
-                    name: file_name.to_string(),
                     vertex_buffer,
                     index_buffer,
                     num_elements: m.mesh.indices.len() as u32,
