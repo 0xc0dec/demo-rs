@@ -24,7 +24,12 @@ async fn run() {
         .unwrap();
 
     let mut driver = Driver::new(&window).await;
-    let mut render_target = RenderTarget::new(&driver);
+    let mut render_target = RenderTarget::new(&driver, wgpu::Color {
+        r: 0.0,
+        g: 0.5,
+        b: 0.0,
+        a: 1.0,
+    });
     let mut scene = Scene::new(&driver).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();

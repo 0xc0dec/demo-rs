@@ -1,5 +1,5 @@
 use std::iter;
-use wgpu::{Device, Queue, TextureFormat};
+use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::render_target::RenderTarget;
@@ -7,10 +7,10 @@ use crate::scene::Scene;
 
 pub struct Driver {
     surface_size: PhysicalSize<u32>,
-    surface: wgpu::Surface,
+    surface: Surface,
     device: Device,
     queue: Queue,
-    surface_config: wgpu::SurfaceConfiguration,
+    surface_config: SurfaceConfiguration,
 }
 
 impl Driver {
@@ -48,7 +48,7 @@ impl Driver {
                 .next()
                 .unwrap_or(caps.formats[0]);
 
-            wgpu::SurfaceConfiguration {
+            SurfaceConfiguration {
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
                 format,
                 width: surface_size.width,
@@ -94,12 +94,7 @@ impl Driver {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.0,
-                            g: 0.5,
-                            b: 0.0,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(target.clear_color()),
                         store: true,
                     }
                 })],
