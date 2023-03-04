@@ -1,5 +1,4 @@
-use std::rc::Rc;
-use cgmath::{Deg, Rad, Vector3};
+use cgmath::{Deg, Rad, Vector3, Zero};
 use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
@@ -23,7 +22,7 @@ pub struct Scene {
 impl Scene {
     pub async fn new(device: &Driver) -> Scene {
         let camera = Camera::new(
-            Vector3::new(5.0, 5.0, 5.0),
+            Vector3::new(0.0, 0.0, -10.0),
             Vector3::new(0.0, 0.0, 0.0),
             device.surface_size().into()
         );
@@ -33,7 +32,7 @@ impl Scene {
             nodes: vec![
                 SceneNode {
                     model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
-                    transform: Transform::new(Vector3::unit_x() * 5.0),
+                    transform: Transform::new(Vector3::zero()),
                     material: {
                         let texture = Texture::from_file("cube-diffuse.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await
@@ -42,7 +41,7 @@ impl Scene {
                 // TODO Avoid duplicate loading
                 SceneNode {
                     model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
-                    transform: Transform::new(Vector3::unit_z() * 5.0),
+                    transform: Transform::new(Vector3::unit_x() * 5.0),
                     material: {
                         let texture = Texture::from_file("cube-diffuse.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await

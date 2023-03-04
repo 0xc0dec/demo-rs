@@ -1,4 +1,4 @@
-use cgmath::{InnerSpace, Matrix4, Rad, Vector3, Zero};
+use cgmath::{InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
 use crate::input::Input;
 use crate::transform::{Transform, TransformSpace};
 
@@ -25,13 +25,13 @@ impl Camera {
 
     pub fn view_proj_matrix(&self) -> Matrix4<f32> {
         let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
-        return proj * self.transform.matrix();
+        proj * self.transform.matrix().invert().unwrap()
     }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
         if input.rmb_down {
             let hdelta = input.mouse_delta.0 as f32 * dt;
-            self.transform.rotate_around_axis(Vector3::unit_y(), Rad(hdelta), TransformSpace::World);
+            self.transform.rotate_around_axis(Vector3::unit_y(), -Rad(hdelta), TransformSpace::World);
 
             let forward = self.transform.forward();
             let angle_to_up = forward.angle(Vector3::unit_y()).0;
@@ -45,27 +45,27 @@ impl Camera {
             } else if angle_to_up + vdelta >= 3.04 {
                 vdelta = 3.04 - angle_to_up;
             }
-            self.transform.rotate_around_axis(Vector3::unit_x(), Rad(vdelta), TransformSpace::Local);
+            self.transform.rotate_around_axis(Vector3::unit_x(), -Rad(vdelta), TransformSpace::Local);
         }
 
         let mut movement: Vector3<f32> = Vector3::zero();
         if input.forward_down {
-            movement += Vector3::unit_z();
-        }
-        if input.back_down {
             movement -= Vector3::unit_z();
         }
-        if input.right_down {
-            movement -= Vector3::unit_x();
+        if input.back_down {
+            movement += Vector3::unit_z();
         }
-        if input.left_down {
+        if input.right_down {
             movement += Vector3::unit_x();
         }
+        if input.left_down {
+            movement -= Vector3::unit_x();
+        }
         if input.up_down {
-            movement -= Vector3::unit_y();
+            movement += Vector3::unit_y();
         }
         if input.down_down {
-            movement += Vector3::unit_y();
+            movement -= Vector3::unit_y();
         }
         if !movement.is_zero() {
             self.transform.translate(movement.normalize() * dt * 10.0);

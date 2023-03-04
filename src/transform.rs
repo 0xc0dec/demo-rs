@@ -1,4 +1,4 @@
-use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Rad, Transform as _, Vector3};
+use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Rad, Transform as _, Vector3, Zero};
 
 pub enum TransformSpace {
     Local,
@@ -6,27 +6,23 @@ pub enum TransformSpace {
 }
 
 pub struct Transform {
-    local_mat: Matrix4<f32>,
+    m: Matrix4<f32>,
 }
 
 // TODO Parent-child relationships
 impl Transform {
     pub fn new(pos: Vector3<f32>) -> Self {
         Self {
-            local_mat: Matrix4::look_to_rh(
-                Point3::from_vec(pos),
-                Vector3::unit_z(),
-                Vector3::unit_y()
-            ),
+            m: Matrix4::from_translation(pos)
         }
     }
 
     pub fn matrix(&self) -> Matrix4<f32> {
-        self.local_mat
+        self.m
     }
 
     pub fn look_at(&mut self, pos: Vector3<f32>, target: Vector3<f32>) {
-        self.local_mat = Matrix4::look_at_rh(
+        self.m = Matrix4::look_at_rh(
             Point3::from_vec(pos),
             Point3::from_vec(target),
             Vector3::unit_y()
@@ -34,21 +30,20 @@ impl Transform {
     }
 
     pub fn translate(&mut self, v: Vector3<f32>) {
-        let t = Matrix4::from_translation(v);
-        self.local_mat = t * self.local_mat;
+        self.m = self.m * Matrix4::from_translation(v);
     }
 
     pub fn forward(&self) -> Vector3<f32> {
-        self.local_mat.z.truncate()
+        self.m.z.truncate()
     }
 
     pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: Rad<f32>, space: TransformSpace) {
         let axis = axis.normalize();
-        self.local_mat = match space {
-            TransformSpace::Local => Matrix4::from_axis_angle(axis, angle) * self.local_mat,
+        self.m = self.m * match space {
+            TransformSpace::Local => Matrix4::from_axis_angle(axis, angle),
             TransformSpace::World => {
-                let axis = self.local_mat.transform_vector(axis);
-                Matrix4::from_axis_angle(axis, angle) * self.local_mat
+                let axis = self.m.inverse_transform_vector(axis).unwrap();
+                Matrix4::from_axis_angle(axis, angle)
             },
         };
     }
