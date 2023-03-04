@@ -1,4 +1,4 @@
-use crate::renderer::Renderer;
+use crate::driver::Driver;
 use crate::texture::Texture;
 
 pub struct RenderTarget {
@@ -7,16 +7,16 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(renderer: &Renderer) -> Self {
-        let depth_tex = Texture::new_depth_texture(renderer);
+    pub fn new(driver: &Driver) -> Self {
+        let depth_tex = Texture::depth(driver);
 
         RenderTarget {
             depth_tex
         }
     }
 
-    pub fn resize(&mut self, renderer: &Renderer) {
-        self.depth_tex = Texture::new_depth_texture(renderer);
+    pub fn resize(&mut self, driver: &Driver) {
+        self.depth_tex = Texture::depth(driver);
     }
 
     pub fn depth_texture(&self) -> &Texture { &self.depth_tex }

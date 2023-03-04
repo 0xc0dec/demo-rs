@@ -5,7 +5,7 @@ mod transform;
 mod input;
 mod model;
 mod resources;
-mod renderer;
+mod driver;
 mod material;
 mod render_target;
 
@@ -13,7 +13,7 @@ use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilde
 
 use scene::Scene;
 use input::Input;
-use renderer::Renderer;
+use driver::Driver;
 use crate::render_target::RenderTarget;
 
 async fn run() {
@@ -22,9 +22,9 @@ async fn run() {
         .with_title("Testy Test")
         .build(&event_loop).unwrap();
 
-    let mut renderer = Renderer::new(&window).await;
-    let mut render_target = RenderTarget::new(&renderer);
-    let mut scene = Scene::new(&renderer).await;
+    let mut driver = Driver::new(&window).await;
+    let mut render_target = RenderTarget::new(&driver);
+    let mut scene = Scene::new(&driver).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();
 
@@ -42,12 +42,12 @@ async fn run() {
             } if window_id == window.id() => {
                 match event {
                     WindowEvent::Resized(new_size) => {
-                        renderer.resize(Some(*new_size));
-                        render_target.resize(&renderer);
+                        driver.resize(Some(*new_size));
+                        render_target.resize(&driver);
                     },
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        renderer.resize(Some(**new_inner_size));
-                        render_target.resize(&renderer);
+                        driver.resize(Some(**new_inner_size));
+                        render_target.resize(&driver);
                     }
                     _ => {}
                 }
@@ -60,7 +60,7 @@ async fn run() {
                 scene.update(&input, dt.as_secs_f32());
                 input.clear();
 
-                renderer.render_frame(&render_target, &mut scene);
+                driver.render_frame(&render_target, &mut scene);
 
                 // TODO Restore
                 // match state.render(&renderer) {

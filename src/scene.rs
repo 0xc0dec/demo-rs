@@ -4,7 +4,7 @@ use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
 use crate::model::{DrawModel, Model};
-use crate::renderer::Renderer;
+use crate::driver::Driver;
 use crate::texture::Texture;
 
 pub struct Scene {
@@ -14,16 +14,16 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub async fn new(renderer: &Renderer) -> Scene {
-        let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
-        let material = Material::diffuse(renderer, MaterialParams { texture }).await;
+    pub async fn new(device: &Driver) -> Scene {
+        let texture = Texture::from_file("cube-diffuse.jpg", device).await.unwrap();
+        let material = Material::diffuse(device, MaterialParams { texture }).await;
 
-        let model = Model::from_file("cube.obj", renderer).await.expect("Failed to load cube model");
+        let model = Model::from_file("cube.obj", device).await.expect("Failed to load cube model");
 
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
             Vector3::new(0.0, 0.0, 0.0),
-            renderer.canvas_size().into()
+            device.canvas_size().into()
         );
 
         Self {
@@ -37,10 +37,10 @@ impl Scene {
         self.camera.update(input, dt);
     }
 
-    pub fn render<'a, 'b>(&'a mut self, renderer: &'a Renderer, rp: &mut RenderPass<'b>)
+    pub fn render<'a, 'b>(&'a mut self, driver: &'a Driver, rp: &mut RenderPass<'b>)
         where 'a: 'b
     {
-        rp.apply_material(renderer, &mut self.material, &self.camera);
+        rp.apply_material(driver, &mut self.material, &self.camera);
         rp.draw_model(&self.model);
     }
 }

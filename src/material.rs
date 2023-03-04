@@ -3,7 +3,7 @@ use wgpu::{BindGroup, RenderPass, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::renderer::Renderer;
+use crate::driver::Driver;
 use crate::resources::load_string;
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
@@ -51,16 +51,16 @@ pub struct MaterialParams {
 }
 
 impl Material {
-    pub async fn diffuse(renderer: &Renderer, params: MaterialParams) -> Self {
+    pub async fn diffuse(driver: &Driver, params: MaterialParams) -> Self {
         let shader_src = load_string("diffuse.wgsl").await.unwrap();
 
-        let shader = renderer.device().create_shader_module(wgpu::ShaderModuleDescriptor {
+        let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(shader_src.into())
         });
 
         let texture_bind_group_layout =
-            renderer.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 entries: &[
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
@@ -82,7 +82,7 @@ impl Material {
                 label: None,
             });
 
-        let texture_bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
+        let texture_bind_group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &texture_bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -99,7 +99,7 @@ impl Material {
 
         let matrices_uniform = MatricesUniform::new();
 
-        let matrices_uniform_buf = renderer.device().create_buffer_init(
+        let matrices_uniform_buf = driver.device().create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: None,
                 contents: bytemuck::cast_slice(&[matrices_uniform]),
@@ -107,7 +107,7 @@ impl Material {
             }
         );
 
-        let matrices_uniform_bind_group_layout = renderer.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let matrices_uniform_bind_group_layout = driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
@@ -123,7 +123,7 @@ impl Material {
             label: None,
         });
 
-        let matrices_uniform_bind_group = renderer.device().create_bind_group(&wgpu::BindGroupDescriptor {
+        let matrices_uniform_bind_group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &matrices_uniform_bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -134,7 +134,7 @@ impl Material {
             label: None,
         });
 
-        let render_pipeline_layout = renderer.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let render_pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[
                 &texture_bind_group_layout,
@@ -143,7 +143,7 @@ impl Material {
             push_constant_ranges: &[]
         });
 
-        let render_pipeline = renderer.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let render_pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
@@ -155,7 +155,7 @@ impl Material {
                 module: &shader,
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: renderer.surface_texture_format(),
+                    format: driver.surface_texture_format(),
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL
                 })]
@@ -195,16 +195,16 @@ impl Material {
 }
 
 pub trait RenderMaterial<'a> {
-    fn apply_material(&mut self, renderer: &'a Renderer, material: &'a mut Material, camera: &'a Camera);
+    fn apply_material(&mut self, driver: &'a Driver, material: &'a mut Material, camera: &'a Camera);
 }
 
 impl<'a, 'b> RenderMaterial<'b> for RenderPass<'a> where 'b: 'a {
-    fn apply_material(&mut self, renderer: &'b Renderer, material: &'b mut Material, camera: &'b Camera) {
+    fn apply_material(&mut self, driver: &'b Driver, material: &'b mut Material, camera: &'b Camera) {
         let mut transform = Transform::new();
         transform.rotate_around_axis(Vector3::unit_z(), Rad::from(Deg(45.0)), TransformSpace::World);
         material.matrices_uniform.update(camera, &transform);
 
-        renderer.queue().write_buffer(
+        driver.queue().write_buffer(
             &material.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[material.matrices_uniform])

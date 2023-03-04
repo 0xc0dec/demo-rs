@@ -1,6 +1,6 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
-use crate::renderer::Renderer;
+use crate::driver::Driver;
 use crate::resources::load_string;
 
 pub trait Vertex {
@@ -53,7 +53,7 @@ pub struct Mesh {
 }
 
 impl Model {
-    pub async fn from_file(file_name: &str, renderer: &Renderer) -> anyhow::Result<Model> {
+    pub async fn from_file(file_name: &str, driver: &Driver) -> anyhow::Result<Model> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
@@ -90,12 +90,12 @@ impl Model {
                     })
                     .collect::<Vec<_>>();
 
-                let vertex_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                let vertex_buffer = driver.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: bytemuck::cast_slice(&vertices),
                     usage: wgpu::BufferUsages::VERTEX,
                 });
-                let index_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                let index_buffer = driver.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: bytemuck::cast_slice(&m.mesh.indices),
                     usage: wgpu::BufferUsages::INDEX,
