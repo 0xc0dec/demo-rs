@@ -7,14 +7,14 @@ use crate::model::{self, DrawModel, load_model};
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
-pub struct State {
+pub struct Scene {
     pub material: Material,
     pub camera: Camera,
     model: model::Model,
 }
 
-impl State {
-    pub async fn new(renderer: &Renderer) -> State {
+impl Scene {
+    pub async fn new(renderer: &Renderer) -> Scene {
         let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
         let material = Material::diffuse(renderer, MaterialParams { texture }).await;
 
@@ -37,9 +37,10 @@ impl State {
         self.camera.update(input, dt);
     }
 
-    pub fn render<'a, 'b>(&'a mut self, render_pass: &mut RenderPass<'b>, renderer: &'a Renderer)
-        where 'a: 'b {
-        render_pass.apply_material(renderer, &mut self.material, &self.camera);
-        render_pass.draw_model(&self.model);
+    pub fn render<'a, 'b>(&'a mut self, renderer: &'a Renderer, rp: &mut RenderPass<'b>)
+        where 'a: 'b
+    {
+        rp.apply_material(renderer, &mut self.material, &self.camera);
+        rp.draw_model(&self.model);
     }
 }

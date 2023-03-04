@@ -1,4 +1,4 @@
-mod state;
+mod scene;
 mod texture;
 mod camera;
 mod transform;
@@ -11,7 +11,7 @@ mod render_target;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
-use state::State;
+use scene::Scene;
 use input::Input;
 use renderer::Renderer;
 use crate::render_target::RenderTarget;
@@ -24,7 +24,7 @@ async fn run() {
 
     let mut renderer = Renderer::new(&window).await;
     let mut render_target = RenderTarget::new(&renderer);
-    let mut state = State::new(&renderer).await;
+    let mut scene = Scene::new(&renderer).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();
 
@@ -57,10 +57,10 @@ async fn run() {
                 let dt = instant::Instant::now() - time;
                 time = instant::Instant::now();
 
-                state.update(&input, dt.as_secs_f32());
+                scene.update(&input, dt.as_secs_f32());
                 input.clear();
 
-                renderer.render_frame(&render_target, &mut state);
+                renderer.render_frame(&render_target, &mut scene);
 
                 // TODO Restore
                 // match state.render(&renderer) {

@@ -3,7 +3,7 @@ use wgpu::{Device, Queue, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::render_target::RenderTarget;
-use crate::state::State;
+use crate::scene::Scene;
 
 pub struct Renderer {
     surface_size: PhysicalSize<u32>,
@@ -79,7 +79,7 @@ impl Renderer {
         }
     }
 
-    pub fn render_frame(&self, target: &RenderTarget, state: &mut State) {
+    pub fn render_frame(&self, target: &RenderTarget, scene: &mut Scene) {
         let output = self.surface.get_current_texture().expect("Missing surface texture");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -88,7 +88,7 @@ impl Renderer {
         });
 
         {
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let mut rp = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
@@ -113,7 +113,7 @@ impl Renderer {
                 })
             });
 
-            state.render(&mut render_pass, &self);
+            scene.render(&self, &mut rp);
         }
 
         self.queue().submit(iter::once(encoder.finish()));
