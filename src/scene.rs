@@ -2,49 +2,60 @@ use cgmath::{Deg, Rad, Vector3, Zero};
 use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
-use crate::material::{Material, MaterialParams, RenderMaterial};
-use crate::model::{DrawModel, Model};
+use crate::diffuse_material::{DiffuseMaterial, DiffuseMaterialParams, RenderDiffuseMaterial};
+use crate::model::{DrawModel, Mesh, Model};
 use crate::driver::Driver;
+use crate::skybox_material::{RenderSkyboxMaterial, SkyboxMaterial};
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
 
 struct SceneNode {
     model: Model,
     transform: Transform,
-    material: Material,
+    material: DiffuseMaterial,
+}
+
+struct Skybox {
+    mesh: Mesh,
+    material: SkyboxMaterial,
 }
 
 pub struct Scene {
     camera: Camera,
+    skybox: Skybox,
     nodes: Vec<SceneNode>,
 }
 
 impl Scene {
-    pub async fn new(device: &Driver) -> Scene {
+    pub async fn new(driver: &Driver) -> Scene {
         let camera = Camera::new(
             Vector3::new(0.0, 0.0, -10.0),
             Vector3::new(0.0, 0.0, 0.0),
-            device.surface_size().into(),
+            driver.surface_size().into(),
         );
 
         Self {
             camera,
+            skybox: Skybox {
+                mesh: Mesh::quad(driver),
+                material: SkyboxMaterial::new(driver).await,
+            },
             nodes: vec![
                 SceneNode {
-                    model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
+                    model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::zero()),
                     material: {
-                        let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
-                        Material::diffuse(device, MaterialParams { texture }).await
+                        let texture = Texture::from_file("stonewall.jpg", driver).await.unwrap();
+                        DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
                 },
                 // TODO Avoid duplicate loading
                 SceneNode {
-                    model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
+                    model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::unit_x() * 5.0),
                     material: {
-                        let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
-                        Material::diffuse(device, MaterialParams { texture }).await
+                        let texture = Texture::from_file("stonewall.jpg", driver).await.unwrap();
+                        DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
                 },
             ],
@@ -64,6 +75,9 @@ impl Scene {
     pub fn render<'a, 'b>(&'a mut self, driver: &'a Driver, pass: &mut RenderPass<'b>)
         where 'a: 'b
     {
+        pass.apply_skybox_material(&self.skybox.material);
+        pass.draw_mesh(&self.skybox.mesh);
+
         for n in &mut self.nodes {
             n.material.update(driver, &self.camera, &n.transform);
             pass.apply_material(&n.material);

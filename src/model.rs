@@ -52,6 +52,58 @@ pub struct Mesh {
     num_elements: u32,
 }
 
+impl Mesh {
+    // TODO Use different vertex description and remove unused attributes
+    pub fn quad(driver: &Driver) -> Mesh {
+        let vertices = [
+            // Bottom left
+            ModelVertex {
+                position: [-1.0, -1.0, 0.0],
+                tex_coords: [0.0, 0.0], // unused
+                normal: [0.0, 0.0, 0.0], // unused
+            },
+            // Top left
+            ModelVertex {
+                position: [-1.0, 1.0, 0.0],
+                tex_coords: [0.0, 1.0], // unused
+                normal: [0.0, 0.0, 0.0], // unused
+            },
+            // Top right
+            ModelVertex {
+                position: [1.0, 1.0, 0.0],
+                tex_coords: [1.0, 1.0], // unused
+                normal: [0.0, 0.0, 0.0], // unused
+            },
+            // Bottom right
+            ModelVertex {
+                position: [1.0, -1.0, 0.0],
+                tex_coords: [0.0, 0.0], // unused
+                normal: [0.0, 0.0, 0.0], // unused
+            }
+        ];
+
+        let indices = [0, 1, 2, 0, 2, 3];
+
+        // TODO Remove copypasta
+        let vertex_buffer = driver.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: bytemuck::cast_slice(&vertices),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+        let index_buffer = driver.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: bytemuck::cast_slice(&indices),
+            usage: wgpu::BufferUsages::INDEX,
+        });
+
+        Mesh {
+            vertex_buffer,
+            index_buffer,
+            num_elements: indices.len() as u32,
+        }
+    }
+}
+
 impl Model {
     pub async fn from_file(file_name: &str, driver: &Driver) -> anyhow::Result<Model> {
         let text = load_string(file_name).await?;
@@ -113,22 +165,23 @@ impl Model {
     }
 }
 
-fn draw_mesh<'a, 'b>(rp: &mut wgpu::RenderPass<'a>, mesh: &'b Mesh) where 'b: 'a {
-    rp.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
-    rp.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-    rp.draw_indexed(0..mesh.num_elements, 0, 0..1);
-}
-
 pub trait DrawModel<'a> {
+    fn draw_mesh(&mut self, mesh: &'a Mesh);
     fn draw_model(&mut self, model: &'a Model);
 }
 
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
     where 'b: 'a,
 {
+    fn draw_mesh(&mut self, mesh: &'b Mesh) {
+        self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
+        self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+        self.draw_indexed(0..mesh.num_elements, 0, 0..1);
+    }
+
     fn draw_model(&mut self, model: &'b Model) {
         for mesh in &model.meshes {
-            draw_mesh(self, mesh);
+            self.draw_mesh(mesh);
         }
     }
 }

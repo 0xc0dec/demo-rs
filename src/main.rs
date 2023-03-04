@@ -6,8 +6,9 @@ mod input;
 mod model;
 mod resources;
 mod driver;
-mod material;
+mod diffuse_material;
 mod render_target;
+mod skybox_material;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 

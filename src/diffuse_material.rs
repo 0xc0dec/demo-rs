@@ -9,7 +9,7 @@ use crate::texture::Texture;
 use crate::transform::{Transform};
 
 #[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
+const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
     1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 0.5, 0.0,
@@ -38,20 +38,22 @@ impl MatricesUniform {
     }
 }
 
-pub struct Material {
+pub struct DiffuseMaterial {
     texture_bind_group: BindGroup,
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: BindGroup,
-    render_pipeline: RenderPipeline,
+    pipeline: RenderPipeline,
 }
 
-pub struct MaterialParams {
+pub struct DiffuseMaterialParams {
     pub texture: Texture,
 }
 
-impl Material {
-    pub async fn diffuse(driver: &Driver, params: MaterialParams) -> Self {
+// TODO ASAP generalize material, remove copypasta across different material types
+// this is an MVP
+impl DiffuseMaterial {
+    pub async fn new(driver: &Driver, params: DiffuseMaterialParams) -> Self {
         let shader_src = load_string("diffuse.wgsl").await.unwrap();
 
         let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
@@ -143,7 +145,7 @@ impl Material {
             push_constant_ranges: &[],
         });
 
-        let render_pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
@@ -189,7 +191,7 @@ impl Material {
             matrices_uniform,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
-            render_pipeline,
+            pipeline,
         }
     }
 
@@ -203,13 +205,13 @@ impl Material {
     }
 }
 
-pub trait RenderMaterial<'a> {
-    fn apply_material(&mut self, material: &'a Material);
+pub trait RenderDiffuseMaterial<'a> {
+    fn apply_material(&mut self, material: &'a DiffuseMaterial);
 }
 
-impl<'a, 'b> RenderMaterial<'b> for RenderPass<'a> where 'b: 'a {
-    fn apply_material(&mut self, material: &'b Material) {
-        self.set_pipeline(&material.render_pipeline);
+impl<'a, 'b> RenderDiffuseMaterial<'b> for RenderPass<'a> where 'b: 'a {
+    fn apply_material(&mut self, material: &'b DiffuseMaterial) {
+        self.set_pipeline(&material.pipeline);
         self.set_bind_group(0, &material.texture_bind_group, &[]);
         self.set_bind_group(1, &material.matrices_uniform_bind_group, &[]);
     }
