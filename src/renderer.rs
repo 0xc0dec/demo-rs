@@ -13,6 +13,7 @@ pub struct Renderer {
     surface_config: wgpu::SurfaceConfiguration,
 }
 
+// TODO Rename to Driver or Device
 impl Renderer {
     pub async fn new(window: &Window) -> Renderer {
         let surface_size = window.inner_size();

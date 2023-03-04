@@ -53,84 +53,84 @@ pub struct Mesh {
     pub num_elements: u32,
 }
 
-pub async fn load_model(file_name: &str, renderer: &Renderer) -> anyhow::Result<Model> {
-    let obj_text = load_string(file_name).await?;
-    let obj_cursor = Cursor::new(obj_text);
-    let mut obj_reader = BufReader::new(obj_cursor);
+impl Model {
+    pub async fn from_file(file_name: &str, renderer: &Renderer) -> anyhow::Result<Model> {
+        let obj_text = load_string(file_name).await?;
+        let obj_cursor = Cursor::new(obj_text);
+        let mut obj_reader = BufReader::new(obj_cursor);
 
-    let (models, _) = tobj::load_obj_buf_async(
-        &mut obj_reader,
-        &tobj::LoadOptions {
-            triangulate: true,
-            single_index: true,
-            ..Default::default()
-        },
-        |p| async move {
-            let mat_text = load_string(&p).await.unwrap();
-            tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
-        },
-    )
-        .await?;
+        let (models, _) = tobj::load_obj_buf_async(
+            &mut obj_reader,
+            &tobj::LoadOptions {
+                triangulate: true,
+                single_index: true,
+                ..Default::default()
+            },
+            |p| async move {
+                let mat_text = load_string(&p).await.unwrap();
+                tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
+            },
+        ).await?;
 
-    let meshes = models
-        .into_iter()
-        .map(|m| {
-            let vertices = (0..m.mesh.positions.len() / 3)
-                .map(|i| ModelVertex {
-                    position: [
-                        m.mesh.positions[i * 3],
-                        m.mesh.positions[i * 3 + 1],
-                        m.mesh.positions[i * 3 + 2],
-                    ],
-                    tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
-                    normal: [
-                        m.mesh.normals[i * 3],
-                        m.mesh.normals[i * 3 + 1],
-                        m.mesh.normals[i * 3 + 2],
-                    ],
-                })
-                .collect::<Vec<_>>();
+        let meshes = models
+            .into_iter()
+            .map(|m| {
+                let vertices = (0..m.mesh.positions.len() / 3)
+                    .map(|i| ModelVertex {
+                        position: [
+                            m.mesh.positions[i * 3],
+                            m.mesh.positions[i * 3 + 1],
+                            m.mesh.positions[i * 3 + 2],
+                        ],
+                        tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
+                        normal: [
+                            m.mesh.normals[i * 3],
+                            m.mesh.normals[i * 3 + 1],
+                            m.mesh.normals[i * 3 + 2],
+                        ],
+                    })
+                    .collect::<Vec<_>>();
 
-            let vertex_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some(&format!("{:?} Vertex Buffer", file_name)),
-                contents: bytemuck::cast_slice(&vertices),
-                usage: wgpu::BufferUsages::VERTEX,
-            });
-            let index_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some(&format!("{:?} Index Buffer", file_name)),
-                contents: bytemuck::cast_slice(&m.mesh.indices),
-                usage: wgpu::BufferUsages::INDEX,
-            });
+                let vertex_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some(&format!("{:?} Vertex Buffer", file_name)),
+                    contents: bytemuck::cast_slice(&vertices),
+                    usage: wgpu::BufferUsages::VERTEX,
+                });
+                let index_buffer = renderer.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some(&format!("{:?} Index Buffer", file_name)),
+                    contents: bytemuck::cast_slice(&m.mesh.indices),
+                    usage: wgpu::BufferUsages::INDEX,
+                });
 
-            Mesh {
-                name: file_name.to_string(),
-                vertex_buffer,
-                index_buffer,
-                num_elements: m.mesh.indices.len() as u32,
-            }
-        })
-        .collect::<Vec<_>>();
+                Mesh {
+                    name: file_name.to_string(),
+                    vertex_buffer,
+                    index_buffer,
+                    num_elements: m.mesh.indices.len() as u32,
+                }
+            })
+            .collect::<Vec<_>>();
 
-    Ok(Model { meshes })
+        Ok(Model { meshes })
+    }
+}
+
+fn draw_mesh<'a, 'b>(rp: &mut wgpu::RenderPass<'a>, mesh: &'b Mesh) where 'b: 'a {
+    rp.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
+    rp.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+    rp.draw_indexed(0..mesh.num_elements, 0, 0..1);
 }
 
 pub trait DrawModel<'a> {
-    fn draw_mesh(&mut self, mesh: &'a Mesh);
     fn draw_model(&mut self, model: &'a Model);
 }
 
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
     where 'b: 'a,
 {
-    fn draw_mesh(&mut self, mesh: &'b Mesh) {
-        self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
-        self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.draw_indexed(0..mesh.num_elements, 0, 0..1);
-    }
-
     fn draw_model(&mut self, model: &'b Model) {
         for mesh in &model.meshes {
-            self.draw_mesh(mesh);
+            draw_mesh(self, mesh);
         }
     }
 }

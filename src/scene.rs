@@ -3,7 +3,7 @@ use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
-use crate::model::{self, DrawModel, load_model};
+use crate::model::{self, DrawModel, Model};
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
@@ -18,7 +18,7 @@ impl Scene {
         let texture = Texture::from_file("cube-diffuse.jpg", renderer).await.unwrap();
         let material = Material::diffuse(renderer, MaterialParams { texture }).await;
 
-        let model = load_model("cube.obj", renderer).await.unwrap();
+        let model = Model::from_file("cube.obj", renderer).await.expect("Failed to load cube model");
 
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
