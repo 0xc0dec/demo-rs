@@ -1,6 +1,9 @@
+use std::iter;
 use wgpu::{Device, Queue, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
+use crate::render_target::RenderTarget;
+use crate::state::State;
 
 pub struct Renderer {
     surface_size: PhysicalSize<u32>,
@@ -76,7 +79,47 @@ impl Renderer {
         }
     }
 
-    pub fn surface(&self) -> &wgpu::Surface { &self.surface }
+    pub fn render_frame(&self, target: &RenderTarget, state: &mut State) {
+        let output = self.surface.get_current_texture().expect("Missing surface texture");
+        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: None
+        });
+
+        {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.0,
+                            g: 0.5,
+                            b: 0.0,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    }
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &target.depth_texture().view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: true,
+                    }),
+                    stencil_ops: None,
+                })
+            });
+
+            state.render(&mut render_pass, &self);
+        }
+
+        self.queue().submit(iter::once(encoder.finish()));
+        output.present();
+    }
+
     pub fn surface_texture_format(&self) -> TextureFormat { self.surface_config.format }
     pub fn device(&self) -> &Device { &self.device }
     pub fn queue(&self) -> &Queue { &self.queue }

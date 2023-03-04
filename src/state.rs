@@ -1,18 +1,16 @@
-use std::iter;
 use cgmath::{Vector3};
+use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
 use crate::material::{Material, MaterialParams, RenderMaterial};
 use crate::model::{self, DrawModel, load_model};
-use crate::render_target::RenderTarget;
 use crate::renderer::Renderer;
 use crate::texture::Texture;
 
 pub struct State {
-    material: Material,
-    camera: Camera,
+    pub material: Material,
+    pub camera: Camera,
     model: model::Model,
-    render_target: RenderTarget,
 }
 
 impl State {
@@ -28,13 +26,10 @@ impl State {
             renderer.canvas_size().into()
         );
 
-        let render_target = RenderTarget::new(renderer);
-
         Self {
             material,
             camera,
             model,
-            render_target
         }
     }
 
@@ -42,52 +37,9 @@ impl State {
         self.camera.update(input, dt);
     }
 
-    pub fn resize(&mut self, renderer: &Renderer) {
-        self.render_target.resize(renderer);
-    }
-
-    // TODO Don't pass Renderer
-    pub fn render(&mut self, renderer: &Renderer) -> Result<(), wgpu::SurfaceError> {
-        let output = renderer.surface().get_current_texture()?;
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
-        let mut encoder = renderer.device().create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: None
-        });
-
-        {
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.0,
-                            g: 0.5,
-                            b: 0.0,
-                            a: 1.0,
-                        }),
-                        store: true,
-                    }
-                })],
-                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: &self.render_target.depth_texture().view,
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: true,
-                    }),
-                    stencil_ops: None,
-                })
-            });
-
-            render_pass.apply_material(renderer, &mut self.material, &self.camera);
-            render_pass.draw_model(&self.model);
-        }
-
-        renderer.queue().submit(iter::once(encoder.finish()));
-        output.present();
-
-        Ok(())
+    pub fn render<'a, 'b>(&'a mut self, render_pass: &mut RenderPass<'b>, renderer: &'a Renderer)
+        where 'a: 'b {
+        render_pass.apply_material(renderer, &mut self.material, &self.camera);
+        render_pass.draw_model(&self.model);
     }
 }

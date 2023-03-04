@@ -2,21 +2,22 @@ use crate::renderer::Renderer;
 use crate::texture::Texture;
 
 pub struct RenderTarget {
-    depth_texture: Texture,
+    // TODO Add color texture
+    depth_tex: Texture,
 }
 
 impl RenderTarget {
     pub fn new(renderer: &Renderer) -> Self {
-        let depth_texture = Texture::new_depth_texture(renderer);
+        let depth_tex = Texture::new_depth_texture(renderer);
 
         RenderTarget {
-            depth_texture
+            depth_tex
         }
     }
 
     pub fn resize(&mut self, renderer: &Renderer) {
-        self.depth_texture = Texture::new_depth_texture(renderer);
+        self.depth_tex = Texture::new_depth_texture(renderer);
     }
 
-    pub fn depth_texture(&self) -> &Texture { &self.depth_texture }
+    pub fn depth_texture(&self) -> &Texture { &self.depth_tex }
 }
