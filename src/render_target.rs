@@ -1,4 +1,3 @@
-use wgpu::{RenderPass};
 use crate::driver::Driver;
 use crate::texture::Texture;
 

@@ -34,7 +34,7 @@ impl Scene {
                     model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::zero()),
                     material: {
-                        let texture = Texture::from_file("cube-diffuse.jpg", device).await.unwrap();
+                        let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await
                     }
                 },
@@ -43,7 +43,7 @@ impl Scene {
                     model: Model::from_file("cube.obj", device).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::unit_x() * 5.0),
                     material: {
-                        let texture = Texture::from_file("cube-diffuse.jpg", device).await.unwrap();
+                        let texture = Texture::from_file("stonewall.jpg", device).await.unwrap();
                         Material::diffuse(device, MaterialParams { texture }).await
                     }
                 },

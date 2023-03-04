@@ -6,7 +6,7 @@ use crate::driver::Driver;
 use crate::resources::load_binary;
 
 pub struct Texture {
-    texture: wgpu::Texture,
+    _texture: wgpu::Texture,
     view: wgpu::TextureView,
     sampler: wgpu::Sampler,
 }
@@ -51,7 +51,7 @@ impl Texture {
             }
         );
 
-        Self { texture, view, sampler }
+        Self { _texture: texture, view, sampler }
     }
 
     pub async fn from_file(file_name: &str, driver: &Driver) -> Result<Self> {
@@ -113,7 +113,7 @@ impl Texture {
         });
 
         Self {
-            texture,
+            _texture: texture,
             view,
             sampler,
         }
