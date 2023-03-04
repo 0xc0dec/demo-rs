@@ -6,9 +6,9 @@ use crate::driver::Driver;
 use crate::resources::load_binary;
 
 pub struct Texture {
-    pub texture: wgpu::Texture,
-    pub view: wgpu::TextureView,
-    pub sampler: wgpu::Sampler,
+    texture: wgpu::Texture,
+    view: wgpu::TextureView,
+    sampler: wgpu::Sampler,
 }
 
 impl Texture {
@@ -51,12 +51,17 @@ impl Texture {
         Self { texture, view, sampler }
     }
 
-    pub fn from_bytes(driver: &Driver, bytes: &[u8]) -> Result<Self> {
+    pub async fn from_file(file_name: &str, driver: &Driver) -> Result<Self> {
+        let data = load_binary(file_name).await?;
+        Self::from_mem(driver, &data)
+    }
+
+    fn from_mem(driver: &Driver, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         Ok(Self::from_image(driver, &img))
     }
 
-    pub fn from_image(driver: &Driver, img: &image::DynamicImage) -> Self {
+    fn from_image(driver: &Driver, img: &image::DynamicImage) -> Self {
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
 
@@ -109,10 +114,5 @@ impl Texture {
             view,
             sampler,
         }
-    }
-
-    pub async fn from_file(file_name: &str, driver: &Driver) -> Result<Self> {
-        let data = load_binary(file_name).await?;
-        Texture::from_bytes(driver, &data)
     }
 }
