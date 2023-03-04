@@ -17,7 +17,7 @@ impl Camera {
             fovy: 45.0,
             znear: 0.1,
             zfar: 100.0,
-            transform: Transform::new(),
+            transform: Transform::new(Vector3::zero()),
         };
         cam.transform.look_at(eye, target);
         cam

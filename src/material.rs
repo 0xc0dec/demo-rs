@@ -1,4 +1,4 @@
-use cgmath::{Deg, Matrix4, Rad, Vector3};
+use cgmath::{Matrix4};
 use wgpu::{BindGroup, RenderPass, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
@@ -6,7 +6,7 @@ use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
 use crate::resources::load_string;
 use crate::texture::Texture;
-use crate::transform::{Transform, TransformSpace};
+use crate::transform::{Transform};
 
 #[rustfmt::skip]
 pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
@@ -20,7 +20,7 @@ pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct MatricesUniform {
     view_proj: [[f32; 4]; 4],
-    world: [[f32; 4]; 4]
+    world: [[f32; 4]; 4],
 }
 
 impl MatricesUniform {
@@ -28,7 +28,7 @@ impl MatricesUniform {
         use cgmath::SquareMatrix;
         Self {
             view_proj: Matrix4::identity().into(),
-            world: Matrix4::identity().into()
+            world: Matrix4::identity().into(),
         }
     }
 
@@ -56,7 +56,7 @@ impl Material {
 
         let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(shader_src.into())
+            source: wgpu::ShaderSource::Wgsl(shader_src.into()),
         });
 
         let texture_bind_group_layout =
@@ -140,7 +140,7 @@ impl Material {
                 &texture_bind_group_layout,
                 &matrices_uniform_bind_group_layout
             ],
-            push_constant_ranges: &[]
+            push_constant_ranges: &[],
         });
 
         let render_pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -149,7 +149,7 @@ impl Material {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[ModelVertex::desc()]
+                buffers: &[ModelVertex::desc()],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
@@ -157,8 +157,8 @@ impl Material {
                 targets: &[Some(wgpu::ColorTargetState {
                     format: driver.surface_texture_format(),
                     blend: Some(wgpu::BlendState::REPLACE),
-                    write_mask: wgpu::ColorWrites::ALL
-                })]
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -167,7 +167,7 @@ impl Material {
                 cull_mode: None,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 unclipped_depth: false,
-                conservative: false
+                conservative: false,
             },
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: Texture::DEPTH_FORMAT,
@@ -181,7 +181,7 @@ impl Material {
                 mask: !0,
                 alpha_to_coverage_enabled: false,
             },
-            multiview: None
+            multiview: None,
         });
 
         Self {
@@ -192,24 +192,23 @@ impl Material {
             render_pipeline,
         }
     }
+
+    pub fn update(&mut self, driver: &Driver, camera: &Camera, transform: &Transform) {
+        self.matrices_uniform.update(camera, transform);
+        driver.queue().write_buffer(
+            &self.matrices_uniform_buf,
+            0,
+            bytemuck::cast_slice(&[self.matrices_uniform]),
+        );
+    }
 }
 
 pub trait RenderMaterial<'a> {
-    fn apply_material(&mut self, driver: &'a Driver, material: &'a mut Material, camera: &'a Camera);
+    fn apply_material(&mut self, material: &'a Material);
 }
 
 impl<'a, 'b> RenderMaterial<'b> for RenderPass<'a> where 'b: 'a {
-    fn apply_material(&mut self, driver: &'b Driver, material: &'b mut Material, camera: &'b Camera) {
-        let mut transform = Transform::new();
-        transform.rotate_around_axis(Vector3::unit_z(), Rad::from(Deg(45.0)), TransformSpace::World);
-        material.matrices_uniform.update(camera, &transform);
-
-        driver.queue().write_buffer(
-            &material.matrices_uniform_buf,
-            0,
-            bytemuck::cast_slice(&[material.matrices_uniform])
-        );
-
+    fn apply_material(&mut self, material: &'b Material) {
         self.set_pipeline(&material.render_pipeline);
         self.set_bind_group(0, &material.texture_bind_group, &[]);
         self.set_bind_group(1, &material.matrices_uniform_bind_group, &[]);

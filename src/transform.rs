@@ -1,4 +1,4 @@
-use cgmath::{EuclideanSpace, Matrix4, Point3, Rad, Transform as _, Vector3};
+use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Rad, Transform as _, Vector3};
 
 pub enum TransformSpace {
     Local,
@@ -11,11 +11,11 @@ pub struct Transform {
 
 // TODO Parent-child relationships
 impl Transform {
-    pub fn new() -> Self {
+    pub fn new(pos: Vector3<f32>) -> Self {
         Self {
-            local_mat: Matrix4::look_at_rh(
-                Point3::new(0.0, 0.0, 0.0),
-                Point3::new(0.0, 0.0, 1.0),
+            local_mat: Matrix4::look_to_rh(
+                Point3::from_vec(pos),
+                Vector3::unit_z(),
                 Vector3::unit_y()
             ),
         }
@@ -43,10 +43,13 @@ impl Transform {
     }
 
     pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: Rad<f32>, space: TransformSpace) {
-        let axis = match space {
-            TransformSpace::Local => axis,
-            TransformSpace::World => self.local_mat.transform_vector(axis), // TODO why not inverse?
+        let axis = axis.normalize();
+        self.local_mat = match space {
+            TransformSpace::Local => Matrix4::from_axis_angle(axis, angle) * self.local_mat,
+            TransformSpace::World => {
+                let axis = self.local_mat.transform_vector(axis);
+                Matrix4::from_axis_angle(axis, angle) * self.local_mat
+            },
         };
-        self.local_mat = Matrix4::from_axis_angle(axis, angle) * self.local_mat;
     }
 }

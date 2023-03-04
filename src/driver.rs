@@ -88,7 +88,7 @@ impl Driver {
         });
 
         {
-            let mut rp = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
@@ -108,7 +108,7 @@ impl Driver {
                 })
             });
 
-            scene.render(&self, &mut rp);
+            scene.render(&self, &mut pass);
         }
 
         self.queue().submit(iter::once(encoder.finish()));
