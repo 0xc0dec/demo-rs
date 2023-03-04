@@ -14,13 +14,14 @@ use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilde
 use scene::Scene;
 use input::Input;
 use driver::Driver;
-use crate::render_target::RenderTarget;
+use render_target::RenderTarget;
 
 async fn run() {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
-        .with_title("Testy Test")
-        .build(&event_loop).unwrap();
+        .with_title("Demo")
+        .build(&event_loop)
+        .unwrap();
 
     let mut driver = Driver::new(&window).await;
     let mut render_target = RenderTarget::new(&driver);

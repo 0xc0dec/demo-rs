@@ -121,7 +121,7 @@ impl Driver {
     }
 
     pub fn surface_texture_format(&self) -> TextureFormat { self.surface_config.format }
+    pub fn surface_size(&self) -> PhysicalSize<u32> { self.surface_size }
     pub fn device(&self) -> &Device { &self.device }
     pub fn queue(&self) -> &Queue { &self.queue }
-    pub fn canvas_size(&self) -> PhysicalSize<u32> { self.surface_size }
 }

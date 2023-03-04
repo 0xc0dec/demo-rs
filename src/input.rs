@@ -1,7 +1,7 @@
 use winit::{event::*};
 use winit::window::WindowId;
 
-// TODO Make sure fields cannot be modified from the outside
+// TODO Make fields public readonly
 pub struct Input {
     pub rmb_down: bool,
     pub forward_down: bool,

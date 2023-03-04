@@ -23,7 +23,7 @@ impl Scene {
         let camera = Camera::new(
             Vector3::new(5.0, 5.0, 5.0),
             Vector3::new(0.0, 0.0, 0.0),
-            device.canvas_size().into()
+            device.surface_size().into()
         );
 
         Self {

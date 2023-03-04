@@ -19,8 +19,8 @@ impl Texture {
 
     pub fn depth(driver: &Driver) -> Self {
         let size = wgpu::Extent3d {
-            width: driver.canvas_size().width,
-            height: driver.canvas_size().height,
+            width: driver.surface_size().width,
+            height: driver.surface_size().height,
             depth_or_array_layers: 1,
         };
         let desc = wgpu::TextureDescriptor {
