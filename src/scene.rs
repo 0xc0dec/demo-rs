@@ -18,6 +18,7 @@ struct SceneNode {
 struct Skybox {
     mesh: Mesh,
     material: SkyboxMaterial,
+    _texture: Texture,
 }
 
 pub struct Scene {
@@ -34,18 +35,21 @@ impl Scene {
             driver.surface_size().into(),
         );
 
+        let skybox_tex = Texture::from_file_cube("skybox_bgra.dds", driver).await.unwrap();
+
         Self {
             camera,
             skybox: Skybox {
                 mesh: Mesh::quad(driver),
                 material: SkyboxMaterial::new(driver).await,
+                _texture: skybox_tex
             },
             nodes: vec![
                 SceneNode {
                     model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::zero()),
                     material: {
-                        let texture = Texture::from_file("stonewall.jpg", driver).await.unwrap();
+                        let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
                         DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
                 },
@@ -54,7 +58,7 @@ impl Scene {
                     model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::unit_x() * 5.0),
                     material: {
-                        let texture = Texture::from_file("stonewall.jpg", driver).await.unwrap();
+                        let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
                         DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
                 },
