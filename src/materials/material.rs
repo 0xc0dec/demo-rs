@@ -1,9 +1,51 @@
+use wgpu::util::DeviceExt;
 use crate::driver::Driver;
 use crate::resources::load_string;
 use crate::texture::Texture;
 
 pub trait Material {
     fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b;
+}
+
+
+pub fn new_uniform_bind_group(driver: &Driver, data: &[u8]) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer)
+{
+    let buffer = driver.device().create_buffer_init(
+        &wgpu::util::BufferInitDescriptor {
+            label: None,
+            contents: data,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        }
+    );
+
+    let group_layout = driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        entries: &[
+            wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }
+        ],
+        label: None,
+    });
+
+    let group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &group_layout,
+        entries: &[
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: buffer.as_entire_binding(),
+            }
+        ],
+        label: None,
+    });
+
+    (group_layout, group, buffer)
 }
 
 pub fn new_texture_bind_group(
