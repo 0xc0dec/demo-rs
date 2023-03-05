@@ -4,7 +4,7 @@ use crate::camera::Camera;
 use crate::input::Input;
 use crate::model::{DrawModel, Mesh, Model};
 use crate::driver::Driver;
-use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, RenderDiffuseMaterial, RenderSkyboxMaterial, SkyboxMaterial, SkyboxMaterialParams};
+use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
 
@@ -77,12 +77,12 @@ impl Scene {
         where 'a: 'b
     {
         self.skybox.material.update(&driver, &self.camera);
-        pass.apply_skybox_material(&self.skybox.material);
+        self.skybox.material.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);
 
         for n in &mut self.nodes {
             n.material.update(driver, &self.camera, &n.transform);
-            pass.apply_material(&n.material);
+            n.material.apply(pass);
             pass.draw_model(&n.model);
         }
     }

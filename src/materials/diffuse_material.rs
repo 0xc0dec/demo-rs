@@ -1,9 +1,10 @@
 use cgmath::{Matrix4};
-use wgpu::{BindGroup, RenderPass, RenderPipeline};
+use wgpu::{BindGroup, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
+use super::Material;
 use crate::resources::load_string;
 use crate::texture::Texture;
 use crate::transform::{Transform};
@@ -205,14 +206,10 @@ impl DiffuseMaterial {
     }
 }
 
-pub trait RenderDiffuseMaterial<'a> {
-    fn apply_material(&mut self, material: &'a DiffuseMaterial);
-}
-
-impl<'a, 'b> RenderDiffuseMaterial<'b> for RenderPass<'a> where 'b: 'a {
-    fn apply_material(&mut self, material: &'b DiffuseMaterial) {
-        self.set_pipeline(&material.pipeline);
-        self.set_bind_group(0, &material.texture_bind_group, &[]);
-        self.set_bind_group(1, &material.matrices_uniform_bind_group, &[]);
+impl Material for DiffuseMaterial {
+    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+        pass.set_pipeline(&self.pipeline);
+        pass.set_bind_group(0, &self.texture_bind_group, &[]);
+        pass.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
     }
 }

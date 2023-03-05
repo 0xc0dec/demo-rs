@@ -1,9 +1,10 @@
-use cgmath::{Matrix4, SquareMatrix, Vector3};
-use wgpu::{BindGroup, RenderPass, RenderPipeline};
+use cgmath::{Matrix4, SquareMatrix};
+use wgpu::{BindGroup, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
+use crate::materials::Material;
 use crate::resources::load_string;
 use crate::texture::Texture;
 
@@ -204,14 +205,10 @@ impl SkyboxMaterial {
     }
 }
 
-pub trait RenderSkyboxMaterial<'a> {
-    fn apply_skybox_material(&mut self, material: &'a SkyboxMaterial);
-}
-
-impl<'a, 'b> RenderSkyboxMaterial<'b> for RenderPass<'a> where 'b: 'a {
-    fn apply_skybox_material(&mut self, material: &'b SkyboxMaterial) {
-        self.set_pipeline(&material.pipeline);
-        self.set_bind_group(0, &material.data_uniform_bind_group, &[]);
-        self.set_bind_group(1, &material.texture_bind_group, &[]);
+impl Material for SkyboxMaterial {
+    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+        pass.set_pipeline(&self.pipeline);
+        pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
+        pass.set_bind_group(1, &self.texture_bind_group, &[]);
     }
 }
