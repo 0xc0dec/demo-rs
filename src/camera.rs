@@ -3,29 +3,28 @@ use crate::input::Input;
 use crate::transform::{Transform, TransformSpace};
 
 pub struct Camera {
-    aspect: f32,
-    fovy: f32,
-    znear: f32,
-    zfar: f32,
+    proj_matrix: Matrix4<f32>,
     transform: Transform,
 }
 
 impl Camera {
     pub fn new(eye: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
-        let mut cam = Self {
-            aspect: canvas_size.0 / canvas_size.1,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-            transform: Transform::new(Vector3::zero()),
-        };
-        cam.transform.look_at(eye, target);
-        cam
+        let aspect = canvas_size.0 / canvas_size.1;
+        let znear = 0.1;
+        let zfar = 100.0;
+        let fov = cgmath::Deg(45.0);
+
+        let mut transform = Transform::new(Vector3::zero());
+        transform.look_at(eye, target);
+
+        Self {
+            proj_matrix: cgmath::perspective(fov, aspect, znear, zfar),
+            transform,
+        }
     }
 
     pub fn view_proj_matrix(&self) -> Matrix4<f32> {
-        let proj = cgmath::perspective(cgmath::Deg(self.fovy), self.aspect, self.znear, self.zfar);
-        proj * self.transform.matrix().invert().unwrap()
+        self.proj_matrix * self.transform.matrix().invert().unwrap()
     }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
