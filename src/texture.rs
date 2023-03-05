@@ -1,5 +1,3 @@
-use std::num::NonZeroU32;
-
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
@@ -76,32 +74,19 @@ impl Texture {
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
-        // TODO Use create_texture_with_data
-        let texture = driver.device().create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            view_formats: &[],
-        });
-
-        driver.queue().write_texture(
-            wgpu::ImageCopyTexture {
-                aspect: wgpu::TextureAspect::All,
-                texture: &texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
+        let texture = driver.device().create_texture_with_data(
+            driver.queue(),
+                &wgpu::TextureDescriptor {
+                label: None,
+                size,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format,
+                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+                view_formats: &[],
             },
-            &rgba,
-            wgpu::ImageDataLayout {
-                offset: 0,
-                bytes_per_row: NonZeroU32::new(4 * dimensions.0),
-                rows_per_image: NonZeroU32::new(dimensions.1),
-            },
-            size,
+            &rgba
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
