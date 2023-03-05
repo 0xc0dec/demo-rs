@@ -4,9 +4,8 @@ use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
-use crate::materials::texture_bind_group;
+use crate::materials::{new_render_pipeline, new_texture_bind_group, RenderPipelineParams};
 use super::Material;
-use crate::resources::load_string;
 use crate::texture::Texture;
 use crate::transform::{Transform};
 
@@ -56,15 +55,8 @@ pub struct DiffuseMaterialParams {
 // this is an MVP
 impl DiffuseMaterial {
     pub async fn new(driver: &Driver, params: DiffuseMaterialParams) -> Self {
-        let shader_src = load_string("diffuse.wgsl").await.unwrap();
-
-        let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(shader_src.into()),
-        });
-
         let (texture_bind_group_layout, texture_bind_group) =
-            texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::D2);
 
         let matrices_uniform = MatricesUniform::new();
 
@@ -103,55 +95,18 @@ impl DiffuseMaterial {
             label: None,
         });
 
-        let pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[
-                &texture_bind_group_layout,
-                &matrices_uniform_bind_group_layout
-            ],
-            push_constant_ranges: &[],
-        });
-
-        let pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: "vs_main",
-                buffers: &[ModelVertex::desc()],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: driver.surface_texture_format(),
-                    blend: Some(wgpu::BlendState::REPLACE),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: None,
-                polygon_mode: wgpu::PolygonMode::Fill,
-                unclipped_depth: false,
-                conservative: false,
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: Texture::DEPTH_FORMAT,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::Less,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
-            multisample: wgpu::MultisampleState {
-                count: 1,
-                mask: !0,
-                alpha_to_coverage_enabled: false,
-            },
-            multiview: None,
-        });
+        let pipeline = new_render_pipeline(
+            driver,
+            RenderPipelineParams {
+                shader_file_name: "diffuse.wgsl",
+                depth_write: true,
+                bind_group_layouts: &[
+                    &texture_bind_group_layout,
+                    &matrices_uniform_bind_group_layout
+                ],
+                vertex_buffer_layouts: &[ModelVertex::desc()]
+            }
+        ).await;
 
         Self {
             texture_bind_group,
