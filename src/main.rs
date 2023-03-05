@@ -1,4 +1,3 @@
-mod scene;
 mod texture;
 mod camera;
 mod transform;
@@ -8,13 +7,14 @@ mod resources;
 mod driver;
 mod render_target;
 mod materials;
+mod scene;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
-use scene::Scene;
 use input::Input;
 use driver::Driver;
 use render_target::RenderTarget;
+use crate::scene::Scene;
 
 async fn run() {
     let event_loop = EventLoop::new();

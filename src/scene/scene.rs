@@ -1,49 +1,14 @@
-use cgmath::{Deg, Rad, Vector3, Zero};
+use cgmath::{Vector3, Zero};
 use wgpu::RenderPass;
 use crate::camera::Camera;
-use crate::input::Input;
-use crate::model::{DrawModel, Mesh, Model};
 use crate::driver::Driver;
+use crate::input::Input;
 use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material, SkyboxMaterial, SkyboxMaterialParams};
+use crate::model::{DrawModel, Mesh, Model};
+use crate::scene::model_node::ModelNode;
+use crate::scene::scene_node::SceneNode;
 use crate::texture::Texture;
-use crate::transform::{Transform, TransformSpace};
-
-trait SceneNode {
-    fn update(&mut self, dt: f32);
-    fn render<'a, 'b>(
-        &'a mut self,
-        driver: &'a Driver,
-        camera: &'a Camera, // TODO Avoid
-        pass: &mut RenderPass<'b>
-    ) where 'a: 'b;
-}
-
-struct ModelNode {
-    model: Model,
-    transform: Transform,
-    material: DiffuseMaterial,
-}
-
-impl SceneNode for ModelNode {
-    fn update(&mut self, dt: f32) {
-        self.transform.rotate_around_axis(
-            Vector3::unit_z(),
-            Rad::from(Deg(45.0 * dt)),
-            TransformSpace::Local)
-    }
-
-    fn render<'a, 'b>(&'a mut self, driver: &'a Driver, camera: &'a Camera, pass: &mut RenderPass<'b>)
-        where 'a: 'b
-    {
-        self.material.update(driver, camera, &self.transform);
-        self.material.apply(pass);
-        pass.draw_model(&self.model);
-    }
-}
-
-struct Player {
-    camera: Camera,
-}
+use crate::transform::Transform;
 
 struct Skybox {
     mesh: Mesh,
