@@ -23,9 +23,11 @@ impl Camera {
         }
     }
 
-    pub fn view_proj_matrix(&self) -> Matrix4<f32> {
-        self.proj_matrix * self.transform.matrix().invert().unwrap()
-    }
+    pub fn transform(&self) -> &Transform { &self.transform }
+
+    pub fn proj_matrix(&self) -> Matrix4<f32> { self.proj_matrix }
+    pub fn view_matrix(&self) -> Matrix4<f32> { self.transform.matrix().invert().unwrap() }
+    pub fn view_proj_matrix(&self) -> Matrix4<f32> { self.proj_matrix * self.view_matrix() }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
         if input.rmb_down {

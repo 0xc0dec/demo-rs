@@ -1,4 +1,4 @@
-use cgmath::{Matrix4, Vector3, Vector4, Zero};
+use cgmath::{Matrix4, SquareMatrix, Vector3};
 use wgpu::{BindGroup, RenderPass, RenderPipeline};
 use wgpu::util::DeviceExt;
 use crate::camera::Camera;
@@ -22,10 +22,9 @@ pub struct SkyboxMaterialParams {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct DataUniform {
-    proj_mat: [[f32; 4]; 4],
     proj_mat_inv: [[f32; 4]; 4],
+    // Couldn't make it work with Matrix3, probably something to do with alignment and padding
     view_mat: [[f32; 4]; 4],
-    view_pos: [f32; 4]
 }
 
 impl DataUniform {
@@ -38,19 +37,15 @@ impl DataUniform {
     );
 
     fn new() -> Self {
-        use cgmath::SquareMatrix;
         Self {
-            proj_mat: Matrix4::identity().into(),
             proj_mat_inv: Matrix4::identity().into(),
             view_mat: Matrix4::identity().into(),
-            view_pos: Vector4::zero().into()
         }
     }
 
     fn update(&mut self, camera: &Camera) {
-        // TODO
-        // self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
-        // self.world = model_transform.matrix().into();
+        self.view_mat = camera.view_matrix().into();
+        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix()).invert().unwrap().into();
     }
 }
 
