@@ -1,4 +1,4 @@
-use cgmath::{EuclideanSpace, InnerSpace, Matrix, Matrix3, Matrix4, Point3, Quaternion, Rad, Rotation, Transform as _, Vector3, Vector4};
+use cgmath::{InnerSpace, Matrix, Matrix4, Quaternion, Rad, Rotation, Transform as _, Vector3};
 
 pub enum TransformSpace {
     Local,

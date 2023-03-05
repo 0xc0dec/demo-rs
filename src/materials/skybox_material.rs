@@ -4,7 +4,7 @@ use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
-use crate::materials::Material;
+use crate::materials::{Material, texture_bind_group};
 use crate::resources::load_string;
 use crate::texture::Texture;
 
@@ -98,43 +98,8 @@ impl SkyboxMaterial {
             label: None,
         });
 
-        let texture_bind_group_layout =
-            driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            view_dimension: wgpu::TextureViewDimension::Cube,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        },
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
-                    },
-                ],
-                label: None,
-            });
-
-        let texture_bind_group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &texture_bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(params.texture.view()),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler()),
-                },
-            ],
-            label: None,
-        });
+        let (texture_bind_group_layout, texture_bind_group) =
+            texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::Cube);
 
         let render_pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,

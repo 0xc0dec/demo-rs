@@ -4,6 +4,7 @@ use wgpu::util::DeviceExt;
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
+use crate::materials::texture_bind_group;
 use super::Material;
 use crate::resources::load_string;
 use crate::texture::Texture;
@@ -62,43 +63,8 @@ impl DiffuseMaterial {
             source: wgpu::ShaderSource::Wgsl(shader_src.into()),
         });
 
-        let texture_bind_group_layout =
-            driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        },
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-                        count: None,
-                    },
-                ],
-                label: None,
-            });
-
-        let texture_bind_group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &texture_bind_group_layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(params.texture.view()),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler()),
-                },
-            ],
-            label: None,
-        });
+        let (texture_bind_group_layout, texture_bind_group) =
+            texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::D2);
 
         let matrices_uniform = MatricesUniform::new();
 
@@ -137,7 +103,7 @@ impl DiffuseMaterial {
             label: None,
         });
 
-        let render_pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: &[
                 &texture_bind_group_layout,
@@ -148,7 +114,7 @@ impl DiffuseMaterial {
 
         let pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
-            layout: Some(&render_pipeline_layout),
+            layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
