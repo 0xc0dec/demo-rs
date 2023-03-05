@@ -5,7 +5,7 @@ use crate::input::Input;
 use crate::diffuse_material::{DiffuseMaterial, DiffuseMaterialParams, RenderDiffuseMaterial};
 use crate::model::{DrawModel, Mesh, Model};
 use crate::driver::Driver;
-use crate::skybox_material::{RenderSkyboxMaterial, SkyboxMaterial};
+use crate::skybox_material::{RenderSkyboxMaterial, SkyboxMaterial, SkyboxMaterialParams};
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
 
@@ -18,7 +18,6 @@ struct SceneNode {
 struct Skybox {
     mesh: Mesh,
     material: SkyboxMaterial,
-    _texture: Texture,
 }
 
 pub struct Scene {
@@ -41,8 +40,7 @@ impl Scene {
             camera,
             skybox: Skybox {
                 mesh: Mesh::quad(driver),
-                material: SkyboxMaterial::new(driver).await,
-                _texture: skybox_tex
+                material: SkyboxMaterial::new(driver, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
             nodes: vec![
                 SceneNode {

@@ -1,4 +1,4 @@
-use wgpu::{RenderPass, RenderPipeline};
+use wgpu::{BindGroup, RenderPass, RenderPipeline};
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
 use crate::resources::load_string;
@@ -6,12 +6,17 @@ use crate::texture::Texture;
 
 pub struct SkyboxMaterial {
     pipeline: RenderPipeline,
+    texture_bind_group: BindGroup,
+}
+
+pub struct SkyboxMaterialParams {
+    pub texture: Texture,
 }
 
 // TODO Generalize materials ASAP, remove copypasta across different material types
 // this is an MVP
 impl SkyboxMaterial {
-    pub async fn new(driver: &Driver) -> Self {
+    pub async fn new(driver: &Driver, params: SkyboxMaterialParams) -> Self {
         let shader_src = load_string("skybox.wgsl").await.unwrap();
 
         let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
@@ -19,9 +24,47 @@ impl SkyboxMaterial {
             source: wgpu::ShaderSource::Wgsl(shader_src.into()),
         });
 
+        let texture_bind_group_layout =
+            driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            multisampled: false,
+                            view_dimension: wgpu::TextureViewDimension::Cube,
+                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        },
+                        count: None,
+                    },
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+                label: None,
+            });
+
+        let texture_bind_group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &texture_bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(params.texture.view()),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&params.texture.sampler()),
+                },
+            ],
+            label: None,
+        });
+
         let render_pipeline_layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[],
+            bind_group_layouts: &[&texture_bind_group_layout],
             push_constant_ranges: &[],
         });
 
@@ -68,6 +111,7 @@ impl SkyboxMaterial {
 
         Self {
             pipeline,
+            texture_bind_group
         }
     }
 }
@@ -79,5 +123,6 @@ pub trait RenderSkyboxMaterial<'a> {
 impl<'a, 'b> RenderSkyboxMaterial<'b> for RenderPass<'a> where 'b: 'a {
     fn apply_skybox_material(&mut self, material: &'b SkyboxMaterial) {
         self.set_pipeline(&material.pipeline);
+        self.set_bind_group(0, &material.texture_bind_group, &[]);
     }
 }
