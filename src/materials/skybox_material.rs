@@ -3,7 +3,8 @@ use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::driver::Driver;
-use crate::materials::{Material, new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
+use crate::materials::Material;
+use crate::materials::utils::{new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
 use crate::texture::Texture;
 
 pub struct SkyboxMaterial {
