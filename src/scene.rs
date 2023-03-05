@@ -2,10 +2,9 @@ use cgmath::{Deg, Rad, Vector3, Zero};
 use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::input::Input;
-use crate::diffuse_material::{DiffuseMaterial, DiffuseMaterialParams, RenderDiffuseMaterial};
 use crate::model::{DrawModel, Mesh, Model};
 use crate::driver::Driver;
-use crate::skybox_material::{RenderSkyboxMaterial, SkyboxMaterial, SkyboxMaterialParams};
+use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, RenderDiffuseMaterial, RenderSkyboxMaterial, SkyboxMaterial, SkyboxMaterialParams};
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
 
