@@ -8,22 +8,20 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(eye: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
+    pub fn new(pos: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
         let aspect = canvas_size.0 / canvas_size.1;
         let znear = 0.1;
         let zfar = 100.0;
         let fov = cgmath::Deg(45.0);
 
-        let mut transform = Transform::new(Vector3::zero());
-        transform.look_at(eye, target);
+        let mut transform = Transform::new(pos);
+        transform.look_at(target);
 
         Self {
             proj_matrix: cgmath::perspective(fov, aspect, znear, zfar),
             transform,
         }
     }
-
-    pub fn transform(&self) -> &Transform { &self.transform }
 
     pub fn proj_matrix(&self) -> Matrix4<f32> { self.proj_matrix }
     pub fn view_matrix(&self) -> Matrix4<f32> { self.transform.matrix().invert().unwrap() }

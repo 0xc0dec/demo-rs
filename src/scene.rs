@@ -28,7 +28,7 @@ pub struct Scene {
 impl Scene {
     pub async fn new(driver: &Driver) -> Scene {
         let camera = Camera::new(
-            Vector3::new(0.0, 0.0, -10.0),
+            Vector3::new(-5.0, 5.0, -5.0),
             Vector3::new(0.0, 0.0, 0.0),
             driver.surface_size().into(),
         );
