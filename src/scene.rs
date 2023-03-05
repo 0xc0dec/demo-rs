@@ -8,10 +8,41 @@ use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material, SkyboxM
 use crate::texture::Texture;
 use crate::transform::{Transform, TransformSpace};
 
-struct SceneNode {
+trait SceneNode {
+    fn update(&mut self, dt: f32);
+    fn render<'a, 'b>(
+        &'a mut self,
+        driver: &'a Driver,
+        camera: &'a Camera, // TODO Avoid
+        pass: &mut RenderPass<'b>
+    ) where 'a: 'b;
+}
+
+struct ModelNode {
     model: Model,
     transform: Transform,
     material: DiffuseMaterial,
+}
+
+impl SceneNode for ModelNode {
+    fn update(&mut self, dt: f32) {
+        self.transform.rotate_around_axis(
+            Vector3::unit_z(),
+            Rad::from(Deg(45.0 * dt)),
+            TransformSpace::Local)
+    }
+
+    fn render<'a, 'b>(&'a mut self, driver: &'a Driver, camera: &'a Camera, pass: &mut RenderPass<'b>)
+        where 'a: 'b
+    {
+        self.material.update(driver, camera, &self.transform);
+        self.material.apply(pass);
+        pass.draw_model(&self.model);
+    }
+}
+
+struct Player {
+    camera: Camera,
 }
 
 struct Skybox {
@@ -22,7 +53,7 @@ struct Skybox {
 pub struct Scene {
     camera: Camera,
     skybox: Skybox,
-    nodes: Vec<SceneNode>,
+    models: Vec<Box<dyn SceneNode>>,
 }
 
 impl Scene {
@@ -41,35 +72,32 @@ impl Scene {
                 mesh: Mesh::quad(driver),
                 material: SkyboxMaterial::new(driver, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
-            nodes: vec![
-                SceneNode {
+            models: vec![
+                Box::new(ModelNode {
                     model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::zero()),
                     material: {
                         let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
                         DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
-                },
+                }),
                 // TODO Avoid duplicate loading
-                SceneNode {
+                Box::new(ModelNode {
                     model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
                     transform: Transform::new(Vector3::unit_x() * 5.0),
                     material: {
                         let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
                         DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
                     },
-                },
+                }),
             ],
         }
     }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
         self.camera.update(input, dt);
-        for n in &mut self.nodes {
-            n.transform.rotate_around_axis(
-                Vector3::unit_z(),
-                Rad::from(Deg(45.0 * dt)),
-                TransformSpace::Local)
+        for n in &mut self.models {
+            n.update(dt);
         }
     }
 
@@ -80,10 +108,8 @@ impl Scene {
         self.skybox.material.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);
 
-        for n in &mut self.nodes {
-            n.material.update(driver, &self.camera, &n.transform);
-            n.material.apply(pass);
-            pass.draw_model(&n.model);
+        for m in &mut self.models {
+            m.render(driver, &self.camera, pass);
         }
     }
 }
