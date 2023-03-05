@@ -77,6 +77,7 @@ impl Scene {
     pub fn render<'a, 'b>(&'a mut self, driver: &'a Driver, pass: &mut RenderPass<'b>)
         where 'a: 'b
     {
+        self.skybox.material.update(&driver, &self.camera);
         pass.apply_skybox_material(&self.skybox.material);
         pass.draw_mesh(&self.skybox.mesh);
 

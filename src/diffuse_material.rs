@@ -8,14 +8,6 @@ use crate::resources::load_string;
 use crate::texture::Texture;
 use crate::transform::{Transform};
 
-#[rustfmt::skip]
-const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-);
-
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct MatricesUniform {
@@ -24,6 +16,14 @@ struct MatricesUniform {
 }
 
 impl MatricesUniform {
+    #[rustfmt::skip]
+    const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.0,
+        0.0, 0.0, 0.5, 1.0,
+    );
+
     fn new() -> Self {
         use cgmath::SquareMatrix;
         Self {
@@ -33,7 +33,7 @@ impl MatricesUniform {
     }
 
     fn update(&mut self, camera: &Camera, model_transform: &Transform) {
-        self.view_proj = (OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
+        self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
         self.world = model_transform.matrix().into();
     }
 }

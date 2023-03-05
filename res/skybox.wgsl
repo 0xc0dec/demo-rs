@@ -10,6 +10,16 @@ struct VertexOutput {
     clip_position: vec4<f32>,
 }
 
+struct Data {
+    proj_mat: mat4x4<f32>,
+    proj_mat_inv: mat4x4<f32>,
+    view_mat: mat4x4<f32>,
+    view_pos: vec4<f32>,
+}
+
+@group(0) @binding(0)
+var<uniform> data: Data;
+
 @vertex
 fn vs_main(model: VertexInput) -> VertexOutput {
     var out: VertexOutput;
@@ -19,10 +29,10 @@ fn vs_main(model: VertexInput) -> VertexOutput {
 
 // Fragment shader
 
-@group(0) @binding(0)
+@group(1) @binding(0)
 var cubeTexture: texture_cube<f32>;
 
-@group(0) @binding(1)
+@group(1) @binding(1)
 var cubeSampler: sampler;
 
 @fragment
