@@ -1,15 +1,16 @@
 use cgmath::{Vector3, Zero};
+use rapier3d::prelude::*;
 use wgpu::RenderPass;
 use winit::dpi::PhysicalSize;
 use crate::camera::Camera;
 use crate::driver::Driver;
 use crate::input::Input;
-use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material, SkyboxMaterial, SkyboxMaterialParams};
-use crate::model::{DrawModel, Mesh, Model};
+use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
+use crate::model::{DrawModel, Mesh};
+use crate::physics::PhysicsWorld;
 use crate::scene::model_node::ModelNode;
 use crate::scene::scene_node::SceneNode;
 use crate::texture::Texture;
-use crate::transform::Transform;
 
 struct Skybox {
     mesh: Mesh,
@@ -20,10 +21,24 @@ pub struct Scene {
     camera: Camera,
     skybox: Skybox,
     models: Vec<Box<dyn SceneNode>>,
+    physics: PhysicsWorld,
 }
 
 impl Scene {
     pub async fn new(driver: &Driver) -> Scene {
+        // let rigi/*d_body = RigidBodyBuilder::dynamic()
+        //     .translation(vector![0.0, 10.0, 0.0])
+        //     .build();
+        // let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
+        // let ball_body_handle = rigid_body_set.insert(rigid_body);
+        // collider_set.insert_with_parent(collider, ball_body_handle, &mut rigid_body_set);
+
+        let mut physics = PhysicsWorld::new();
+
+        let obj1 = Box::new(ModelNode::new(Vector3::zero(), driver, &mut physics).await);
+        let obj2 = Box::new(ModelNode::new(Vector3::unit_x() * 3.0, driver, &mut physics).await);
+        let obj3 = Box::new(ModelNode::new(Vector3::unit_x() * -3.0, driver, &mut physics).await);
+
         let camera = Camera::new(
             Vector3::new(10.0, 10.0, 10.0),
             Vector3::new(0.0, 0.0, 0.0),
@@ -33,30 +48,13 @@ impl Scene {
         let skybox_tex = Texture::from_file_cube("skybox_bgra.dds", driver).await.unwrap();
 
         Self {
+            physics,
             camera,
             skybox: Skybox {
                 mesh: Mesh::quad(driver),
                 material: SkyboxMaterial::new(driver, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
-            models: vec![
-                Box::new(ModelNode {
-                    model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
-                    transform: Transform::new(Vector3::zero()),
-                    material: {
-                        let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
-                        DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
-                    },
-                }),
-                // TODO Avoid duplicate loading
-                Box::new(ModelNode {
-                    model: Model::from_file("cube.obj", driver).await.expect("Failed to load cube model"),
-                    transform: Transform::new(Vector3::unit_x() * 5.0),
-                    material: {
-                        let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
-                        DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await
-                    },
-                }),
-            ],
+            models: vec![obj1, obj2, obj3],
         }
     }
 
@@ -66,6 +64,8 @@ impl Scene {
     }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
+        self.physics.update(dt);
+
         self.camera.update(input, dt);
         for n in &mut self.models {
             n.update(dt);

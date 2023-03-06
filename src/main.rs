@@ -8,6 +8,7 @@ mod driver;
 mod render_target;
 mod materials;
 mod scene;
+mod physics;
 
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
