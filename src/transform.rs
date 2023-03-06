@@ -24,16 +24,26 @@ impl Transform {
 
     pub fn look_at(&mut self, target: Vector3<f32>) {
         // For some reason could not make it work with Matrix4::look_at, was getting weird results.
-        let rot = Matrix4::from(Quaternion::look_at(self.pos - target, Vector3::unit_y())).transpose();
-        self.m.x = rot.x;
-        self.m.y = rot.y;
-        self.m.z = rot.z;
+        let rot_mtx = Matrix4::from(Quaternion::look_at(self.pos - target, Vector3::unit_y())).transpose();
+        self.m.x = rot_mtx.x;
+        self.m.y = rot_mtx.y;
+        self.m.z = rot_mtx.z;
     }
 
     // TODO Specify space
     pub fn translate(&mut self, v: Vector3<f32>) {
         self.m = self.m * Matrix4::from_translation(v);
         self.pos += v;
+    }
+
+    pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
+        self.pos = pos;
+        self.m = Matrix4::from_translation(self.pos);
+
+        let rot_mtx = Matrix4::from(rotation);
+        self.m.x = rot_mtx.x;
+        self.m.y = rot_mtx.y;
+        self.m.z = rot_mtx.z;
     }
 
     pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: Rad<f32>, space: TransformSpace) {

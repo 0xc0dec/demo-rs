@@ -26,7 +26,7 @@ pub struct Scene {
 
 impl Scene {
     pub async fn new(driver: &Driver) -> Scene {
-        // let rigi/*d_body = RigidBodyBuilder::dynamic()
+        // let rigid_body = RigidBodyBuilder::dynamic()
         //     .translation(vector![0.0, 10.0, 0.0])
         //     .build();
         // let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
@@ -68,7 +68,7 @@ impl Scene {
 
         self.camera.update(input, dt);
         for n in &mut self.models {
-            n.update(dt);
+            n.update(dt, &self.physics);
         }
     }
 

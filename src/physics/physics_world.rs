@@ -37,6 +37,14 @@ impl PhysicsWorld {
         }
     }
 
+    pub fn rigid_body_set(&self) -> &RigidBodySet { &self.bodies }
+
+    pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> RigidBodyHandle {
+        let body_handle = self.bodies.insert(body);
+        self.colliders.insert_with_parent(collider, body_handle, &mut self.bodies);
+        body_handle
+    }
+
     pub fn update(&mut self, dt: f32) {
         let gravity = vector![0.0, -9.81, 0.0];
         let integration_parameters = IntegrationParameters {
