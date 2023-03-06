@@ -51,10 +51,12 @@ async fn run() {
                 match event {
                     WindowEvent::Resized(new_size) => {
                         driver.resize(Some(*new_size));
+                        scene.on_canvas_resize(*new_size);
                         render_target.resize(&driver);
                     },
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                         driver.resize(Some(**new_inner_size));
+                        scene.on_canvas_resize(**new_inner_size);
                         render_target.resize(&driver);
                     }
                     _ => {}

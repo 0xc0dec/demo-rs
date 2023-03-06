@@ -1,5 +1,6 @@
 use cgmath::{Vector3, Zero};
 use wgpu::RenderPass;
+use winit::dpi::PhysicalSize;
 use crate::camera::Camera;
 use crate::driver::Driver;
 use crate::input::Input;
@@ -57,6 +58,11 @@ impl Scene {
                 }),
             ],
         }
+    }
+
+    // TODO Remove this and instead react to resizing in update() or render()
+    pub fn on_canvas_resize(&mut self, new_size: PhysicalSize<u32>) {
+        self.camera.on_canvas_resize(new_size.into());
     }
 
     pub fn update(&mut self, input: &Input, dt: f32) {
