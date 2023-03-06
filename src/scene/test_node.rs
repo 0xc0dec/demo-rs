@@ -10,26 +10,32 @@ use crate::texture::Texture;
 use super::scene_node::SceneNode;
 use crate::transform::{Transform, TransformSpace};
 
-pub struct ModelNode {
+pub struct TestNode {
     model: Model,
     transform: Transform,
     material: DiffuseMaterial,
     rigid_body_handle: RigidBodyHandle,
 }
 
-impl ModelNode {
-    pub async fn new(pos: Vector3<f32>, driver: &Driver, physics: &mut PhysicsWorld) -> Self {
-        let mut body = RigidBodyBuilder::dynamic()
-            .translation(vector![pos.x, pos.y, pos.z])
-            .build();
-        body.add_torque(Vector::new(10.0, 10.0, 10.0), true);
+pub struct TestNodeParams {
+    pub pos: Vector3<f32>,
+    pub scale: Vector3<f32>,
+    pub movable: bool,
+}
 
-        let collider = ColliderBuilder::cuboid(1.0, 1.0, 1.0).restitution(0.7).build();
+impl TestNode {
+    pub async fn new(driver: &Driver, physics: &mut PhysicsWorld, params: TestNodeParams) -> Self {
+        let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
+            .translation(vector![params.pos.x, params.pos.y, params.pos.z])
+            .build();
+        let collider = ColliderBuilder::cuboid(params.scale.x, params.scale.y, params.scale.z)
+            .restitution(0.7)
+            .build();
         let rigid_body_handle = physics.add_body(body, collider);
 
-        let model = Model::from_file("cube.obj", driver).await.expect("Failed to load cube model");
-        let transform = Transform::new(pos);
+        let transform = Transform::new(params.pos, params.scale);
 
+        let model = Model::from_file("cube.obj", driver).await.expect("Failed to load cube model");
         let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
         let material = DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await;
 
@@ -42,7 +48,7 @@ impl ModelNode {
     }
 }
 
-impl SceneNode for ModelNode {
+impl SceneNode for TestNode {
     fn update(&mut self, dt: f32, physics: &PhysicsWorld) {
         let body = physics.rigid_body_set().get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();

@@ -8,20 +8,23 @@ pub enum TransformSpace {
 pub struct Transform {
     m: Matrix4<f32>,
     pos: Vector3<f32>,
+    scale: Vector3<f32>,
 }
 
 // TODO Parent-child relationships
 impl Transform {
-    pub fn new(pos: Vector3<f32>) -> Self {
+    pub fn new(pos: Vector3<f32>, scale: Vector3<f32>) -> Self {
         Self {
-            m: Matrix4::from_translation(pos),
-            pos
+            m: Matrix4::from_translation(pos) * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z),
+            pos,
+            scale
         }
     }
 
     pub fn matrix(&self) -> Matrix4<f32> { self.m }
     pub fn forward(&self) -> Vector3<f32> { self.m.z.truncate() }
 
+    // TODO Don't lose scale
     pub fn look_at(&mut self, target: Vector3<f32>) {
         // For some reason could not make it work with Matrix4::look_at, was getting weird results.
         let rot_mtx = Matrix4::from(Quaternion::look_at(self.pos - target, Vector3::unit_y())).transpose();
@@ -37,10 +40,10 @@ impl Transform {
     }
 
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
+        self.m = Matrix4::from_translation(pos);
         self.pos = pos;
-        self.m = Matrix4::from_translation(self.pos);
 
-        let rot_mtx = Matrix4::from(rotation);
+        let rot_mtx = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z) * Matrix4::from(rotation);
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
         self.m.z = rot_mtx.z;

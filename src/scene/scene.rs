@@ -8,7 +8,7 @@ use crate::input::Input;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
-use crate::scene::model_node::ModelNode;
+use crate::scene::test_node::{TestNode, TestNodeParams};
 use crate::scene::scene_node::SceneNode;
 use crate::texture::Texture;
 
@@ -26,18 +26,29 @@ pub struct Scene {
 
 impl Scene {
     pub async fn new(driver: &Driver) -> Scene {
-        // let rigid_body = RigidBodyBuilder::dynamic()
-        //     .translation(vector![0.0, 10.0, 0.0])
-        //     .build();
-        // let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
-        // let ball_body_handle = rigid_body_set.insert(rigid_body);
-        // collider_set.insert_with_parent(collider, ball_body_handle, &mut rigid_body_set);
-
         let mut physics = PhysicsWorld::new();
 
-        let obj1 = Box::new(ModelNode::new(Vector3::zero(), driver, &mut physics).await);
-        let obj2 = Box::new(ModelNode::new(Vector3::unit_x() * 3.0, driver, &mut physics).await);
-        let obj3 = Box::new(ModelNode::new(Vector3::unit_x() * -3.0, driver, &mut physics).await);
+        let ground = Box::new(
+            TestNode::new(
+                driver, &mut physics,
+                TestNodeParams {
+                    pos: Vector3::zero(),
+                    scale: Vector3::new(10.0, 0.1, 10.0),
+                    movable: false,
+                }
+            ).await
+        );
+
+        let box1 = Box::new(
+            TestNode::new(
+                driver, &mut physics,
+                TestNodeParams {
+                    pos: Vector3::unit_y() * 10.0,
+                    scale: Vector3::new(1.0, 1.0, 1.0),
+                    movable: true,
+                }
+            ).await
+        );
 
         let camera = Camera::new(
             Vector3::new(10.0, 10.0, 10.0),
@@ -54,7 +65,7 @@ impl Scene {
                 mesh: Mesh::quad(driver),
                 material: SkyboxMaterial::new(driver, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
-            models: vec![obj1, obj2, obj3],
+            models: vec![ground, box1],
         }
     }
 

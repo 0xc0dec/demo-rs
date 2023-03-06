@@ -1,4 +1,4 @@
-use cgmath::{Deg, InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
+use cgmath::{Array, Deg, InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
 use winit::dpi::PhysicalSize;
 use crate::input::Input;
 use crate::transform::{Transform, TransformSpace};
@@ -14,7 +14,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(pos: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
-        let mut transform = Transform::new(pos);
+        let mut transform = Transform::new(pos, Vector3::from_value(1.0));
         transform.look_at(target);
 
         let aspect = canvas_size.0 / canvas_size.1;
