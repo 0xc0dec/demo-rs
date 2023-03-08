@@ -1,3 +1,3 @@
-pub trait Material {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b;
+pub trait Material<'a, 'b> where 'a: 'b {
+    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>);
 }

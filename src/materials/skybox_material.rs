@@ -4,7 +4,7 @@ use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::graphics::Graphics;
 use crate::materials::Material;
-use crate::materials::utils::{new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
+use crate::materials::utils::*;
 use crate::texture::Texture;
 
 pub struct SkyboxMaterial {
@@ -66,8 +66,8 @@ impl SkyboxMaterial {
     }
 }
 
-impl Material for SkyboxMaterial {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+impl<'a, 'b> Material<'a, 'b> for SkyboxMaterial where 'a: 'b {
+    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
         pass.set_bind_group(1, &self.texture_bind_group, &[]);
