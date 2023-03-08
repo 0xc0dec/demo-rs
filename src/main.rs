@@ -44,7 +44,7 @@ async fn run() {
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
     let mut last_frame_instant = std::time::Instant::now();
-    
+
     let mut running = true;
     while running {
         events.clear();

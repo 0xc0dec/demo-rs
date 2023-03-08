@@ -3,7 +3,6 @@ use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
-use crate::render_target::RenderTarget;
 use crate::state::State;
 
 pub struct Graphics {
@@ -75,37 +74,41 @@ impl Graphics {
         context.target.resize(&self);
 
         let output = self.surface.get_current_texture().expect("Missing surface texture");
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: None
-        });
-
-        {
-            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(context.target.clear_color()),
-                        store: true,
-                    }
-                })],
-                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: context.target.depth_texture().view(),
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: true,
-                    }),
-                    stencil_ops: None,
-                })
+        let cmd_buffer = {
+            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: None
             });
 
-            state.render(&self, &mut pass, context);
-        }
+            {
+                let output_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: &output_view,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(context.target.clear_color()),
+                            store: true,
+                        }
+                    })],
+                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                        view: context.target.depth_texture().view(),
+                        depth_ops: Some(wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(1.0),
+                            store: true,
+                        }),
+                        stencil_ops: None,
+                    })
+                });
 
-        self.queue.submit(iter::once(encoder.finish()));
+                state.render(&self, &mut pass, context);
+            }
+
+            encoder.finish()
+        };
+
+        self.queue.submit(iter::once(cmd_buffer));
         output.present();
     }
 
