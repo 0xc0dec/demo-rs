@@ -5,7 +5,6 @@ mod events;
 mod model;
 mod resources;
 mod graphics;
-mod render_target;
 mod materials;
 mod state;
 mod physics;
@@ -19,7 +18,6 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 
 use events::Events;
 use graphics::Graphics;
-use render_target::RenderTarget;
 use crate::frame_context::FrameContext;
 use crate::state::State;
 
@@ -32,12 +30,6 @@ async fn run() {
         .unwrap();
 
     let mut gfx = Graphics::new(&window).await;
-    let mut render_target = RenderTarget::new(&gfx, wgpu::Color {
-        r: 0.0,
-        g: 0.5,
-        b: 0.0,
-        a: 1.0,
-    });
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
 
@@ -85,7 +77,6 @@ async fn run() {
         let mut frame_context = FrameContext {
             dt: dt_filtered,
             events: &events,
-            target: &mut render_target
         };
 
         state.update(&frame_context);

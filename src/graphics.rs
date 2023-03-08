@@ -3,8 +3,8 @@ use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
-use crate::render_target::RenderTarget;
 use crate::state::State;
+use crate::texture::Texture;
 
 pub struct Graphics {
     surface_size: PhysicalSize<u32>,
@@ -12,6 +12,7 @@ pub struct Graphics {
     device: Device,
     queue: Queue,
     surface_config: SurfaceConfiguration,
+    depth_tex: Option<Texture>,
 }
 
 impl Graphics {
@@ -67,13 +68,13 @@ impl Graphics {
             device,
             queue,
             surface_config,
+            depth_tex: None
         }
     }
 
     pub fn render_frame(&mut self, state: &mut State, context: &mut FrameContext) {
         if let Some(new_size) = context.events.new_surface_size {
             self.resize(new_size);
-            *context.target = RenderTarget::new(&self, context.target.clear_color());
         }
 
         let output = self.surface.get_current_texture().expect("Missing surface texture");
@@ -91,12 +92,17 @@ impl Graphics {
                         view: &output_view,
                         resolve_target: None,
                         ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(context.target.clear_color()),
+                            load: wgpu::LoadOp::Clear(wgpu::Color {
+                                r: 1.0,
+                                g: 1.0,
+                                b: 1.0,
+                                a: 1.0
+                            }),
                             store: true,
                         }
                     })],
                     depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                        view: context.target.depth_texture().view(),
+                        view: self.depth_tex.as_ref().unwrap().view(),
                         depth_ops: Some(wgpu::Operations {
                             load: wgpu::LoadOp::Clear(1.0),
                             store: true,
@@ -121,6 +127,7 @@ impl Graphics {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
+            self.depth_tex = Some(Texture::depth(&self));
         }
     }
 
