@@ -82,14 +82,15 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        let frame_context = FrameContext {
+        let mut frame_context = FrameContext {
             dt: dt_filtered,
-            events: &events
+            events: &events,
+            target: &mut render_target
         };
 
         state.update(&frame_context);
 
-        gfx.render_frame(&mut state, &mut render_target, &frame_context);
+        gfx.render_frame(&mut state, &mut frame_context);
     }
 }
 

@@ -70,19 +70,9 @@ impl Graphics {
         }
     }
 
-    fn resize(&mut self, new_size: Option<PhysicalSize<u32>>) {
-        let size = new_size.unwrap_or(self.surface_size);
-        if size.width > 0 && size.height > 0 {
-            self.surface_size = size;
-            self.surface_config.width = size.width;
-            self.surface_config.height = size.height;
-            self.surface.configure(&self.device, &self.surface_config);
-        }
-    }
-
-    pub fn render_frame(&mut self, state: &mut State, target: &mut RenderTarget, context: &FrameContext) {
+    pub fn render_frame(&mut self, state: &mut State, context: &mut FrameContext) {
         self.resize(context.events.new_surface_size);
-        target.resize(&self);
+        context.target.resize(&self);
 
         let output = self.surface.get_current_texture().expect("Missing surface texture");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
@@ -98,12 +88,12 @@ impl Graphics {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(target.clear_color()),
+                        load: wgpu::LoadOp::Clear(context.target.clear_color()),
                         store: true,
                     }
                 })],
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: target.depth_texture().view(),
+                    view: context.target.depth_texture().view(),
                     depth_ops: Some(wgpu::Operations {
                         load: wgpu::LoadOp::Clear(1.0),
                         store: true,
@@ -115,8 +105,18 @@ impl Graphics {
             state.render(&self, &mut pass, context);
         }
 
-        self.queue().submit(iter::once(encoder.finish()));
+        self.queue.submit(iter::once(encoder.finish()));
         output.present();
+    }
+
+    fn resize(&mut self, new_size: Option<PhysicalSize<u32>>) {
+        let size = new_size.unwrap_or(self.surface_size);
+        if size.width > 0 && size.height > 0 {
+            self.surface_size = size;
+            self.surface_config.width = size.width;
+            self.surface_config.height = size.height;
+            self.surface.configure(&self.device, &self.surface_config);
+        }
     }
 
     pub fn surface_texture_format(&self) -> TextureFormat { self.surface_config.format }
