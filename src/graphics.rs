@@ -72,8 +72,8 @@ impl Graphics {
         }
     }
 
-    pub fn render_frame(&mut self, state: &mut State, context: &mut FrameContext) {
-        if let Some(new_size) = context.events.new_surface_size {
+    pub fn render_frame(&mut self, state: &mut State, ctx: &mut FrameContext) {
+        if let Some(new_size) = ctx.events.new_surface_size {
             self.resize(new_size);
         }
 
@@ -111,7 +111,7 @@ impl Graphics {
                     })
                 });
 
-                state.render(&self, &mut pass, context);
+                state.render(&self, &mut pass, ctx);
             }
 
             encoder.finish()

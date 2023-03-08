@@ -68,11 +68,11 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, context: &FrameContext) {
-        self.physics.update(context.dt);
-        self.camera.update(context.events, context.dt);
+    pub fn update(&mut self, ctx: &FrameContext) {
+        self.physics.update(ctx.dt);
+        self.camera.update(ctx.events, ctx.dt);
         for n in &mut self.entities {
-            n.update(context.dt, &self.physics);
+            n.update(ctx.dt, &self.physics);
         }
     }
 
