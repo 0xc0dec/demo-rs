@@ -2,7 +2,7 @@ use cgmath::{Matrix4, SquareMatrix};
 use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::materials::Material;
 use crate::materials::utils::{new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
 use crate::texture::Texture;
@@ -20,22 +20,22 @@ pub struct SkyboxMaterialParams {
 }
 
 impl SkyboxMaterial {
-    pub async fn new(driver: &Driver, params: SkyboxMaterialParams) -> Self {
+    pub async fn new(gfx: &Graphics, params: SkyboxMaterialParams) -> Self {
         let data_uniform = DataUniform::new();
 
         let (
             data_uniform_bind_group_layout,
             data_uniform_bind_group,
             data_uniform_buf
-        ) = new_uniform_bind_group(driver, bytemuck::cast_slice(&[data_uniform]));
+        ) = new_uniform_bind_group(gfx, bytemuck::cast_slice(&[data_uniform]));
 
         let (
             texture_bind_group_layout,
             texture_bind_group
-        ) = new_texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::Cube);
+        ) = new_texture_bind_group(gfx, &params.texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = new_render_pipeline(
-            driver,
+            gfx,
             RenderPipelineParams {
                 shader_file_name: "skybox.wgsl",
                 depth_write: false,
@@ -56,9 +56,9 @@ impl SkyboxMaterial {
         }
     }
 
-    pub fn update(&mut self, driver: &Driver, camera: &Camera) {
+    pub fn update(&mut self, gfx: &Graphics, camera: &Camera) {
         self.data_uniform.update(camera);
-        driver.queue().write_buffer(
+        gfx.queue().write_buffer(
             &self.data_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.data_uniform]),

@@ -1,4 +1,4 @@
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::texture::Texture;
 
 pub struct RenderTarget {
@@ -8,8 +8,8 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(driver: &Driver, clear_color: wgpu::Color) -> Self {
-        let depth_tex = Texture::depth(driver);
+    pub fn new(gfx: &Graphics, clear_color: wgpu::Color) -> Self {
+        let depth_tex = Texture::depth(gfx);
 
         RenderTarget {
             depth_tex,
@@ -17,8 +17,8 @@ impl RenderTarget {
         }
     }
 
-    pub fn resize(&mut self, driver: &Driver) {
-        self.depth_tex = Texture::depth(driver);
+    pub fn resize(&mut self, gfx: &Graphics) {
+        self.depth_tex = Texture::depth(gfx);
     }
 
     pub fn depth_texture(&self) -> &Texture { &self.depth_tex }

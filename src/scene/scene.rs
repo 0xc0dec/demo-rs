@@ -3,7 +3,7 @@ use rapier3d::prelude::*;
 use wgpu::RenderPass;
 use winit::dpi::PhysicalSize;
 use crate::camera::Camera;
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::input::Input;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
@@ -25,12 +25,12 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub async fn new(driver: &Driver) -> Scene {
+    pub async fn new(gfx: &Graphics) -> Scene {
         let mut physics = PhysicsWorld::new();
 
         let ground = Box::new(
             TestNode::new(
-                driver, &mut physics,
+                gfx, &mut physics,
                 TestNodeParams {
                     pos: Vector3::zero(),
                     scale: Vector3::new(10.0, 0.1, 10.0),
@@ -41,7 +41,7 @@ impl Scene {
 
         let box1 = Box::new(
             TestNode::new(
-                driver, &mut physics,
+                gfx, &mut physics,
                 TestNodeParams {
                     pos: Vector3::unit_y() * 10.0,
                     scale: Vector3::new(1.0, 1.0, 1.0),
@@ -53,17 +53,17 @@ impl Scene {
         let camera = Camera::new(
             Vector3::new(10.0, 10.0, 10.0),
             Vector3::new(0.0, 0.0, 0.0),
-            driver.surface_size().into(),
+            gfx.surface_size().into(),
         );
 
-        let skybox_tex = Texture::from_file_cube("skybox_bgra.dds", driver).await.unwrap();
+        let skybox_tex = Texture::from_file_cube("skybox_bgra.dds", gfx).await.unwrap();
 
         Self {
             physics,
             camera,
             skybox: Skybox {
-                mesh: Mesh::quad(driver),
-                material: SkyboxMaterial::new(driver, SkyboxMaterialParams { texture: skybox_tex }).await,
+                mesh: Mesh::quad(gfx),
+                material: SkyboxMaterial::new(gfx, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
             models: vec![ground, box1],
         }
@@ -83,15 +83,15 @@ impl Scene {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, driver: &'a Driver, pass: &mut RenderPass<'b>)
+    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>)
         where 'a: 'b
     {
-        self.skybox.material.update(&driver, &self.camera);
+        self.skybox.material.update(&gfx, &self.camera);
         self.skybox.material.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.models {
-            m.render(driver, &self.camera, pass);
+            m.render(gfx, &self.camera, pass);
         }
     }
 }

@@ -1,11 +1,11 @@
 use wgpu::util::DeviceExt;
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::resources::load_string;
 use crate::texture::Texture;
 
-pub fn new_uniform_bind_group(driver: &Driver, data: &[u8]) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer)
+pub fn new_uniform_bind_group(gfx: &Graphics, data: &[u8]) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer)
 {
-    let buffer = driver.device().create_buffer_init(
+    let buffer = gfx.device().create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
             label: None,
             contents: data,
@@ -13,7 +13,7 @@ pub fn new_uniform_bind_group(driver: &Driver, data: &[u8]) -> (wgpu::BindGroupL
         }
     );
 
-    let group_layout = driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+    let group_layout = gfx.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         entries: &[
             wgpu::BindGroupLayoutEntry {
                 binding: 0,
@@ -29,7 +29,7 @@ pub fn new_uniform_bind_group(driver: &Driver, data: &[u8]) -> (wgpu::BindGroupL
         label: None,
     });
 
-    let group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
+    let group = gfx.device().create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &group_layout,
         entries: &[
             wgpu::BindGroupEntry {
@@ -44,11 +44,11 @@ pub fn new_uniform_bind_group(driver: &Driver, data: &[u8]) -> (wgpu::BindGroupL
 }
 
 pub fn new_texture_bind_group(
-    driver: &Driver,
+    gfx: &Graphics,
     texture: &Texture,
     view_dimension: wgpu::TextureViewDimension
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup) {
-    let layout = driver.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+    let layout = gfx.device().create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         entries: &[
             wgpu::BindGroupLayoutEntry {
                 binding: 0,
@@ -70,7 +70,7 @@ pub fn new_texture_bind_group(
         label: None,
     });
 
-    let group = driver.device().create_bind_group(&wgpu::BindGroupDescriptor {
+    let group = gfx.device().create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &layout,
         entries: &[
             wgpu::BindGroupEntry {
@@ -96,23 +96,23 @@ pub struct RenderPipelineParams<'a> {
 }
 
 pub async fn new_render_pipeline(
-    driver: &Driver,
+    gfx: &Graphics,
     params: RenderPipelineParams<'_>
 ) -> wgpu::RenderPipeline {
     let shader_src = load_string(params.shader_file_name).await.unwrap();
 
-    let shader = driver.device().create_shader_module(wgpu::ShaderModuleDescriptor {
+    let shader = gfx.device().create_shader_module(wgpu::ShaderModuleDescriptor {
         label: None,
         source: wgpu::ShaderSource::Wgsl(shader_src.into()),
     });
 
-    let layout = driver.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+    let layout = gfx.device().create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: None,
         bind_group_layouts: params.bind_group_layouts,
         push_constant_ranges: &[],
     });
 
-    let pipeline = driver.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+    let pipeline = gfx.device().create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&layout),
         vertex: wgpu::VertexState {
@@ -124,7 +124,7 @@ pub async fn new_render_pipeline(
             module: &shader,
             entry_point: "fs_main",
             targets: &[Some(wgpu::ColorTargetState {
-                format: driver.surface_texture_format(),
+                format: gfx.surface_texture_format(),
                 blend: Some(wgpu::BlendState::REPLACE),
                 write_mask: wgpu::ColorWrites::ALL,
             })],

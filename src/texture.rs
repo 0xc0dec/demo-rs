@@ -1,7 +1,7 @@
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::resources::load_binary;
 
 pub struct Texture {
@@ -16,10 +16,10 @@ impl Texture {
     pub fn view(&self) -> &wgpu::TextureView { &self.view }
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
 
-    pub fn depth(driver: &Driver) -> Self {
+    pub fn depth(gfx: &Graphics) -> Self {
         let size = wgpu::Extent3d {
-            width: driver.surface_size().width,
-            height: driver.surface_size().height,
+            width: gfx.surface_size().width,
+            height: gfx.surface_size().height,
             depth_or_array_layers: 1,
         };
         let desc = wgpu::TextureDescriptor {
@@ -32,10 +32,10 @@ impl Texture {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[Self::DEPTH_FORMAT],
         };
-        let texture = driver.device().create_texture(&desc);
+        let texture = gfx.device().create_texture(&desc);
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = driver.device().create_sampler(
+        let sampler = gfx.device().create_sampler(
             &wgpu::SamplerDescriptor {
                 address_mode_u: wgpu::AddressMode::ClampToEdge,
                 address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -53,17 +53,17 @@ impl Texture {
         Self { _texture: texture, view, sampler }
     }
 
-    pub async fn from_file_2d(file_name: &str, driver: &Driver) -> Result<Self> {
+    pub async fn from_file_2d(file_name: &str, gfx: &Graphics) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::from_mem_2d(driver, &data)
+        Self::from_mem_2d(gfx, &data)
     }
 
-    pub async fn from_file_cube(file_name: &str, driver: &Driver) -> Result<Self> {
+    pub async fn from_file_cube(file_name: &str, gfx: &Graphics) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::from_mem_cube(driver, &data)
+        Self::from_mem_cube(gfx, &data)
     }
 
-    fn from_mem_2d(driver: &Driver, bytes: &[u8]) -> Result<Self> {
+    fn from_mem_2d(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -74,9 +74,9 @@ impl Texture {
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
-        let texture = driver.device().create_texture_with_data(
-            driver.queue(),
-                &wgpu::TextureDescriptor {
+        let texture = gfx.device().create_texture_with_data(
+            gfx.queue(),
+            &wgpu::TextureDescriptor {
                 label: None,
                 size,
                 mip_level_count: 1,
@@ -90,7 +90,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = driver.device().create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -107,7 +107,7 @@ impl Texture {
         })
     }
 
-    fn from_mem_cube(driver: &Driver, bytes: &[u8]) -> Result<Self> {
+    fn from_mem_cube(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
@@ -124,8 +124,8 @@ impl Texture {
         };
         let max_mips = layer_size.max_mips(wgpu::TextureDimension::D2);
 
-        let texture = driver.device().create_texture_with_data(
-            driver.queue(),
+        let texture = gfx.device().create_texture_with_data(
+            gfx.queue(),
             &wgpu::TextureDescriptor {
                 size,
                 mip_level_count: max_mips,
@@ -145,7 +145,7 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = driver.device().create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
             label: None,
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,

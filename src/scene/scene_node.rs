@@ -1,6 +1,6 @@
 use wgpu::RenderPass;
 use crate::camera::Camera;
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::physics::PhysicsWorld;
 
 pub trait SceneNode {
@@ -8,7 +8,7 @@ pub trait SceneNode {
 
     fn render<'a, 'b>(
         &'a mut self,
-        driver: &'a Driver,
+        gfx: &'a Graphics,
         camera: &'a Camera, // TODO Avoid
         pass: &mut RenderPass<'b>
     ) where 'a: 'b;

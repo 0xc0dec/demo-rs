@@ -5,7 +5,7 @@ use winit::window::Window;
 use crate::render_target::RenderTarget;
 use crate::scene::Scene;
 
-pub struct Driver {
+pub struct Graphics {
     surface_size: PhysicalSize<u32>,
     surface: Surface,
     device: Device,
@@ -13,8 +13,8 @@ pub struct Driver {
     surface_config: SurfaceConfiguration,
 }
 
-impl Driver {
-    pub async fn new(window: &Window) -> Driver {
+impl Graphics {
+    pub async fn new(window: &Window) -> Graphics {
         let surface_size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -60,7 +60,7 @@ impl Driver {
         };
         surface.configure(&device, &surface_config);
 
-        Driver {
+        Graphics {
             surface_size,
             surface,
             device,

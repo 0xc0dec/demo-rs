@@ -2,7 +2,7 @@ use cgmath::{Deg, Quaternion, Rad, Vector3, Zero};
 use rapier3d::prelude::*;
 use wgpu::RenderPass;
 use crate::camera::Camera;
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material};
 use crate::model::{DrawModel, Model};
 use crate::physics::PhysicsWorld;
@@ -24,7 +24,7 @@ pub struct TestNodeParams {
 }
 
 impl TestNode {
-    pub async fn new(driver: &Driver, physics: &mut PhysicsWorld, params: TestNodeParams) -> Self {
+    pub async fn new(gfx: &Graphics, physics: &mut PhysicsWorld, params: TestNodeParams) -> Self {
         let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
             .translation(vector![params.pos.x, params.pos.y, params.pos.z])
             .build();
@@ -35,9 +35,9 @@ impl TestNode {
 
         let transform = Transform::new(params.pos, params.scale);
 
-        let model = Model::from_file("cube.obj", driver).await.expect("Failed to load cube model");
-        let texture = Texture::from_file_2d("stonewall.jpg", driver).await.unwrap();
-        let material = DiffuseMaterial::new(driver, DiffuseMaterialParams { texture }).await;
+        let model = Model::from_file("cube.obj", gfx).await.expect("Failed to load cube model");
+        let texture = Texture::from_file_2d("stonewall.jpg", gfx).await.unwrap();
+        let material = DiffuseMaterial::new(gfx, DiffuseMaterialParams { texture }).await;
 
         Self {
             model,
@@ -65,10 +65,10 @@ impl SceneNode for TestNode {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, driver: &'a Driver, camera: &'a Camera, pass: &mut RenderPass<'b>)
+    fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, camera: &'a Camera, pass: &mut RenderPass<'b>)
         where 'a: 'b
     {
-        self.material.update(driver, camera, &self.transform);
+        self.material.update(gfx, camera, &self.transform);
         self.material.apply(pass);
         pass.draw_model(&self.model);
     }

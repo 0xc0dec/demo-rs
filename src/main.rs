@@ -4,7 +4,7 @@ mod transform;
 mod input;
 mod model;
 mod resources;
-mod driver;
+mod graphics;
 mod render_target;
 mod materials;
 mod scene;
@@ -13,7 +13,7 @@ mod physics;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
 use input::Input;
-use driver::Driver;
+use graphics::Graphics;
 use render_target::RenderTarget;
 use crate::scene::Scene;
 
@@ -24,14 +24,14 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
 
-    let mut driver = Driver::new(&window).await;
-    let mut render_target = RenderTarget::new(&driver, wgpu::Color {
+    let mut gfx = Graphics::new(&window).await;
+    let mut render_target = RenderTarget::new(&gfx, wgpu::Color {
         r: 0.0,
         g: 0.5,
         b: 0.0,
         a: 1.0,
     });
-    let mut scene = Scene::new(&driver).await;
+    let mut scene = Scene::new(&gfx).await;
     let mut input = Input::new();
     let mut time = instant::Instant::now();
 
@@ -51,14 +51,14 @@ async fn run() {
             } if window_id == window.id() => {
                 match event {
                     WindowEvent::Resized(new_size) => {
-                        driver.resize(Some(*new_size));
+                        gfx.resize(Some(*new_size));
                         scene.on_canvas_resize(*new_size);
-                        render_target.resize(&driver);
+                        render_target.resize(&gfx);
                     },
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        driver.resize(Some(**new_inner_size));
+                        gfx.resize(Some(**new_inner_size));
                         scene.on_canvas_resize(**new_inner_size);
-                        render_target.resize(&driver);
+                        render_target.resize(&gfx);
                     }
                     _ => {}
                 }
@@ -70,7 +70,7 @@ async fn run() {
 
                 scene.update(&input, dt.as_secs_f32());
 
-                driver.render_frame(&mut scene, &render_target);
+                gfx.render_frame(&mut scene, &render_target);
 
                 // TODO Restore
                 // match state.render(&renderer) {

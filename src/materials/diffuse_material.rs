@@ -2,7 +2,7 @@ use cgmath::{Matrix4};
 use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::driver::Driver;
+use crate::graphics::Graphics;
 use crate::materials::utils::{new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
 use super::Material;
 use crate::texture::Texture;
@@ -21,19 +21,19 @@ pub struct DiffuseMaterialParams {
 }
 
 impl DiffuseMaterial {
-    pub async fn new(driver: &Driver, params: DiffuseMaterialParams) -> Self {
+    pub async fn new(gfx: &Graphics, params: DiffuseMaterialParams) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (
             matrices_uniform_bind_group_layout,
             matrices_uniform_bind_group,
             matrices_uniform_buf
-        ) = new_uniform_bind_group(driver, bytemuck::cast_slice(&[matrices_uniform]));
+        ) = new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(driver, &params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(gfx, &params.texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
-            driver,
+            gfx,
             RenderPipelineParams {
                 shader_file_name: "diffuse.wgsl",
                 depth_write: true,
@@ -54,9 +54,9 @@ impl DiffuseMaterial {
         }
     }
 
-    pub fn update(&mut self, driver: &Driver, camera: &Camera, transform: &Transform) {
+    pub fn update(&mut self, gfx: &Graphics, camera: &Camera, transform: &Transform) {
         self.matrices_uniform.update(camera, transform);
-        driver.queue().write_buffer(
+        gfx.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
