@@ -27,13 +27,9 @@ async fn run() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")
-        .with_inner_size(PhysicalSize::new(1600, 1200))
+        .with_inner_size(PhysicalSize::new(1800, 1200))
         .build(&event_loop)
         .unwrap();
-
-    const DT_FILTER_WIDTH: usize = 10;
-    let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
-    let mut last_frame_instant = std::time::Instant::now();
 
     let mut gfx = Graphics::new(&window).await;
     let mut render_target = RenderTarget::new(&gfx, wgpu::Color {
@@ -45,6 +41,10 @@ async fn run() {
     let mut state = State::new(&gfx).await;
     let mut events = Events::new(&window);
 
+    const DT_FILTER_WIDTH: usize = 10;
+    let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
+    let mut last_frame_instant = std::time::Instant::now();
+    
     let mut running = true;
     while running {
         events.clear();
