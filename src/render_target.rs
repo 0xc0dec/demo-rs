@@ -9,16 +9,10 @@ pub struct RenderTarget {
 
 impl RenderTarget {
     pub fn new(gfx: &Graphics, clear_color: wgpu::Color) -> Self {
-        let depth_tex = Texture::depth(gfx);
-
         RenderTarget {
-            depth_tex,
+            depth_tex: Texture::depth(gfx),
             clear_color
         }
-    }
-
-    pub fn resize(&mut self, gfx: &Graphics) {
-        self.depth_tex = Texture::depth(gfx);
     }
 
     pub fn depth_texture(&self) -> &Texture { &self.depth_tex }

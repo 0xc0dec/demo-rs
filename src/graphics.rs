@@ -3,7 +3,9 @@ use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
+use crate::render_target::RenderTarget;
 use crate::state::State;
+use crate::texture::Texture;
 
 pub struct Graphics {
     surface_size: PhysicalSize<u32>,
@@ -70,8 +72,10 @@ impl Graphics {
     }
 
     pub fn render_frame(&mut self, state: &mut State, context: &mut FrameContext) {
-        self.resize(context.events.new_surface_size);
-        context.target.resize(&self);
+        if let Some(new_size) = context.events.new_surface_size {
+            self.resize(new_size);
+            *context.target = RenderTarget::new(&self, context.target.clear_color());
+        }
 
         let output = self.surface.get_current_texture().expect("Missing surface texture");
 
@@ -112,12 +116,11 @@ impl Graphics {
         output.present();
     }
 
-    fn resize(&mut self, new_size: Option<PhysicalSize<u32>>) {
-        let size = new_size.unwrap_or(self.surface_size);
-        if size.width > 0 && size.height > 0 {
-            self.surface_size = size;
-            self.surface_config.width = size.width;
-            self.surface_config.height = size.height;
+    fn resize(&mut self, new_size: PhysicalSize<u32>) {
+        if new_size.width > 0 && new_size.height > 0 {
+            self.surface_size = new_size;
+            self.surface_config.width = new_size.width;
+            self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
         }
     }
