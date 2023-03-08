@@ -89,7 +89,7 @@ async fn run() {
 
         state.update(&frame_context);
 
-        gfx.render_frame(&mut state, &mut render_target, &events);
+        gfx.render_frame(&mut state, &mut render_target, &frame_context);
     }
 }
 

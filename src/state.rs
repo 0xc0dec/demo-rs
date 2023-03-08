@@ -2,7 +2,6 @@ use cgmath::{Vector3, Zero};
 use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
-use crate::events::Events;
 use crate::frame_context::FrameContext;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
@@ -75,10 +74,10 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>, events: &'a Events)
+    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>, context: &FrameContext)
         where 'a: 'b
     {
-        if let Some(new_surface_size) = events.new_surface_size {
+        if let Some(new_surface_size) = context.events.new_surface_size {
             self.camera.on_canvas_resize(new_surface_size)
         }
 

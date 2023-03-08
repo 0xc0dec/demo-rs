@@ -2,7 +2,7 @@ use std::iter;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
-use crate::events::Events;
+use crate::frame_context::FrameContext;
 use crate::render_target::RenderTarget;
 use crate::state::State;
 
@@ -80,8 +80,8 @@ impl Graphics {
         }
     }
 
-    pub fn render_frame(&mut self, state: &mut State, target: &mut RenderTarget, events: &Events) {
-        self.resize(events.new_surface_size);
+    pub fn render_frame(&mut self, state: &mut State, target: &mut RenderTarget, context: &FrameContext) {
+        self.resize(context.events.new_surface_size);
         target.resize(&self);
 
         let output = self.surface.get_current_texture().expect("Missing surface texture");
@@ -112,7 +112,7 @@ impl Graphics {
                 })
             });
 
-            state.render(&self, &mut pass, events);
+            state.render(&self, &mut pass, context);
         }
 
         self.queue().submit(iter::once(encoder.finish()));
