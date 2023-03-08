@@ -1,10 +1,8 @@
 use cgmath::{Vector3, Zero};
-use rapier3d::prelude::*;
 use wgpu::RenderPass;
-use winit::dpi::PhysicalSize;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
-use crate::input::Input;
+use crate::events::Events;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
@@ -24,6 +22,7 @@ pub struct Scene {
     physics: PhysicsWorld,
 }
 
+// TODO Rename to State
 impl Scene {
     pub async fn new(gfx: &Graphics) -> Scene {
         let mut physics = PhysicsWorld::new();
@@ -69,23 +68,21 @@ impl Scene {
         }
     }
 
-    // TODO Remove this and instead react to resizing in update() or render()
-    pub fn on_canvas_resize(&mut self, new_size: PhysicalSize<u32>) {
-        self.camera.on_canvas_resize(new_size.into());
-    }
-
-    pub fn update(&mut self, input: &Input, dt: f32) {
+    pub fn update(&mut self, events: &Events, dt: f32) {
         self.physics.update(dt);
-
-        self.camera.update(input, dt);
+        self.camera.update(events, dt);
         for n in &mut self.models {
             n.update(dt, &self.physics);
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>)
+    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>, events: &'a Events)
         where 'a: 'b
     {
+        if let Some(new_surface_size) = events.new_surface_size {
+            self.camera.on_canvas_resize(new_surface_size)
+        }
+
         self.skybox.material.update(&gfx, &self.camera);
         self.skybox.material.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);

@@ -1,7 +1,7 @@
 mod texture;
 mod camera;
 mod transform;
-mod input;
+mod events;
 mod model;
 mod resources;
 mod graphics;
@@ -12,10 +12,10 @@ mod physics;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
-use winit::dpi::{PhysicalSize, Size};
+use winit::dpi::{PhysicalSize};
 use winit::platform::run_return::EventLoopExtRunReturn;
 
-use input::Input;
+use events::Events;
 use graphics::Graphics;
 use render_target::RenderTarget;
 use crate::scene::Scene;
@@ -40,46 +40,26 @@ async fn run() {
         a: 1.0,
     });
     let mut scene = Scene::new(&gfx).await;
-    let mut input = Input::new();
+    let mut events = Events::new(&window);
 
     let mut running = true;
     while running {
-        input.clear();
+        events.clear();
 
         event_loop.run_return(|event, _, flow| {
             *flow = ControlFlow::Poll;
 
-            match event {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == window.id() => {
-                    match event {
-                        WindowEvent::Resized(new_size) => {
-                            gfx.resize(Some(*new_size));
-                            scene.on_canvas_resize(*new_size);
-                            render_target.resize(&gfx);
-                        },
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            gfx.resize(Some(**new_inner_size));
-                            scene.on_canvas_resize(**new_inner_size);
-                            render_target.resize(&gfx);
-                        }
-                        _ => {}
-                    }
-                }
+            events.process_event(&event, &window.id());
 
+            match event {
                 Event::MainEventsCleared => {
                     *flow = ControlFlow::Exit;
                 }
-
                 _ => {}
             }
-
-            input.process_event(&event, &window.id());
         });
 
-        if input.escape_down {
+        if events.escape_down {
             running = false;
         }
 
@@ -99,9 +79,9 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        scene.update(&input, dt_filtered);
+        scene.update(&events, dt_filtered);
 
-        gfx.render_frame(&mut scene, &render_target);
+        gfx.render_frame(&mut scene, &mut render_target, &events);
     }
 }
 

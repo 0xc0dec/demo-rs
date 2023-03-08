@@ -1,6 +1,6 @@
 use cgmath::{Array, Deg, InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
 use winit::dpi::PhysicalSize;
-use crate::input::Input;
+use crate::events::Events;
 use crate::transform::{Transform, TransformSpace};
 
 pub struct Camera {
@@ -37,19 +37,19 @@ impl Camera {
     pub fn view_matrix(&self) -> Matrix4<f32> { self.transform.matrix().invert().unwrap() }
     pub fn view_proj_matrix(&self) -> Matrix4<f32> { self.proj_matrix * self.view_matrix() }
 
-    pub fn on_canvas_resize(&mut self, new_size: (f32, f32)) {
-        self.aspect = new_size.0 / new_size.1;
+    pub fn on_canvas_resize(&mut self, new_size: PhysicalSize<u32>) {
+        self.aspect = new_size.width as f32 / new_size.height as f32;
         self.proj_matrix = cgmath::perspective(self.fov, self.aspect, self.znear, self.zfar)
     }
 
-    pub fn update(&mut self, input: &Input, dt: f32) {
-        if input.rmb_down {
-            let hdelta = -input.mouse_delta.0 as f32 * dt;
+    pub fn update(&mut self, events: &Events, dt: f32) {
+        if events.rmb_down {
+            let hdelta = -events.mouse_delta.0 as f32 * dt;
             self.transform.rotate_around_axis(Vector3::unit_y(), Rad(hdelta), TransformSpace::World);
 
             let forward = self.transform.forward();
             let angle_to_up = forward.angle(Vector3::unit_y()).0;
-            let mut vdelta = -input.mouse_delta.1 as f32 * dt;
+            let mut vdelta = -events.mouse_delta.1 as f32 * dt;
             if vdelta < 0.0 { // Moving up
                 if angle_to_up + vdelta <= 0.1 {
                     vdelta = -(angle_to_up - 0.1);
@@ -61,22 +61,22 @@ impl Camera {
         }
 
         let mut movement: Vector3<f32> = Vector3::zero();
-        if input.forward_down {
+        if events.forward_down {
             movement -= Vector3::unit_z();
         }
-        if input.back_down {
+        if events.back_down {
             movement += Vector3::unit_z();
         }
-        if input.right_down {
+        if events.right_down {
             movement += Vector3::unit_x();
         }
-        if input.left_down {
+        if events.left_down {
             movement -= Vector3::unit_x();
         }
-        if input.up_down {
+        if events.up_down {
             movement += Vector3::unit_y();
         }
-        if input.down_down {
+        if events.down_down {
             movement -= Vector3::unit_y();
         }
         if !movement.is_zero() {

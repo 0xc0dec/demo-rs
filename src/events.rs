@@ -1,8 +1,9 @@
 use winit::{event::*};
-use winit::window::WindowId;
+use winit::dpi::PhysicalSize;
+use winit::window::{Window, WindowId};
 
 // TODO Make fields public readonly
-pub struct Input {
+pub struct Events {
     pub rmb_down: bool,
     pub forward_down: bool,
     pub back_down: bool,
@@ -12,11 +13,12 @@ pub struct Input {
     pub down_down: bool,
     pub escape_down: bool,
     pub mouse_delta: (f32, f32),
+    pub new_surface_size: Option<PhysicalSize<u32>>,
 }
 
-impl Input {
-    pub fn new() -> Self {
-        Input {
+impl Events {
+    pub fn new(window: &Window) -> Self {
+        Events {
             rmb_down: false,
             forward_down: false,
             back_down: false,
@@ -25,12 +27,14 @@ impl Input {
             up_down: false,
             down_down: false,
             escape_down: false,
-            mouse_delta: (0.0, 0.0)
+            mouse_delta: (0.0, 0.0),
+            new_surface_size: Some(window.inner_size().into())
         }
     }
 
     pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
+        self.new_surface_size = None
     }
 
     pub fn process_event(&mut self, event: &Event<()>, own_window_id: &WindowId) {
@@ -76,6 +80,14 @@ impl Input {
                             VirtualKeyCode::Escape => self.escape_down = down,
                             _ => ()
                         }
+                    }
+
+                    WindowEvent::Resized(new_size) => {
+                        self.new_surface_size = Some(*new_size);
+                    },
+
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        self.new_surface_size = Some(**new_inner_size);
                     }
 
                     _ => ()
