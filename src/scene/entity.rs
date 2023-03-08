@@ -3,8 +3,7 @@ use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::physics::PhysicsWorld;
 
-// TODO Rename to Entity
-pub trait SceneNode {
+pub trait Entity {
     fn update(&mut self, dt: f32, physics: &PhysicsWorld);
 
     fn render<'a, 'b>(

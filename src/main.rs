@@ -7,8 +7,9 @@ mod resources;
 mod graphics;
 mod render_target;
 mod materials;
-mod scene;
+mod state;
 mod physics;
+mod scene;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
@@ -18,7 +19,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use events::Events;
 use graphics::Graphics;
 use render_target::RenderTarget;
-use crate::scene::Scene;
+use crate::state::State;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -39,7 +40,7 @@ async fn run() {
         b: 0.0,
         a: 1.0,
     });
-    let mut scene = Scene::new(&gfx).await;
+    let mut state = State::new(&gfx).await;
     let mut events = Events::new(&window);
 
     let mut running = true;
@@ -79,9 +80,9 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        scene.update(&events, dt_filtered);
+        state.update(&events, dt_filtered);
 
-        gfx.render_frame(&mut scene, &mut render_target, &events);
+        gfx.render_frame(&mut state, &mut render_target, &events);
     }
 }
 

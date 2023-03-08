@@ -1,5 +1,5 @@
-mod scene_node;
+mod entity;
 mod test_node;
-mod scene;
 
-pub use scene::*;
+pub use entity::*;
+pub use test_node::*;

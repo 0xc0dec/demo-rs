@@ -7,24 +7,24 @@ use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material};
 use crate::model::{DrawModel, Model};
 use crate::physics::PhysicsWorld;
 use crate::texture::Texture;
-use super::scene_node::SceneNode;
+use super::entity::Entity;
 use crate::transform::{Transform, TransformSpace};
 
-pub struct TestNode {
+pub struct TestEntity {
     model: Model,
     transform: Transform,
     material: DiffuseMaterial,
     rigid_body_handle: RigidBodyHandle,
 }
 
-pub struct TestNodeParams {
+pub struct TestEntityParams {
     pub pos: Vector3<f32>,
     pub scale: Vector3<f32>,
     pub movable: bool,
 }
 
-impl TestNode {
-    pub async fn new(gfx: &Graphics, physics: &mut PhysicsWorld, params: TestNodeParams) -> Self {
+impl TestEntity {
+    pub async fn new(gfx: &Graphics, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
         let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
             .translation(vector![params.pos.x, params.pos.y, params.pos.z])
             .build();
@@ -48,7 +48,7 @@ impl TestNode {
     }
 }
 
-impl SceneNode for TestNode {
+impl Entity for TestEntity {
     fn update(&mut self, dt: f32, physics: &PhysicsWorld) {
         let body = physics.rigid_body_set().get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();

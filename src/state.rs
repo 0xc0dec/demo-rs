@@ -6,8 +6,7 @@ use crate::events::Events;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
-use crate::scene::test_node::{TestNode, TestNodeParams};
-use crate::scene::scene_node::SceneNode;
+use crate::scene::{Entity, TestEntity, TestEntityParams};
 use crate::texture::Texture;
 
 struct Skybox {
@@ -15,22 +14,21 @@ struct Skybox {
     material: SkyboxMaterial,
 }
 
-pub struct Scene {
+pub struct State {
     camera: Camera,
     skybox: Skybox,
-    models: Vec<Box<dyn SceneNode>>,
+    entities: Vec<Box<dyn Entity>>,
     physics: PhysicsWorld,
 }
 
-// TODO Rename to State
-impl Scene {
-    pub async fn new(gfx: &Graphics) -> Scene {
+impl State {
+    pub async fn new(gfx: &Graphics) -> State {
         let mut physics = PhysicsWorld::new();
 
         let ground = Box::new(
-            TestNode::new(
+            TestEntity::new(
                 gfx, &mut physics,
-                TestNodeParams {
+                TestEntityParams {
                     pos: Vector3::zero(),
                     scale: Vector3::new(10.0, 0.1, 10.0),
                     movable: false,
@@ -39,9 +37,9 @@ impl Scene {
         );
 
         let box1 = Box::new(
-            TestNode::new(
+            TestEntity::new(
                 gfx, &mut physics,
-                TestNodeParams {
+                TestEntityParams {
                     pos: Vector3::unit_y() * 10.0,
                     scale: Vector3::new(1.0, 1.0, 1.0),
                     movable: true,
@@ -64,14 +62,14 @@ impl Scene {
                 mesh: Mesh::quad(gfx),
                 material: SkyboxMaterial::new(gfx, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
-            models: vec![ground, box1],
+            entities: vec![ground, box1],
         }
     }
 
     pub fn update(&mut self, events: &Events, dt: f32) {
         self.physics.update(dt);
         self.camera.update(events, dt);
-        for n in &mut self.models {
+        for n in &mut self.entities {
             n.update(dt, &self.physics);
         }
     }
@@ -87,7 +85,7 @@ impl Scene {
         self.skybox.material.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);
 
-        for m in &mut self.models {
+        for m in &mut self.entities {
             m.render(gfx, &self.camera, pass);
         }
     }

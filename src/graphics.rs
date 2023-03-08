@@ -1,11 +1,10 @@
 use std::iter;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
-use winit::event::Event;
 use winit::window::Window;
 use crate::events::Events;
 use crate::render_target::RenderTarget;
-use crate::scene::Scene;
+use crate::state::State;
 
 pub struct Graphics {
     surface_size: PhysicalSize<u32>,
@@ -81,7 +80,7 @@ impl Graphics {
         }
     }
 
-    pub fn render_frame(&mut self, scene: &mut Scene, target: &mut RenderTarget, events: &Events) {
+    pub fn render_frame(&mut self, state: &mut State, target: &mut RenderTarget, events: &Events) {
         self.resize(events.new_surface_size);
         target.resize(&self);
 
@@ -113,7 +112,7 @@ impl Graphics {
                 })
             });
 
-            scene.render(&self, &mut pass, events);
+            state.render(&self, &mut pass, events);
         }
 
         self.queue().submit(iter::once(encoder.finish()));
