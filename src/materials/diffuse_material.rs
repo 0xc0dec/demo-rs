@@ -37,6 +37,7 @@ impl DiffuseMaterial {
             RenderPipelineParams {
                 shader_file_name: "diffuse.wgsl",
                 depth_write: true,
+                depth_enabled: true,
                 bind_group_layouts: &[
                     &texture_bind_group_layout,
                     &matrices_uniform_bind_group_layout

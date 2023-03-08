@@ -91,6 +91,7 @@ pub fn new_texture_bind_group(
 pub struct RenderPipelineParams<'a> {
     pub shader_file_name: &'a str,
     pub depth_write: bool,
+    pub depth_enabled: bool,
     pub bind_group_layouts: &'a [&'a wgpu::BindGroupLayout],
     pub vertex_buffer_layouts: &'a [wgpu::VertexBufferLayout<'a>]
 }
@@ -138,13 +139,15 @@ pub async fn new_render_pipeline(
             unclipped_depth: false,
             conservative: false,
         },
-        depth_stencil: Some(wgpu::DepthStencilState {
-            format: Texture::DEPTH_FORMAT,
-            depth_write_enabled: params.depth_write,
-            depth_compare: wgpu::CompareFunction::Less,
-            stencil: wgpu::StencilState::default(),
-            bias: wgpu::DepthBiasState::default(),
-        }),
+        depth_stencil: if params.depth_enabled {
+            Some(wgpu::DepthStencilState {
+                format: Texture::DEPTH_FORMAT,
+                depth_write_enabled: params.depth_write,
+                depth_compare: wgpu::CompareFunction::Less,
+                stencil: wgpu::StencilState::default(),
+                bias: wgpu::DepthBiasState::default(),
+            })
+        } else { None },
         multisample: wgpu::MultisampleState {
             count: 1,
             mask: !0,

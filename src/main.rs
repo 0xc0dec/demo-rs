@@ -19,7 +19,10 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use events::Events;
 use graphics::Graphics;
 use crate::frame_context::FrameContext;
+use crate::materials::{PostProcessMaterial, PostProcessMaterialParams};
+use crate::model::Mesh;
 use crate::state::State;
+use crate::texture::Texture;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -32,6 +35,12 @@ async fn run() {
     let mut gfx = Graphics::new(&window).await;
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
+
+    let render_target = Texture::new_render_attachment(&gfx, PhysicalSize::new(1800, 1200));
+    let mut post_process_material = PostProcessMaterial::new(&gfx, PostProcessMaterialParams {
+        texture: render_target
+    }).await;
+    let post_process_quad = Mesh::quad(&gfx);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -80,7 +89,8 @@ async fn run() {
         };
 
         state.update(&frame_context);
-        gfx.render_frame(&mut state, &mut frame_context);
+        gfx.render_to_target(&post_process_material.texture, &mut state, &mut frame_context);
+        gfx.render_post_process(&mut post_process_material, &post_process_quad, &mut frame_context);
     }
 }
 

@@ -39,6 +39,7 @@ impl SkyboxMaterial {
             RenderPipelineParams {
                 shader_file_name: "skybox.wgsl",
                 depth_write: false,
+                depth_enabled: true,
                 bind_group_layouts: &[
                     &data_uniform_bind_group_layout,
                     &texture_bind_group_layout

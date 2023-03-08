@@ -1,6 +1,7 @@
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
+use winit::dpi::PhysicalSize;
 use crate::graphics::Graphics;
 use crate::resources::load_binary;
 
@@ -10,13 +11,14 @@ pub struct Texture {
     sampler: wgpu::Sampler,
 }
 
+// TODO Reduce copypasta
 impl Texture {
     pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
     pub fn view(&self) -> &wgpu::TextureView { &self.view }
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
 
-    pub fn depth(gfx: &Graphics) -> Self {
+    pub fn new_depth(gfx: &Graphics) -> Self {
         let size = wgpu::Extent3d {
             width: gfx.surface_size().width,
             height: gfx.surface_size().height,
@@ -51,6 +53,44 @@ impl Texture {
         );
 
         Self { _texture: texture, view, sampler }
+    }
+
+    pub fn new_render_attachment(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
+        let size = wgpu::Extent3d {
+            width: size.width,
+            height: size.height,
+            depth_or_array_layers: 1,
+        };
+
+        let texture = gfx.device().create_texture(
+            &wgpu::TextureDescriptor {
+                label: None,
+                size,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: gfx.surface_texture_format(),
+                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
+                view_formats: &[],
+            },
+        );
+
+        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            address_mode_w: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Nearest,
+            min_filter: wgpu::FilterMode::Nearest,
+            mipmap_filter: wgpu::FilterMode::Nearest,
+            ..Default::default()
+        });
+
+        Self {
+            _texture: texture,
+            view,
+            sampler,
+        }
     }
 
     pub async fn from_file_2d(file_name: &str, gfx: &Graphics) -> Result<Self> {

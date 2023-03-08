@@ -64,7 +64,7 @@ impl State {
                 mesh: Mesh::quad(gfx),
                 material: SkyboxMaterial::new(gfx, SkyboxMaterialParams { texture: skybox_tex }).await,
             },
-            entities: vec![ground, box1],
+            entities: vec![ground, box1]
         }
     }
 

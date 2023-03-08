@@ -3,6 +3,8 @@ use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
+use crate::materials::{Material, PostProcessMaterial};
+use crate::model::{DrawModel, Mesh};
 use crate::state::State;
 use crate::texture::Texture;
 
@@ -72,12 +74,10 @@ impl Graphics {
         }
     }
 
-    pub fn render_frame(&mut self, state: &mut State, ctx: &mut FrameContext) {
+    pub fn render_to_target(&mut self, target: &Texture, state: &mut State, ctx: &mut FrameContext) {
         if let Some(new_size) = ctx.events.new_surface_size {
             self.resize(new_size);
         }
-
-        let output = self.surface.get_current_texture().expect("Missing surface texture");
 
         let cmd_buffer = {
             let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -85,11 +85,10 @@ impl Graphics {
             });
 
             {
-                let output_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &output_view,
+                        view: target.view(),
                         resolve_target: None,
                         ops: wgpu::Operations {
                             load: wgpu::LoadOp::Clear(wgpu::Color {
@@ -118,6 +117,48 @@ impl Graphics {
         };
 
         self.queue.submit(iter::once(cmd_buffer));
+    }
+
+    pub fn render_post_process(&mut self, material: &mut PostProcessMaterial, quad: &Mesh, ctx: &mut FrameContext) {
+        if let Some(new_size) = ctx.events.new_surface_size {
+            self.resize(new_size);
+        }
+
+        let output = self.surface.get_current_texture().expect("Missing surface texture");
+
+        let cmd_buffer = {
+            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: None
+            });
+
+            {
+                let output_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: &output_view,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color {
+                                r: 1.0,
+                                g: 1.0,
+                                b: 1.0,
+                                a: 1.0
+                            }),
+                            store: true,
+                        }
+                    })],
+                    depth_stencil_attachment: None
+                });
+
+                material.apply(&mut pass);
+                pass.draw_mesh(quad);
+            }
+
+            encoder.finish()
+        };
+
+        self.queue.submit(iter::once(cmd_buffer));
         output.present();
     }
 
@@ -127,7 +168,7 @@ impl Graphics {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Some(Texture::depth(&self));
+            self.depth_tex = Some(Texture::new_depth(&self));
         }
     }
 
