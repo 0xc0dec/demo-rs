@@ -3,6 +3,7 @@ use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::events::Events;
+use crate::frame_context::FrameContext;
 use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
@@ -66,11 +67,11 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, events: &Events, dt: f32) {
-        self.physics.update(dt);
-        self.camera.update(events, dt);
+    pub fn update(&mut self, context: &FrameContext) {
+        self.physics.update(context.dt);
+        self.camera.update(context.events, context.dt);
         for n in &mut self.entities {
-            n.update(dt, &self.physics);
+            n.update(context.dt, &self.physics);
         }
     }
 

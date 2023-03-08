@@ -10,6 +10,7 @@ mod materials;
 mod state;
 mod physics;
 mod scene;
+mod frame_context;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
@@ -19,6 +20,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use events::Events;
 use graphics::Graphics;
 use render_target::RenderTarget;
+use crate::frame_context::FrameContext;
 use crate::state::State;
 
 async fn run() {
@@ -80,7 +82,12 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        state.update(&events, dt_filtered);
+        let frame_context = FrameContext {
+            dt: dt_filtered,
+            events: &events
+        };
+
+        state.update(&frame_context);
 
         gfx.render_frame(&mut state, &mut render_target, &events);
     }
