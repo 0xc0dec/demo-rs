@@ -2,7 +2,6 @@ use winit::{event::*};
 use winit::dpi::PhysicalSize;
 use winit::window::{Window, WindowId};
 
-// TODO Make fields public readonly
 pub struct Events {
     pub rmb_down: bool,
     pub forward_down: bool,

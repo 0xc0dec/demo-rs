@@ -1,5 +1,5 @@
 mod entity;
-mod test_node;
+mod test_entity;
 
 pub use entity::*;
-pub use test_node::*;
+pub use test_entity::*;

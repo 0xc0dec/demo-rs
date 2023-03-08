@@ -5,7 +5,6 @@ use winit::window::Window;
 use crate::frame_context::FrameContext;
 use crate::render_target::RenderTarget;
 use crate::state::State;
-use crate::texture::Texture;
 
 pub struct Graphics {
     surface_size: PhysicalSize<u32>,
