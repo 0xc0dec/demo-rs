@@ -38,8 +38,8 @@ async fn run() {
         b: 0.0,
         a: 1.0,
     });
-    let mut state = State::new(&gfx).await;
     let mut events = Events::new(&window);
+    let mut state = State::new(&gfx).await;
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -89,7 +89,6 @@ async fn run() {
         };
 
         state.update(&frame_context);
-
         gfx.render_frame(&mut state, &mut frame_context);
     }
 }

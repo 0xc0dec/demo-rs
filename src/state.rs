@@ -27,7 +27,8 @@ impl State {
 
         let ground = Box::new(
             TestEntity::new(
-                gfx, &mut physics,
+                gfx,
+                &mut physics,
                 TestEntityParams {
                     pos: Vector3::zero(),
                     scale: Vector3::new(10.0, 0.1, 10.0),
@@ -38,7 +39,8 @@ impl State {
 
         let box1 = Box::new(
             TestEntity::new(
-                gfx, &mut physics,
+                gfx,
+                &mut physics,
                 TestEntityParams {
                     pos: Vector3::unit_y() * 10.0,
                     scale: Vector3::new(1.0, 1.0, 1.0),
