@@ -1,3 +1,4 @@
+use winit::dpi::PhysicalSize;
 use crate::graphics::Graphics;
 use crate::texture::Texture;
 
@@ -7,9 +8,10 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(gfx: &Graphics) -> Self {
-        let color_tex = Texture::new_render_attachment(gfx, gfx.surface_size());
-        let depth_tex = Texture::new_depth(&gfx, gfx.surface_size());
+    pub fn new(gfx: &Graphics, size: Option<PhysicalSize<u32>>) -> Self {
+        let size = size.unwrap_or(gfx.surface_size());
+        let color_tex = Texture::new_render_attachment(gfx, size);
+        let depth_tex = Texture::new_depth(&gfx, size);
 
         Self {
             color_tex,

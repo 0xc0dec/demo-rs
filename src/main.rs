@@ -38,7 +38,7 @@ async fn run() {
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
 
-    let rt = RenderTarget::new(&gfx);
+    let rt = RenderTarget::new(&gfx, Some(PhysicalSize::new(200, 150)));
     let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
         texture: rt.color_tex()
     }).await;
