@@ -75,10 +75,6 @@ impl Graphics {
     }
 
     pub fn render_to_target(&mut self, target: &RenderTarget, state: &mut State, ctx: &mut FrameContext) {
-        if let Some(new_size) = ctx.events.new_surface_size {
-            self.resize(new_size);
-        }
-
         let cmd_buffer = {
             let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: None
