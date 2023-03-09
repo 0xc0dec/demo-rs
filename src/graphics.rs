@@ -120,7 +120,7 @@ impl Graphics {
             self.resize(new_size);
         }
 
-        let output = self.surface.get_current_texture().expect("Missing surface texture");
+        let target_tex = self.surface.get_current_texture().expect("Missing surface texture");
 
         let cmd_buffer = {
             let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
@@ -128,11 +128,11 @@ impl Graphics {
             });
 
             {
-                let output_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+                let target_tex_view = target_tex.texture.create_view(&wgpu::TextureViewDescriptor::default());
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &output_view,
+                        view: &target_tex_view,
                         resolve_target: None,
                         ops: wgpu::Operations {
                             load: wgpu::LoadOp::Clear(wgpu::Color {
@@ -156,7 +156,7 @@ impl Graphics {
         };
 
         self.queue.submit(Some(cmd_buffer));
-        output.present();
+        target_tex.present();
     }
 
     fn resize(&mut self, new_size: PhysicalSize<u32>) {
