@@ -5,7 +5,7 @@ mod events;
 mod model;
 mod resources;
 mod graphics;
-mod materials;
+mod shaders;
 mod state;
 mod physics;
 mod scene;
@@ -19,7 +19,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use events::Events;
 use graphics::Graphics;
 use crate::frame_context::FrameContext;
-use crate::materials::{PostProcessMaterial, PostProcessMaterialParams};
+use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use crate::model::Mesh;
 use crate::state::State;
 use crate::texture::Texture;
@@ -37,7 +37,7 @@ async fn run() {
     let mut state = State::new(&gfx).await;
 
     let render_target = Texture::new_render_attachment(&gfx, PhysicalSize::new(1800, 1200));
-    let mut post_process_material = PostProcessMaterial::new(&gfx, PostProcessMaterialParams {
+    let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
         texture: render_target
     }).await;
     let post_process_quad = Mesh::quad(&gfx);
@@ -89,8 +89,8 @@ async fn run() {
         };
 
         state.update(&frame_context);
-        gfx.render_to_target(&post_process_material.texture, &mut state, &mut frame_context);
-        gfx.render_post_process(&mut post_process_material, &post_process_quad, &mut frame_context);
+        gfx.render_to_target(&post_process_shader.texture, &mut state, &mut frame_context);
+        gfx.render_post_process(&mut post_process_shader, &post_process_quad, &mut frame_context);
     }
 }
 

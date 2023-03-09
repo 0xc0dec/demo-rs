@@ -2,9 +2,9 @@ use cgmath::{Quaternion, Vector3};
 use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
-use crate::materials::{DiffuseMaterial, DiffuseMaterialParams, Material};
 use crate::model::{DrawModel, Model};
 use crate::physics::PhysicsWorld;
+use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
 use super::entity::Entity;
 use crate::transform::{Transform};
@@ -12,7 +12,7 @@ use crate::transform::{Transform};
 pub struct TestEntity {
     model: Model,
     transform: Transform,
-    material: DiffuseMaterial,
+    shader: DiffuseShader,
     rigid_body_handle: RigidBodyHandle,
 }
 
@@ -36,12 +36,12 @@ impl TestEntity {
 
         let model = Model::from_file("cube.obj", gfx).await.expect("Failed to load cube model");
         let texture = Texture::from_file_2d("stonewall.jpg", gfx).await.unwrap();
-        let material = DiffuseMaterial::new(gfx, DiffuseMaterialParams { texture }).await;
+        let shader = DiffuseShader::new(gfx, DiffuseShaderParams { texture }).await;
 
         Self {
             model,
             transform,
-            material,
+            shader,
             rigid_body_handle
         }
     }
@@ -67,8 +67,8 @@ impl Entity for TestEntity {
     fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, camera: &'a Camera, pass: &mut wgpu::RenderPass<'b>)
         where 'a: 'b
     {
-        self.material.update(gfx, camera, &self.transform);
-        self.material.apply(pass);
+        self.shader.update(gfx, camera, &self.transform);
+        self.shader.apply(pass);
         pass.draw_model(&self.model);
     }
 }

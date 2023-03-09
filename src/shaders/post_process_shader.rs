@@ -1,22 +1,22 @@
 use wgpu::{BindGroup, RenderPipeline};
 use crate::model::{ModelVertex, Vertex};
 use crate::graphics::Graphics;
-use crate::materials::Material;
-use crate::materials::utils::*;
+use crate::shaders::Shader;
+use crate::shaders::utils::*;
 use crate::texture::Texture;
 
-pub struct PostProcessMaterial {
+pub struct PostProcessShader {
     pub texture: Texture,
     pipeline: RenderPipeline,
     texture_bind_group: BindGroup,
 }
 
-pub struct PostProcessMaterialParams {
+pub struct PostProcessShaderParams {
     pub texture: Texture,
 }
 
-impl PostProcessMaterial {
-    pub async fn new(gfx: &Graphics, params: PostProcessMaterialParams) -> Self {
+impl PostProcessShader {
+    pub async fn new(gfx: &Graphics, params: PostProcessShaderParams) -> Self {
         let (
             texture_bind_group_layout,
             texture_bind_group
@@ -43,7 +43,7 @@ impl PostProcessMaterial {
     }
 }
 
-impl<'a, 'b> Material<'a, 'b> for PostProcessMaterial where 'a: 'b {
+impl<'a, 'b> Shader<'a, 'b> for PostProcessShader where 'a: 'b {
     fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);

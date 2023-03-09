@@ -1,10 +1,9 @@
-use std::iter;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
-use crate::materials::{Material, PostProcessMaterial};
 use crate::model::{DrawModel, Mesh};
+use crate::shaders::{PostProcessShader, Shader};
 use crate::state::State;
 use crate::texture::Texture;
 
@@ -116,10 +115,10 @@ impl Graphics {
             encoder.finish()
         };
 
-        self.queue.submit(iter::once(cmd_buffer));
+        self.queue.submit(Some(cmd_buffer));
     }
 
-    pub fn render_post_process(&mut self, material: &mut PostProcessMaterial, quad: &Mesh, ctx: &mut FrameContext) {
+    pub fn render_post_process(&mut self, shader: &mut PostProcessShader, quad: &Mesh, ctx: &mut FrameContext) {
         if let Some(new_size) = ctx.events.new_surface_size {
             self.resize(new_size);
         }
@@ -151,14 +150,14 @@ impl Graphics {
                     depth_stencil_attachment: None
                 });
 
-                material.apply(&mut pass);
+                shader.apply(&mut pass);
                 pass.draw_mesh(quad);
             }
 
             encoder.finish()
         };
 
-        self.queue.submit(iter::once(cmd_buffer));
+        self.queue.submit(Some(cmd_buffer));
         output.present();
     }
 

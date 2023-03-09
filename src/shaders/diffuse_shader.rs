@@ -3,12 +3,12 @@ use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::graphics::Graphics;
-use crate::materials::utils::{new_render_pipeline, new_texture_bind_group, new_uniform_bind_group, RenderPipelineParams};
-use super::Material;
+use crate::shaders::utils::*;
+use super::Shader;
 use crate::texture::Texture;
 use crate::transform::{Transform};
 
-pub struct DiffuseMaterial {
+pub struct DiffuseShader {
     texture_bind_group: BindGroup,
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
@@ -16,12 +16,12 @@ pub struct DiffuseMaterial {
     pipeline: RenderPipeline,
 }
 
-pub struct DiffuseMaterialParams {
+pub struct DiffuseShaderParams {
     pub texture: Texture,
 }
 
-impl DiffuseMaterial {
-    pub async fn new(gfx: &Graphics, params: DiffuseMaterialParams) -> Self {
+impl DiffuseShader {
+    pub async fn new(gfx: &Graphics, params: DiffuseShaderParams) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (
             matrices_uniform_bind_group_layout,
@@ -65,7 +65,7 @@ impl DiffuseMaterial {
     }
 }
 
-impl<'a, 'b> Material<'a, 'b> for DiffuseMaterial where 'a: 'b {
+impl<'a, 'b> Shader<'a, 'b> for DiffuseShader where 'a: 'b {
     fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);

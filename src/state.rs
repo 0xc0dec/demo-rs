@@ -3,15 +3,15 @@ use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::frame_context::FrameContext;
-use crate::materials::{Material, SkyboxMaterial, SkyboxMaterialParams};
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
 use crate::scene::{Entity, TestEntity, TestEntityParams};
+use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
 
 struct Skybox {
     mesh: Mesh,
-    material: SkyboxMaterial,
+    shader: SkyboxShader,
 }
 
 pub struct State {
@@ -62,7 +62,7 @@ impl State {
             camera,
             skybox: Skybox {
                 mesh: Mesh::quad(gfx),
-                material: SkyboxMaterial::new(gfx, SkyboxMaterialParams { texture: skybox_tex }).await,
+                shader: SkyboxShader::new(gfx, SkyboxShaderParams { texture: skybox_tex }).await,
             },
             entities: vec![ground, box1]
         }
@@ -83,8 +83,8 @@ impl State {
             self.camera.on_canvas_resize(new_surface_size)
         }
 
-        self.skybox.material.update(&gfx, &self.camera);
-        self.skybox.material.apply(pass);
+        self.skybox.shader.update(&gfx, &self.camera);
+        self.skybox.shader.apply(pass);
         pass.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.entities {

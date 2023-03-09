@@ -3,11 +3,11 @@ use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::graphics::Graphics;
-use crate::materials::Material;
-use crate::materials::utils::*;
+use crate::shaders::Shader;
+use crate::shaders::utils::*;
 use crate::texture::Texture;
 
-pub struct SkyboxMaterial {
+pub struct SkyboxShader {
     pipeline: RenderPipeline,
     texture_bind_group: BindGroup,
     data_uniform: DataUniform,
@@ -15,12 +15,12 @@ pub struct SkyboxMaterial {
     data_uniform_bind_group: BindGroup,
 }
 
-pub struct SkyboxMaterialParams {
+pub struct SkyboxShaderParams {
     pub texture: Texture,
 }
 
-impl SkyboxMaterial {
-    pub async fn new(gfx: &Graphics, params: SkyboxMaterialParams) -> Self {
+impl SkyboxShader {
+    pub async fn new(gfx: &Graphics, params: SkyboxShaderParams) -> Self {
         let data_uniform = DataUniform::new();
 
         let (
@@ -67,7 +67,7 @@ impl SkyboxMaterial {
     }
 }
 
-impl<'a, 'b> Material<'a, 'b> for SkyboxMaterial where 'a: 'b {
+impl<'a, 'b> Shader<'a, 'b> for SkyboxShader where 'a: 'b {
     fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
