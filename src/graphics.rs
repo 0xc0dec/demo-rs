@@ -3,6 +3,7 @@ use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
 use crate::model::{DrawModel, Mesh};
+use crate::render_target::RenderTarget;
 use crate::shaders::{PostProcessShader, Shader};
 use crate::state::State;
 use crate::texture::Texture;
@@ -73,7 +74,7 @@ impl Graphics {
         }
     }
 
-    pub fn render_to_target(&mut self, target: &Texture, state: &mut State, ctx: &mut FrameContext) {
+    pub fn render_to_target(&mut self, target: &RenderTarget, state: &mut State, ctx: &mut FrameContext) {
         if let Some(new_size) = ctx.events.new_surface_size {
             self.resize(new_size);
         }
@@ -87,7 +88,7 @@ impl Graphics {
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
                     color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: target.view(),
+                        view: target.color_tex().view(),
                         resolve_target: None,
                         ops: wgpu::Operations {
                             load: wgpu::LoadOp::Clear(wgpu::Color {
@@ -100,7 +101,7 @@ impl Graphics {
                         }
                     })],
                     depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                        view: self.depth_tex.as_ref().unwrap().view(),
+                        view: target.depth_tex().view(),
                         depth_ops: Some(wgpu::Operations {
                             load: wgpu::LoadOp::Clear(1.0),
                             store: true,
@@ -147,6 +148,7 @@ impl Graphics {
                             store: true,
                         }
                     })],
+                    // TODO Generally should not be None if we're not using RTT
                     depth_stencil_attachment: None
                 });
 
@@ -167,7 +169,7 @@ impl Graphics {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Some(Texture::new_depth(&self));
+            self.depth_tex = Some(Texture::new_depth(&self, self.surface_size));
         }
     }
 

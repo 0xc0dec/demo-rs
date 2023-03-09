@@ -18,10 +18,10 @@ impl Texture {
     pub fn view(&self) -> &wgpu::TextureView { &self.view }
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
 
-    pub fn new_depth(gfx: &Graphics) -> Self {
+    pub fn new_depth(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
         let size = wgpu::Extent3d {
-            width: gfx.surface_size().width,
-            height: gfx.surface_size().height,
+            width: size.width,
+            height: size.height,
             depth_or_array_layers: 1,
         };
         let desc = wgpu::TextureDescriptor {

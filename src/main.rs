@@ -10,6 +10,7 @@ mod state;
 mod physics;
 mod scene;
 mod frame_context;
+mod render_target;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
@@ -21,6 +22,7 @@ use graphics::Graphics;
 use crate::frame_context::FrameContext;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use crate::model::Mesh;
+use crate::render_target::RenderTarget;
 use crate::state::State;
 use crate::texture::Texture;
 
@@ -36,9 +38,9 @@ async fn run() {
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
 
-    let render_target = Texture::new_render_attachment(&gfx, PhysicalSize::new(1800, 1200));
+    let rt = RenderTarget::new(&gfx);
     let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
-        texture: &render_target
+        texture: rt.color_tex()
     }).await;
     let post_process_quad = Mesh::quad(&gfx);
 
@@ -90,7 +92,7 @@ async fn run() {
 
         state.update(&frame_context);
 
-        gfx.render_to_target(&render_target, &mut state, &mut frame_context);
+        gfx.render_to_target(&rt, &mut state, &mut frame_context);
         gfx.render_to_surface(&mut post_process_shader, &post_process_quad, &mut frame_context);
     }
 }
