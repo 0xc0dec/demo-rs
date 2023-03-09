@@ -69,7 +69,7 @@ impl Texture {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: gfx.surface_texture_format(),
+                format: gfx.surface_texture_format(), // TODO Configurable
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 view_formats: &[],
             },
@@ -93,17 +93,17 @@ impl Texture {
         }
     }
 
-    pub async fn from_file_2d(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::from_mem_2d(gfx, &data)
+        Self::new_2d_from_mem(gfx, &data)
     }
 
-    pub async fn from_file_cube(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::from_mem_cube(gfx, &data)
+        Self::new_cube_from_mem(gfx, &data)
     }
 
-    fn from_mem_2d(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
+    fn new_2d_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -147,7 +147,7 @@ impl Texture {
         })
     }
 
-    fn from_mem_cube(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
+    fn new_cube_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;

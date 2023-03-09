@@ -55,7 +55,7 @@ impl State {
             gfx.surface_size().into(),
         );
 
-        let skybox_tex = Texture::from_file_cube("skybox_bgra.dds", gfx).await.unwrap();
+        let skybox_tex = Texture::new_cube_from_file("skybox_bgra.dds", gfx).await.unwrap();
 
         Self {
             physics,

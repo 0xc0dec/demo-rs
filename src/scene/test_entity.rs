@@ -35,7 +35,7 @@ impl TestEntity {
         let transform = Transform::new(params.pos, params.scale);
 
         let model = Model::from_file("cube.obj", gfx).await.expect("Failed to load cube model");
-        let texture = Texture::from_file_2d("stonewall.jpg", gfx).await.unwrap();
+        let texture = Texture::new_2d_from_file("stonewall.jpg", gfx).await.unwrap();
         let shader = DiffuseShader::new(gfx, DiffuseShaderParams { texture }).await;
 
         Self {
