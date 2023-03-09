@@ -38,7 +38,7 @@ async fn run() {
 
     let render_target = Texture::new_render_attachment(&gfx, PhysicalSize::new(1800, 1200));
     let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
-        texture: render_target
+        texture: &render_target
     }).await;
     let post_process_quad = Mesh::quad(&gfx);
 
@@ -89,8 +89,9 @@ async fn run() {
         };
 
         state.update(&frame_context);
-        gfx.render_to_target(&post_process_shader.texture, &mut state, &mut frame_context);
-        gfx.render_post_process(&mut post_process_shader, &post_process_quad, &mut frame_context);
+
+        gfx.render_to_target(&render_target, &mut state, &mut frame_context);
+        gfx.render_to_surface(&mut post_process_shader, &post_process_quad, &mut frame_context);
     }
 }
 

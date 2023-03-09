@@ -118,7 +118,7 @@ impl Graphics {
         self.queue.submit(Some(cmd_buffer));
     }
 
-    pub fn render_post_process(&mut self, shader: &mut PostProcessShader, quad: &Mesh, ctx: &mut FrameContext) {
+    pub fn render_to_surface(&mut self, shader: &mut PostProcessShader, quad: &Mesh, ctx: &mut FrameContext) {
         if let Some(new_size) = ctx.events.new_surface_size {
             self.resize(new_size);
         }

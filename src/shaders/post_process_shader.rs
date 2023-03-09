@@ -6,17 +6,16 @@ use crate::shaders::utils::*;
 use crate::texture::Texture;
 
 pub struct PostProcessShader {
-    pub texture: Texture,
     pipeline: RenderPipeline,
     texture_bind_group: BindGroup,
 }
 
-pub struct PostProcessShaderParams {
-    pub texture: Texture,
+pub struct PostProcessShaderParams<'a> {
+    pub texture: &'a Texture,
 }
 
 impl PostProcessShader {
-    pub async fn new(gfx: &Graphics, params: PostProcessShaderParams) -> Self {
+    pub async fn new(gfx: &Graphics, params: PostProcessShaderParams<'_>) -> Self {
         let (
             texture_bind_group_layout,
             texture_bind_group
@@ -36,7 +35,6 @@ impl PostProcessShader {
         ).await;
 
         Self {
-            texture: params.texture,
             pipeline,
             texture_bind_group,
         }
