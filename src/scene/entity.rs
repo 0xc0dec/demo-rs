@@ -1,4 +1,3 @@
-use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::physics::PhysicsWorld;
@@ -10,6 +9,6 @@ pub trait Entity {
         &'a mut self,
         gfx: &'a Graphics,
         camera: &'a Camera, // TODO Avoid
-        pass: &mut RenderPass<'b>
+        encoder: &mut wgpu::RenderBundleEncoder<'b>
     ) where 'a: 'b;
 }

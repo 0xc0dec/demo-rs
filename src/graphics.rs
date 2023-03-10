@@ -1,11 +1,11 @@
-use wgpu::{Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
+use std::iter;
+use wgpu::{Device, Queue, RenderBundleDepthStencil, RenderBundleDescriptor, Surface, SurfaceConfiguration, TextureFormat};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::frame_context::FrameContext;
 use crate::model::{DrawModel, Mesh};
 use crate::render_target::RenderTarget;
 use crate::shaders::{PostProcessShader, Shader};
-use crate::state::State;
 use crate::texture::Texture;
 
 pub struct Graphics {
@@ -18,7 +18,7 @@ pub struct Graphics {
 }
 
 impl Graphics {
-    pub async fn new(window: &Window) -> Graphics {
+    pub async fn new(window: &Window) -> Self {
         let surface_size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -64,7 +64,7 @@ impl Graphics {
         };
         surface.configure(&device, &surface_config);
 
-        Graphics {
+        Self {
             surface_size,
             surface,
             device,
@@ -74,7 +74,29 @@ impl Graphics {
         }
     }
 
-    pub fn render_to_target(&mut self, target: &RenderTarget, state: &mut State, ctx: &mut FrameContext) {
+    pub fn new_render_encoder(&self, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder {
+        let (color_format, depth_format) = if let Some(ref target) = target {
+            (target.color_tex().format(), target.depth_tex().format())
+        } else {
+            (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
+        };
+
+        self.device.create_render_bundle_encoder(
+            &wgpu::RenderBundleEncoderDescriptor {
+                label: None,
+                multiview: None,
+                sample_count: 1,
+                color_formats: &[Some(color_format)],
+                depth_stencil: Some(RenderBundleDepthStencil {
+                    format: depth_format,
+                    depth_read_only: false,
+                    stencil_read_only: false
+                })
+            }
+        )
+    }
+
+    pub fn render_to_target(&mut self, target: &RenderTarget, bundle: wgpu::RenderBundle) {
         let cmd_buffer = {
             let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
                 label: None
@@ -106,7 +128,7 @@ impl Graphics {
                     })
                 });
 
-                state.render(&self, &mut pass, ctx);
+                pass.execute_bundles(iter::once(&bundle));
             }
 
             encoder.finish()
@@ -115,11 +137,7 @@ impl Graphics {
         self.queue.submit(Some(cmd_buffer));
     }
 
-    pub fn render_to_surface(&mut self, shader: &mut PostProcessShader, quad: &Mesh, ctx: &mut FrameContext) {
-        if let Some(new_size) = ctx.events.new_surface_size {
-            self.resize(new_size);
-        }
-
+    pub fn render_to_surface(&self, bundle: wgpu::RenderBundle) {
         let target_tex = self.surface.get_current_texture().expect("Missing surface texture");
 
         let cmd_buffer = {
@@ -144,12 +162,18 @@ impl Graphics {
                             store: true,
                         }
                     })],
-                    // TODO Generally should not be None if we're not using RTT
-                    depth_stencil_attachment: None
+                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                        view: self.depth_tex.as_ref().unwrap().view(),
+                        depth_ops: Some(wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(1.0),
+                            store: true,
+                        }),
+                        stencil_ops: None,
+                    })
+
                 });
 
-                shader.apply(&mut pass);
-                pass.draw_mesh(quad);
+                pass.execute_bundles(iter::once(&bundle));
             }
 
             encoder.finish()
@@ -159,7 +183,7 @@ impl Graphics {
         target_tex.present();
     }
 
-    fn resize(&mut self, new_size: PhysicalSize<u32>) {
+    pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             self.surface_size = new_size;
             self.surface_config.width = new_size.width;

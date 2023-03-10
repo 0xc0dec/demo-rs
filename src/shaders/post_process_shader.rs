@@ -26,7 +26,7 @@ impl PostProcessShader {
             RenderPipelineParams {
                 shader_file_name: "post-process.wgsl",
                 depth_write: true,
-                depth_enabled: false,
+                depth_enabled: true,
                 bind_group_layouts: &[
                     &texture_bind_group_layout
                 ],
@@ -42,7 +42,7 @@ impl PostProcessShader {
 }
 
 impl<'a, 'b> Shader<'a, 'b> for PostProcessShader where 'a: 'b {
-    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
+    fn apply(&'a mut self, pass: &mut wgpu::RenderBundleEncoder<'b>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);
     }

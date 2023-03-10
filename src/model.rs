@@ -170,9 +170,7 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
-    where 'b: 'a,
-{
+impl<'a, 'b> DrawModel<'b> for wgpu::RenderBundleEncoder<'a> where 'b: 'a {
     fn draw_mesh(&mut self, mesh: &'b Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);

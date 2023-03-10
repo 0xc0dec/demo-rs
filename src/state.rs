@@ -1,5 +1,4 @@
 use cgmath::{Vector3, Zero};
-use wgpu::RenderPass;
 use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::frame_context::FrameContext;
@@ -76,7 +75,7 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, pass: &mut RenderPass<'b>, context: &FrameContext)
+    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, encoder: &mut wgpu::RenderBundleEncoder<'b>, context: &FrameContext)
         where 'a: 'b
     {
         if let Some(new_surface_size) = context.events.new_surface_size {
@@ -84,11 +83,11 @@ impl State {
         }
 
         self.skybox.shader.update(&gfx, &self.camera);
-        self.skybox.shader.apply(pass);
-        pass.draw_mesh(&self.skybox.mesh);
+        self.skybox.shader.apply(encoder);
+        encoder.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.entities {
-            m.render(gfx, &self.camera, pass);
+            m.render(gfx, &self.camera, encoder);
         }
     }
 }

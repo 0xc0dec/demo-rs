@@ -141,7 +141,7 @@ pub async fn new_render_pipeline(
         },
         depth_stencil: if params.depth_enabled {
             Some(wgpu::DepthStencilState {
-                format: Texture::DEPTH_FORMAT,
+                format: Texture::DEPTH_FORMAT, // TODO Configurable
                 depth_write_enabled: params.depth_write,
                 depth_compare: wgpu::CompareFunction::Less,
                 stencil: wgpu::StencilState::default(),

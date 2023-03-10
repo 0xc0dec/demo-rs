@@ -64,11 +64,11 @@ impl Entity for TestEntity {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, camera: &'a Camera, pass: &mut wgpu::RenderPass<'b>)
+    fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, camera: &'a Camera, encoder: &mut wgpu::RenderBundleEncoder<'b>)
         where 'a: 'b
     {
         self.shader.update(gfx, camera, &self.transform);
-        self.shader.apply(pass);
-        pass.draw_model(&self.model);
+        self.shader.apply(encoder);
+        encoder.draw_model(&self.model);
     }
 }

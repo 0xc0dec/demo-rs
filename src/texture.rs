@@ -9,6 +9,7 @@ pub struct Texture {
     _texture: wgpu::Texture,
     view: wgpu::TextureView,
     sampler: wgpu::Sampler,
+    format: wgpu::TextureFormat,
 }
 
 // TODO Reduce copypasta
@@ -17,6 +18,7 @@ impl Texture {
 
     pub fn view(&self) -> &wgpu::TextureView { &self.view }
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
+    pub fn format(&self) -> wgpu::TextureFormat { self.format }
 
     pub fn new_depth(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
         let size = wgpu::Extent3d {
@@ -24,13 +26,15 @@ impl Texture {
             height: size.height,
             depth_or_array_layers: 1,
         };
+        let format = Self::DEPTH_FORMAT;
+
         let desc = wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: Self::DEPTH_FORMAT,
+            format,
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[Self::DEPTH_FORMAT],
         };
@@ -52,7 +56,12 @@ impl Texture {
             }
         );
 
-        Self { _texture: texture, view, sampler }
+        Self {
+            _texture: texture,
+            view,
+            sampler,
+            format
+        }
     }
 
     pub fn new_render_attachment(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
@@ -61,6 +70,7 @@ impl Texture {
             height: size.height,
             depth_or_array_layers: 1,
         };
+        let format = gfx.surface_texture_format(); // TODO Configurable
 
         let texture = gfx.device().create_texture(
             &wgpu::TextureDescriptor {
@@ -69,7 +79,7 @@ impl Texture {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format: gfx.surface_texture_format(), // TODO Configurable
+                format,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
                 view_formats: &[],
             },
@@ -90,6 +100,7 @@ impl Texture {
             _texture: texture,
             view,
             sampler,
+            format
         }
     }
 
@@ -144,6 +155,7 @@ impl Texture {
             _texture: texture,
             view,
             sampler,
+            format
         })
     }
 
@@ -196,10 +208,11 @@ impl Texture {
             ..Default::default()
         });
 
-        Ok(Texture {
+        Ok(Self {
             _texture: texture,
             view,
-            sampler
+            sampler,
+            format
         })
     }
 }

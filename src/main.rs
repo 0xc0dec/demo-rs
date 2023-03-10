@@ -13,6 +13,7 @@ mod frame_context;
 mod render_target;
 
 use std::collections::VecDeque;
+use wgpu::RenderBundleDescriptor;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::dpi::{PhysicalSize};
 use winit::platform::run_return::EventLoopExtRunReturn;
@@ -20,11 +21,10 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use events::Events;
 use graphics::Graphics;
 use crate::frame_context::FrameContext;
-use crate::shaders::{PostProcessShader, PostProcessShaderParams};
-use crate::model::Mesh;
+use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};
+use crate::model::{DrawModel, Mesh};
 use crate::render_target::RenderTarget;
 use crate::state::State;
-use crate::texture::Texture;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -85,15 +85,29 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        let mut frame_context = FrameContext {
+        let frame_context = FrameContext {
             dt: dt_filtered,
             events: &events,
         };
 
         state.update(&frame_context);
 
-        gfx.render_to_target(&rt, &mut state, &mut frame_context);
-        gfx.render_to_surface(&mut post_process_shader, &post_process_quad, &mut frame_context);
+        if let Some(new_size) = events.new_surface_size {
+            gfx.resize(new_size);
+        }
+
+        gfx.render_to_target(&rt, {
+            let mut encoder = gfx.new_render_encoder(Some(&rt));
+            state.render(&gfx, &mut encoder, &frame_context);
+            encoder.finish(&RenderBundleDescriptor { label: None })
+        });
+
+        gfx.render_to_surface({
+            let mut encoder = gfx.new_render_encoder(None);
+            post_process_shader.apply(&mut encoder);
+            encoder.draw_mesh(&post_process_quad);
+            encoder.finish(&RenderBundleDescriptor { label: None })
+        });
     }
 }
 
