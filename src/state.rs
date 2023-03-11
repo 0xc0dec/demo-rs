@@ -79,7 +79,7 @@ impl State {
         where 'a: 'b
     {
         // TODO Do this only when the size changes
-        self.camera.on_surface_resize(device.surface_size());
+        self.camera.set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
 
         self.skybox.shader.update(&device, &self.camera);
         self.skybox.shader.apply(frame);
