@@ -4,9 +4,10 @@ use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
-use crate::scene::{Entity, TestEntity, TestEntityParams};
-use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
+use crate::scene::entity::Entity;
 use crate::scene::spectator::Spectator;
+use crate::scene::test_entity::{TestEntity, TestEntityParams};
+use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
 
 struct Skybox {
@@ -14,16 +15,15 @@ struct Skybox {
     shader: SkyboxShader,
 }
 
-// TODO Rename to Scene
-pub struct State {
+pub struct Scene {
     spectator: Spectator,
     skybox: Skybox,
     entities: Vec<Box<dyn Entity>>,
     physics: PhysicsWorld,
 }
 
-impl State {
-    pub async fn new(device: &Device) -> State {
+impl Scene {
+    pub async fn new(device: &Device) -> Scene {
         let mut physics = PhysicsWorld::new();
 
         let ground = Box::new(

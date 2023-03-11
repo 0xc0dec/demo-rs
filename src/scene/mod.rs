@@ -1,6 +1,6 @@
 mod entity;
 mod test_entity;
-pub mod spectator;
+mod spectator;
+mod scene;
 
-pub use entity::*;
-pub use test_entity::*;
+pub use scene::*;

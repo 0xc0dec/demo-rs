@@ -6,7 +6,6 @@ mod model;
 mod resources;
 mod device;
 mod shaders;
-mod state;
 mod physics;
 mod scene;
 mod frame_context;
@@ -23,7 +22,7 @@ use crate::frame_context::FrameContext;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};
 use crate::model::{DrawModel, Mesh};
 use crate::render_target::RenderTarget;
-use crate::state::State;
+use crate::scene::Scene;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -35,7 +34,7 @@ async fn run() {
 
     let mut device = Device::new(&window).await;
     let mut events = Events::new();
-    let mut state = State::new(&device).await;
+    let mut scene = Scene::new(&device).await;
 
     let rt = RenderTarget::new(&device, Some(SurfaceSize::new(200, 150)));
     let mut post_process_shader = PostProcessShader::new(&device, PostProcessShaderParams {
@@ -131,11 +130,11 @@ async fn run() {
             events: &events,
         };
 
-        state.update(&frame_context);
+        scene.update(&frame_context);
 
         {
             let mut frame = device.new_frame(Some(&rt));
-            state.render(&device, &mut frame);
+            scene.render(&device, &mut frame);
             frame.finish(&device);
         }
 
