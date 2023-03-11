@@ -136,14 +136,14 @@ async fn run() {
         {
             let mut frame = device.new_frame(Some(&rt));
             state.render(&device, &mut frame);
-            frame.finish(&device, Some(&rt)); // TODO Avoid passing rt twice
+            frame.finish(&device);
         }
 
         {
             let mut frame = device.new_frame(None);
             post_process_shader.apply(&mut frame);
             frame.draw_mesh(&post_process_quad);
-            frame.finish(&device, None);
+            frame.finish(&device);
         }
     }
 }

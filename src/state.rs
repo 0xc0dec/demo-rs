@@ -75,7 +75,7 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, frame: &mut Frame<'b>)
+    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, frame: &mut Frame<'b, 'a>)
         where 'a: 'b
     {
         // TODO Do this only when the size changes

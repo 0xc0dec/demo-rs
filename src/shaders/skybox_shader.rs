@@ -68,7 +68,7 @@ impl SkyboxShader {
 }
 
 impl<'a, 'b> Shader<'a, 'b> for SkyboxShader where 'a: 'b {
-    fn apply(&'a mut self, frame: &mut Frame<'b>) {
+    fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
         frame.set_pipeline(&self.pipeline);
         frame.set_bind_group(0, &self.data_uniform_bind_group, &[]);
         frame.set_bind_group(1, &self.texture_bind_group, &[]);

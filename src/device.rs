@@ -70,7 +70,7 @@ impl Device {
     }
 
     // TODO Add FrameTarget as enum
-    pub fn new_frame(&self, target: Option<&RenderTarget>) -> Frame {
+    pub fn new_frame<'a, 'b>(&'b self, target: Option<&'b RenderTarget>) -> Frame<'a, 'b> where 'b: 'a {
         let (color_format, depth_format) = match target {
             Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
             None => (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
@@ -91,7 +91,8 @@ impl Device {
         );
 
         Frame {
-            bundle_encoder
+            bundle_encoder,
+            target
         }
     }
 
@@ -121,11 +122,12 @@ impl Device {
     }
 }
 
-pub struct Frame<'a> {
+pub struct Frame<'a, 'b> where 'b: 'a {
     bundle_encoder: wgpu::RenderBundleEncoder<'a>,
+    target: Option<&'b RenderTarget>
 }
 
-impl<'a> Deref for Frame<'a> {
+impl<'a, 'b> Deref for Frame<'a, 'b> where 'b: 'a {
     type Target = wgpu::RenderBundleEncoder<'a>;
 
     fn deref(&self) -> &Self::Target {
@@ -133,15 +135,15 @@ impl<'a> Deref for Frame<'a> {
     }
 }
 
-impl<'a> DerefMut for Frame<'a> {
+impl<'a, 'b> DerefMut for Frame<'a, 'b> where 'b: 'a {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.bundle_encoder
     }
 }
 
-impl<'a> Frame<'a> {
-    pub fn finish(self, device: &Device, target: Option<&RenderTarget>) {
-        let surface_tex = target.is_none()
+impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
+    pub fn finish(self, device: &Device) {
+        let surface_tex = self.target.is_none()
             .then(|| device.surface
                 .get_current_texture()
                 .expect("Missing surface texture")
@@ -150,12 +152,12 @@ impl<'a> Frame<'a> {
             .as_ref()
             .map(|t| t.texture.create_view(&wgpu::TextureViewDescriptor::default()));
 
-        let color_tex_view = target
+        let color_tex_view = self.target
             .map(|t| t.color_tex().view())
             .or(surface_tex_view.as_ref())
             .unwrap();
 
-        let depth_tex_view = target
+        let depth_tex_view = self.target
             .map(|t| t.depth_tex().view())
             .or(device.depth_tex.as_ref().map(|t| t.view()))
             .unwrap();

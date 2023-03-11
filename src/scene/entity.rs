@@ -9,6 +9,6 @@ pub trait Entity {
         &'a mut self,
         gfx: &'a Device,
         camera: &'a Camera, // TODO Avoid
-        frame: &mut Frame<'b>
+        frame: &mut Frame<'b, 'a>
     ) where 'a: 'b;
 }

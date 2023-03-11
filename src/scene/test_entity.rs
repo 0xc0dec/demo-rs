@@ -64,7 +64,7 @@ impl Entity for TestEntity {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, frame: &mut Frame<'b>)
+    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
         where 'a: 'b
     {
         self.shader.update(gfx, camera, &self.transform);

@@ -42,7 +42,7 @@ impl PostProcessShader {
 }
 
 impl<'a, 'b> Shader<'a, 'b> for PostProcessShader where 'a: 'b {
-    fn apply(&'a mut self, pass: &mut Frame<'b>) {
+    fn apply(&'a mut self, pass: &mut Frame<'b, 'a>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);
     }
