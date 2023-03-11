@@ -1,9 +1,9 @@
 use wgpu::util::DeviceExt;
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::resources::load_string;
 use crate::texture::Texture;
 
-pub fn new_uniform_bind_group(gfx: &Graphics, data: &[u8]) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer)
+pub fn new_uniform_bind_group(gfx: &Device, data: &[u8]) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer)
 {
     let buffer = gfx.device().create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
@@ -44,7 +44,7 @@ pub fn new_uniform_bind_group(gfx: &Graphics, data: &[u8]) -> (wgpu::BindGroupLa
 }
 
 pub fn new_texture_bind_group(
-    gfx: &Graphics,
+    gfx: &Device,
     texture: &Texture,
     view_dimension: wgpu::TextureViewDimension
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup) {
@@ -97,7 +97,7 @@ pub struct RenderPipelineParams<'a> {
 }
 
 pub async fn new_render_pipeline(
-    gfx: &Graphics,
+    gfx: &Device,
     params: RenderPipelineParams<'_>
 ) -> wgpu::RenderPipeline {
     let shader_src = load_string(params.shader_file_name).await.unwrap();

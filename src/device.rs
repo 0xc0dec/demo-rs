@@ -2,7 +2,7 @@ use std::iter;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
-pub struct Graphics {
+pub struct Device {
     surface_size: winit::dpi::PhysicalSize<u32>,
     surface: wgpu::Surface,
     device: wgpu::Device,
@@ -11,7 +11,7 @@ pub struct Graphics {
     depth_tex: Option<Texture>,
 }
 
-impl Graphics {
+impl Device {
     pub async fn new(window: &winit::window::Window) -> Self {
         let surface_size = window.inner_size();
 

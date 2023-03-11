@@ -2,7 +2,7 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
 use winit::dpi::PhysicalSize;
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::resources::load_binary;
 
 pub struct Texture {
@@ -20,7 +20,7 @@ impl Texture {
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
     pub fn format(&self) -> wgpu::TextureFormat { self.format }
 
-    pub fn new_depth(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
+    pub fn new_depth(gfx: &Device, size: PhysicalSize<u32>) -> Self {
         let size = wgpu::Extent3d {
             width: size.width,
             height: size.height,
@@ -64,7 +64,7 @@ impl Texture {
         }
     }
 
-    pub fn new_render_attachment(gfx: &Graphics, size: PhysicalSize<u32>) -> Self {
+    pub fn new_render_attachment(gfx: &Device, size: PhysicalSize<u32>) -> Self {
         let size = wgpu::Extent3d {
             width: size.width,
             height: size.height,
@@ -104,17 +104,17 @@ impl Texture {
         }
     }
 
-    pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_2d_from_file(file_name: &str, gfx: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
         Self::new_2d_from_mem(gfx, &data)
     }
 
-    pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_cube_from_file(file_name: &str, gfx: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
         Self::new_cube_from_mem(gfx, &data)
     }
 
-    fn new_2d_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
+    fn new_2d_from_mem(gfx: &Device, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -159,7 +159,7 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
+    fn new_cube_from_mem(gfx: &Device, bytes: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;

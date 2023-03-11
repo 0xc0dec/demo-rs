@@ -1,6 +1,6 @@
 use cgmath::{Vector3, Zero};
 use crate::camera::Camera;
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::frame_context::FrameContext;
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
@@ -21,7 +21,7 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(gfx: &Graphics) -> State {
+    pub async fn new(gfx: &Device) -> State {
         let mut physics = PhysicsWorld::new();
 
         let ground = Box::new(
@@ -75,7 +75,7 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, encoder: &mut wgpu::RenderBundleEncoder<'b>, context: &FrameContext)
+    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Device, encoder: &mut wgpu::RenderBundleEncoder<'b>, context: &FrameContext)
         where 'a: 'b
     {
         if let Some(new_surface_size) = context.events.new_surface_size {

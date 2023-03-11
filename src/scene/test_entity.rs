@@ -1,7 +1,7 @@
 use cgmath::{Quaternion, Vector3};
 use rapier3d::prelude::*;
 use crate::camera::Camera;
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::model::{DrawModel, Model};
 use crate::physics::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
@@ -23,7 +23,7 @@ pub struct TestEntityParams {
 }
 
 impl TestEntity {
-    pub async fn new(gfx: &Graphics, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
+    pub async fn new(gfx: &Device, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
         let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
             .translation(vector![params.pos.x, params.pos.y, params.pos.z])
             .build();
@@ -64,7 +64,7 @@ impl Entity for TestEntity {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, gfx: &'a Graphics, camera: &'a Camera, encoder: &mut wgpu::RenderBundleEncoder<'b>)
+    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, encoder: &mut wgpu::RenderBundleEncoder<'b>)
         where 'a: 'b
     {
         self.shader.update(gfx, camera, &self.transform);

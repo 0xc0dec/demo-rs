@@ -4,7 +4,7 @@ mod transform;
 mod events;
 mod model;
 mod resources;
-mod graphics;
+mod device;
 mod shaders;
 mod state;
 mod physics;
@@ -19,7 +19,7 @@ use winit::dpi::{PhysicalSize};
 use winit::platform::run_return::EventLoopExtRunReturn;
 
 use events::Events;
-use graphics::Graphics;
+use device::Device;
 use crate::frame_context::FrameContext;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};
 use crate::model::{DrawModel, Mesh};
@@ -34,7 +34,7 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
 
-    let mut gfx = Graphics::new(&window).await;
+    let mut gfx = Device::new(&window).await;
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
 

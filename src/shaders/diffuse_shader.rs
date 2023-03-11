@@ -2,7 +2,7 @@ use cgmath::{Matrix4};
 use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::shaders::utils::*;
 use super::Shader;
 use crate::texture::Texture;
@@ -21,7 +21,7 @@ pub struct DiffuseShaderParams {
 }
 
 impl DiffuseShader {
-    pub async fn new(gfx: &Graphics, params: DiffuseShaderParams) -> Self {
+    pub async fn new(gfx: &Device, params: DiffuseShaderParams) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (
             matrices_uniform_bind_group_layout,
@@ -55,7 +55,7 @@ impl DiffuseShader {
         }
     }
 
-    pub fn update(&mut self, gfx: &Graphics, camera: &Camera, transform: &Transform) {
+    pub fn update(&mut self, gfx: &Device, camera: &Camera, transform: &Transform) {
         self.matrices_uniform.update(camera, transform);
         gfx.queue().write_buffer(
             &self.matrices_uniform_buf,

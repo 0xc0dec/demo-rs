@@ -1,6 +1,6 @@
 use wgpu::{BindGroup, RenderPipeline};
 use crate::model::{ModelVertex, Vertex};
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::shaders::Shader;
 use crate::shaders::utils::*;
 use crate::texture::Texture;
@@ -15,7 +15,7 @@ pub struct PostProcessShaderParams<'a> {
 }
 
 impl PostProcessShader {
-    pub async fn new(gfx: &Graphics, params: PostProcessShaderParams<'_>) -> Self {
+    pub async fn new(gfx: &Device, params: PostProcessShaderParams<'_>) -> Self {
         let (
             texture_bind_group_layout,
             texture_bind_group

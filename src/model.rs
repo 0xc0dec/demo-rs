@@ -1,6 +1,6 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::resources::load_string;
 
 pub trait Vertex {
@@ -54,7 +54,7 @@ pub struct Mesh {
 
 impl Mesh {
     // TODO Use different vertex description and remove unused attributes
-    pub fn quad(gfx: &Graphics) -> Mesh {
+    pub fn quad(gfx: &Device) -> Mesh {
         let vertices = [
             // Bottom left
             ModelVertex {
@@ -105,7 +105,7 @@ impl Mesh {
 }
 
 impl Model {
-    pub async fn from_file(file_name: &str, gfx: &Graphics) -> anyhow::Result<Model> {
+    pub async fn from_file(file_name: &str, gfx: &Device) -> anyhow::Result<Model> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);

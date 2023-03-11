@@ -2,7 +2,7 @@ use cgmath::{Matrix4, SquareMatrix};
 use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::graphics::Graphics;
+use crate::device::Device;
 use crate::shaders::Shader;
 use crate::shaders::utils::*;
 use crate::texture::Texture;
@@ -20,7 +20,7 @@ pub struct SkyboxShaderParams {
 }
 
 impl SkyboxShader {
-    pub async fn new(gfx: &Graphics, params: SkyboxShaderParams) -> Self {
+    pub async fn new(gfx: &Device, params: SkyboxShaderParams) -> Self {
         let data_uniform = DataUniform::new();
 
         let (
@@ -57,7 +57,7 @@ impl SkyboxShader {
         }
     }
 
-    pub fn update(&mut self, gfx: &Graphics, camera: &Camera) {
+    pub fn update(&mut self, gfx: &Device, camera: &Camera) {
         self.data_uniform.update(camera);
         gfx.queue().write_buffer(
             &self.data_uniform_buf,
