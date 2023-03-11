@@ -50,17 +50,18 @@ impl Texture {
         };
         let format = Self::DEPTH_FORMAT;
 
-        let desc = wgpu::TextureDescriptor {
-            label: None,
-            size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-            view_formats: &[Self::DEPTH_FORMAT],
-        };
-        let texture = device.device().create_texture(&desc);
+        let texture = device.device().create_texture(
+            &wgpu::TextureDescriptor {
+                label: None,
+                size,
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[Self::DEPTH_FORMAT],
+            }
+        );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = new_sampler(
