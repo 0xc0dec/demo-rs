@@ -136,7 +136,7 @@ async fn run() {
         {
             let mut frame = device.new_frame(Some(&rt));
             state.render(&device, &mut frame);
-            frame.finish(&device, Some(&rt));
+            frame.finish(&device, Some(&rt)); // TODO Avoid passing rt twice
         }
 
         {

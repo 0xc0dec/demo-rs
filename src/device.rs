@@ -1,4 +1,5 @@
 use std::iter;
+use std::ops::{Deref, DerefMut};
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
@@ -121,7 +122,21 @@ impl Device {
 }
 
 pub struct Frame<'a> {
-    pub bundle_encoder: wgpu::RenderBundleEncoder<'a>,
+    bundle_encoder: wgpu::RenderBundleEncoder<'a>,
+}
+
+impl<'a> Deref for Frame<'a> {
+    type Target = wgpu::RenderBundleEncoder<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bundle_encoder
+    }
+}
+
+impl<'a> DerefMut for Frame<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.bundle_encoder
+    }
 }
 
 impl<'a> Frame<'a> {

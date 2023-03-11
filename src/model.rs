@@ -172,9 +172,9 @@ pub trait DrawModel<'a> {
 
 impl<'a, 'b> DrawModel<'b> for Frame<'a> where 'b: 'a {
     fn draw_mesh(&mut self, mesh: &'b Mesh) {
-        self.bundle_encoder.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
-        self.bundle_encoder.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.bundle_encoder.draw_indexed(0..mesh.num_elements, 0, 0..1);
+        self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
+        self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+        self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
     fn draw_model(&mut self, model: &'b Model) {
