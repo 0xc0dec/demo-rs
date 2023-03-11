@@ -1,5 +1,4 @@
 use winit::event::*;
-use winit::window::{WindowId};
 
 pub struct Events {
     pub rmb_down: bool,

@@ -5,7 +5,6 @@ use crate::texture::Texture;
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
 pub struct Device {
-    surface_size: SurfaceSize,
     surface: wgpu::Surface,
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
@@ -61,7 +60,6 @@ impl Device {
         surface.configure(&device, &surface_config);
 
         Self {
-            surface_size,
             surface_config,
             surface,
             device,
@@ -181,16 +179,26 @@ impl Device {
 
     pub fn resize(&mut self, new_size: SurfaceSize) {
         if new_size.width > 0 && new_size.height > 0 {
-            self.surface_size = new_size;
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Some(Texture::new_depth(&self, self.surface_size.into()));
+            self.depth_tex = Some(Texture::new_depth(&self, new_size.into()));
         }
     }
 
-    pub fn surface_texture_format(&self) -> wgpu::TextureFormat { self.surface_config.format }
-    pub fn surface_size(&self) -> SurfaceSize { self.surface_size }
-    pub fn device(&self) -> &wgpu::Device { &self.device }
-    pub fn queue(&self) -> &wgpu::Queue { &self.queue }
+    pub fn surface_texture_format(&self) -> wgpu::TextureFormat {
+        self.surface_config.format
+    }
+
+    pub fn surface_size(&self) -> SurfaceSize {
+        SurfaceSize::new(self.surface_config.width, self.surface_config.height)
+    }
+
+    pub fn device(&self) -> &wgpu::Device {
+        &self.device
+    }
+
+    pub fn queue(&self) -> &wgpu::Queue {
+        &self.queue
+    }
 }
