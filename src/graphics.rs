@@ -1,21 +1,18 @@
 use std::iter;
-use wgpu::{Device, Queue, RenderBundleDepthStencil, Surface, SurfaceConfiguration, TextureFormat};
-use winit::dpi::PhysicalSize;
-use winit::window::Window;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
 pub struct Graphics {
-    surface_size: PhysicalSize<u32>,
-    surface: Surface,
-    device: Device,
-    queue: Queue,
-    surface_config: SurfaceConfiguration,
+    surface_size: winit::dpi::PhysicalSize<u32>,
+    surface: wgpu::Surface,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+    surface_config: wgpu::SurfaceConfiguration,
     depth_tex: Option<Texture>,
 }
 
 impl Graphics {
-    pub async fn new(window: &Window) -> Self {
+    pub async fn new(window: &winit::window::Window) -> Self {
         let surface_size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -49,7 +46,7 @@ impl Graphics {
                 .next()
                 .unwrap_or(caps.formats[0]);
 
-            SurfaceConfiguration {
+            wgpu::SurfaceConfiguration {
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
                 format,
                 width: surface_size.width,
@@ -84,7 +81,7 @@ impl Graphics {
                 multiview: None,
                 sample_count: 1,
                 color_formats: &[Some(color_format)],
-                depth_stencil: Some(RenderBundleDepthStencil {
+                depth_stencil: Some(wgpu::RenderBundleDepthStencil {
                     format: depth_format,
                     depth_read_only: false,
                     stencil_read_only: false
@@ -180,7 +177,7 @@ impl Graphics {
         target_tex.present();
     }
 
-    pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
+    pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             self.surface_size = new_size;
             self.surface_config.width = new_size.width;
@@ -190,8 +187,8 @@ impl Graphics {
         }
     }
 
-    pub fn surface_texture_format(&self) -> TextureFormat { self.surface_config.format }
-    pub fn surface_size(&self) -> PhysicalSize<u32> { self.surface_size }
-    pub fn device(&self) -> &Device { &self.device }
-    pub fn queue(&self) -> &Queue { &self.queue }
+    pub fn surface_texture_format(&self) -> wgpu::TextureFormat { self.surface_config.format }
+    pub fn surface_size(&self) -> winit::dpi::PhysicalSize<u32> { self.surface_size }
+    pub fn device(&self) -> &wgpu::Device { &self.device }
+    pub fn queue(&self) -> &wgpu::Queue { &self.queue }
 }
