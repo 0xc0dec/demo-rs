@@ -68,13 +68,14 @@ impl Device {
         }
     }
 
-    pub fn new_render_encoder(&self, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder {
+    // TODO Add FrameTarget as enum
+    pub fn new_frame(&self, target: Option<&RenderTarget>) -> Frame {
         let (color_format, depth_format) = match target {
             Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
             None => (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
         };
 
-        self.device.create_render_bundle_encoder(
+        let bundle_encoder = self.device.create_render_bundle_encoder(
             &wgpu::RenderBundleEncoderDescriptor {
                 label: None,
                 multiview: None,
@@ -86,94 +87,11 @@ impl Device {
                     stencil_read_only: false
                 })
             }
-        )
-    }
+        );
 
-    pub fn render_to_target(&mut self, target: &RenderTarget, bundle: wgpu::RenderBundle) {
-        let cmd_buffer = {
-            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: None
-            });
-
-            {
-                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    label: None,
-                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: target.color_tex().view(),
-                        resolve_target: None,
-                        ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(wgpu::Color {
-                                r: 1.0,
-                                g: 1.0,
-                                b: 1.0,
-                                a: 1.0
-                            }),
-                            store: true,
-                        }
-                    })],
-                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                        view: target.depth_tex().view(),
-                        depth_ops: Some(wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(1.0),
-                            store: true,
-                        }),
-                        stencil_ops: None,
-                    })
-                });
-
-                pass.execute_bundles(iter::once(&bundle));
-            }
-
-            encoder.finish()
-        };
-
-        self.queue.submit(Some(cmd_buffer));
-    }
-
-    pub fn render_to_surface(&self, bundle: wgpu::RenderBundle) {
-        let target_tex = self.surface.get_current_texture().expect("Missing surface texture");
-
-        let cmd_buffer = {
-            let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: None
-            });
-
-            {
-                let target_tex_view = target_tex.texture.create_view(&wgpu::TextureViewDescriptor::default());
-                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    label: None,
-                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &target_tex_view,
-                        resolve_target: None,
-                        ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(wgpu::Color {
-                                r: 1.0,
-                                g: 1.0,
-                                b: 1.0,
-                                a: 1.0
-                            }),
-                            store: true,
-                        }
-                    })],
-                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                        view: self.depth_tex.as_ref().unwrap().view(),
-                        depth_ops: Some(wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(1.0),
-                            store: true,
-                        }),
-                        stencil_ops: None,
-                    })
-
-                });
-
-                pass.execute_bundles(iter::once(&bundle));
-            }
-
-            encoder.finish()
-        };
-
-        self.queue.submit(Some(cmd_buffer));
-        target_tex.present();
+        Frame {
+            bundle_encoder
+        }
     }
 
     pub fn resize(&mut self, new_size: SurfaceSize) {
@@ -199,5 +117,71 @@ impl Device {
 
     pub fn queue(&self) -> &wgpu::Queue {
         &self.queue
+    }
+}
+
+pub struct Frame<'a> {
+    pub bundle_encoder: wgpu::RenderBundleEncoder<'a>,
+}
+
+impl<'a> Frame<'a> {
+    pub fn finish(self, device: &Device, target: Option<&RenderTarget>) {
+        let surface_tex = target.is_none()
+            .then(|| device.surface
+                .get_current_texture()
+                .expect("Missing surface texture")
+            );
+        let surface_tex_view = surface_tex
+            .as_ref()
+            .map(|t| t.texture.create_view(&wgpu::TextureViewDescriptor::default()));
+
+        let color_tex_view = target
+            .map(|t| t.color_tex().view())
+            .or(surface_tex_view.as_ref())
+            .unwrap();
+
+        let depth_tex_view = target
+            .map(|t| t.depth_tex().view())
+            .or(device.depth_tex.as_ref().map(|t| t.view()))
+            .unwrap();
+
+        let bundle = self.bundle_encoder
+            .finish(&wgpu::RenderBundleDescriptor { label : None });
+
+        let cmd_buffer = {
+            let mut encoder = device.device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+            {
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: color_tex_view,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color::WHITE),
+                            store: true,
+                        }
+                    })],
+                    depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                        view: depth_tex_view,
+                        depth_ops: Some(wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(1.0),
+                            store: true,
+                        }),
+                        stencil_ops: None,
+                    })
+
+                });
+
+                pass.execute_bundles(iter::once(&bundle));
+            }
+
+            encoder.finish()
+        };
+
+        device.queue.submit(Some(cmd_buffer));
+
+        surface_tex.map(|t| t.present());
     }
 }

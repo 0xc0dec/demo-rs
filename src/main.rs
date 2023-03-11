@@ -13,7 +13,6 @@ mod frame_context;
 mod render_target;
 
 use std::collections::VecDeque;
-use wgpu::RenderBundleDescriptor;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::platform::run_return::EventLoopExtRunReturn;
 
@@ -134,18 +133,18 @@ async fn run() {
 
         state.update(&frame_context);
 
-        device.render_to_target(&rt, {
-            let mut encoder = device.new_render_encoder(Some(&rt));
-            state.render(&device, &mut encoder);
-            encoder.finish(&RenderBundleDescriptor { label: None })
-        });
+        {
+            let mut frame = device.new_frame(Some(&rt));
+            state.render(&device, &mut frame);
+            frame.finish(&device, Some(&rt));
+        }
 
-        device.render_to_surface({
-            let mut encoder = device.new_render_encoder(None);
-            post_process_shader.apply(&mut encoder);
-            encoder.draw_mesh(&post_process_quad);
-            encoder.finish(&RenderBundleDescriptor { label: None })
-        });
+        {
+            let mut frame = device.new_frame(None);
+            post_process_shader.apply(&mut frame);
+            frame.draw_mesh(&post_process_quad);
+            frame.finish(&device, None);
+        }
     }
 }
 

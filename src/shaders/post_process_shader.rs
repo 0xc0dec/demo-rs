@@ -1,6 +1,6 @@
 use wgpu::{BindGroup, RenderPipeline};
 use crate::model::{ModelVertex, Vertex};
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::shaders::Shader;
 use crate::shaders::utils::*;
 use crate::texture::Texture;
@@ -42,8 +42,8 @@ impl PostProcessShader {
 }
 
 impl<'a, 'b> Shader<'a, 'b> for PostProcessShader where 'a: 'b {
-    fn apply(&'a mut self, pass: &mut wgpu::RenderBundleEncoder<'b>) {
-        pass.set_pipeline(&self.pipeline);
-        pass.set_bind_group(0, &self.texture_bind_group, &[]);
+    fn apply(&'a mut self, pass: &mut Frame<'b>) {
+        pass.bundle_encoder.set_pipeline(&self.pipeline);
+        pass.bundle_encoder.set_bind_group(0, &self.texture_bind_group, &[]);
     }
 }

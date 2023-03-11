@@ -2,7 +2,7 @@ use cgmath::{Matrix4};
 use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::shaders::utils::*;
 use super::Shader;
 use crate::texture::Texture;
@@ -66,10 +66,10 @@ impl DiffuseShader {
 }
 
 impl<'a, 'b> Shader<'a, 'b> for DiffuseShader where 'a: 'b  {
-    fn apply(&'a mut self, pass: &mut wgpu::RenderBundleEncoder<'b>) {
-        pass.set_pipeline(&self.pipeline);
-        pass.set_bind_group(0, &self.texture_bind_group, &[]);
-        pass.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
+    fn apply(&'a mut self, frame: &mut Frame<'b>) {
+        frame.bundle_encoder.set_pipeline(&self.pipeline);
+        frame.bundle_encoder.set_bind_group(0, &self.texture_bind_group, &[]);
+        frame.bundle_encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
     }
 }
 

@@ -1,6 +1,6 @@
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::resources::load_string;
 
 pub trait Vertex {
@@ -170,11 +170,11 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a, 'b> DrawModel<'b> for wgpu::RenderBundleEncoder<'a> where 'b: 'a {
+impl<'a, 'b> DrawModel<'b> for Frame<'a> where 'b: 'a {
     fn draw_mesh(&mut self, mesh: &'b Mesh) {
-        self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
-        self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.draw_indexed(0..mesh.num_elements, 0, 0..1);
+        self.bundle_encoder.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
+        self.bundle_encoder.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+        self.bundle_encoder.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
     fn draw_model(&mut self, model: &'b Model) {

@@ -1,5 +1,5 @@
 use crate::camera::Camera;
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::physics::PhysicsWorld;
 
 pub trait Entity {
@@ -9,6 +9,6 @@ pub trait Entity {
         &'a mut self,
         gfx: &'a Device,
         camera: &'a Camera, // TODO Avoid
-        encoder: &mut wgpu::RenderBundleEncoder<'b>
+        frame: &mut Frame<'b>
     ) where 'a: 'b;
 }

@@ -1,6 +1,6 @@
 use cgmath::{Vector3, Zero};
 use crate::camera::Camera;
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
 use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
@@ -75,18 +75,18 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, encoder: &mut wgpu::RenderBundleEncoder<'b>)
+    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, frame: &mut Frame<'b>)
         where 'a: 'b
     {
         // TODO Do this only when the size changes
         self.camera.on_surface_resize(device.surface_size());
 
         self.skybox.shader.update(&device, &self.camera);
-        self.skybox.shader.apply(encoder);
-        encoder.draw_mesh(&self.skybox.mesh);
+        self.skybox.shader.apply(frame);
+        frame.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.entities {
-            m.render(device, &self.camera, encoder);
+            m.render(device, &self.camera, frame);
         }
     }
 }

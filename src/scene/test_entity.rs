@@ -1,7 +1,7 @@
 use cgmath::{Quaternion, Vector3};
 use rapier3d::prelude::*;
 use crate::camera::Camera;
-use crate::device::Device;
+use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
@@ -64,11 +64,11 @@ impl Entity for TestEntity {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, encoder: &mut wgpu::RenderBundleEncoder<'b>)
+    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, frame: &mut Frame<'b>)
         where 'a: 'b
     {
         self.shader.update(gfx, camera, &self.transform);
-        self.shader.apply(encoder);
-        encoder.draw_model(&self.model);
+        self.shader.apply(frame);
+        frame.draw_model(&self.model);
     }
 }
