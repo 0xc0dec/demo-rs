@@ -79,7 +79,7 @@ impl State {
         where 'a: 'b
     {
         if let Some(new_surface_size) = context.events.new_surface_size {
-            self.camera.on_canvas_resize(new_surface_size)
+            self.camera.on_surface_resize(new_surface_size)
         }
 
         self.skybox.shader.update(&gfx, &self.camera);

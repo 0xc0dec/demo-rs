@@ -15,11 +15,11 @@ mod render_target;
 use std::collections::VecDeque;
 use wgpu::RenderBundleDescriptor;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
-use winit::dpi::{PhysicalSize};
 use winit::platform::run_return::EventLoopExtRunReturn;
 
 use events::Events;
 use device::Device;
+use crate::device::SurfaceSize;
 use crate::frame_context::FrameContext;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};
 use crate::model::{DrawModel, Mesh};
@@ -30,7 +30,7 @@ async fn run() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")
-        .with_inner_size(PhysicalSize::new(1800, 1200))
+        .with_inner_size(SurfaceSize::new(1800, 1200))
         .build(&event_loop)
         .unwrap();
 
@@ -38,7 +38,7 @@ async fn run() {
     let mut events = Events::new(&window);
     let mut state = State::new(&gfx).await;
 
-    let rt = RenderTarget::new(&gfx, Some(PhysicalSize::new(200, 150)));
+    let rt = RenderTarget::new(&gfx, Some(SurfaceSize::new(200, 150)));
     let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
         texture: rt.color_tex()
     }).await;

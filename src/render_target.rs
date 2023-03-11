@@ -1,5 +1,4 @@
-use winit::dpi::PhysicalSize;
-use crate::device::Device;
+use crate::device::{Device, SurfaceSize};
 use crate::texture::Texture;
 
 pub struct RenderTarget {
@@ -8,10 +7,10 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(gfx: &Device, size: Option<PhysicalSize<u32>>) -> Self {
+    pub fn new(gfx: &Device, size: Option<SurfaceSize>) -> Self {
         let size = size.unwrap_or(gfx.surface_size());
-        let color_tex = Texture::new_render_attachment(gfx, size);
-        let depth_tex = Texture::new_depth(&gfx, size);
+        let color_tex = Texture::new_render_attachment(gfx, size.into());
+        let depth_tex = Texture::new_depth(&gfx, size.into());
 
         Self {
             color_tex,

@@ -2,8 +2,10 @@ use std::iter;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
+pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
+
 pub struct Device {
-    surface_size: winit::dpi::PhysicalSize<u32>,
+    surface_size: SurfaceSize,
     surface: wgpu::Surface,
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -177,18 +179,18 @@ impl Device {
         target_tex.present();
     }
 
-    pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
+    pub fn resize(&mut self, new_size: SurfaceSize) {
         if new_size.width > 0 && new_size.height > 0 {
             self.surface_size = new_size;
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Some(Texture::new_depth(&self, self.surface_size));
+            self.depth_tex = Some(Texture::new_depth(&self, self.surface_size.into()));
         }
     }
 
     pub fn surface_texture_format(&self) -> wgpu::TextureFormat { self.surface_config.format }
-    pub fn surface_size(&self) -> winit::dpi::PhysicalSize<u32> { self.surface_size }
+    pub fn surface_size(&self) -> SurfaceSize { self.surface_size }
     pub fn device(&self) -> &wgpu::Device { &self.device }
     pub fn queue(&self) -> &wgpu::Queue { &self.queue }
 }

@@ -1,9 +1,10 @@
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
-use winit::dpi::PhysicalSize;
-use crate::device::Device;
+use crate::device::{Device};
 use crate::resources::load_binary;
+
+pub type TextureSize = (u32, u32);
 
 pub struct Texture {
     _texture: wgpu::Texture,
@@ -20,10 +21,10 @@ impl Texture {
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
     pub fn format(&self) -> wgpu::TextureFormat { self.format }
 
-    pub fn new_depth(gfx: &Device, size: PhysicalSize<u32>) -> Self {
+    pub fn new_depth(gfx: &Device, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
-            width: size.width,
-            height: size.height,
+            width: size.0,
+            height: size.1,
             depth_or_array_layers: 1,
         };
         let format = Self::DEPTH_FORMAT;
@@ -64,10 +65,10 @@ impl Texture {
         }
     }
 
-    pub fn new_render_attachment(gfx: &Device, size: PhysicalSize<u32>) -> Self {
+    pub fn new_render_attachment(gfx: &Device, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
-            width: size.width,
-            height: size.height,
+            width: size.0,
+            height: size.1,
             depth_or_array_layers: 1,
         };
         let format = gfx.surface_texture_format(); // TODO Configurable

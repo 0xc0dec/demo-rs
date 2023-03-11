@@ -1,5 +1,5 @@
 use cgmath::{Array, Deg, InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
-use winit::dpi::PhysicalSize;
+use crate::device::SurfaceSize;
 use crate::events::Events;
 use crate::transform::{Transform, TransformSpace};
 
@@ -37,7 +37,8 @@ impl Camera {
     pub fn view_matrix(&self) -> Matrix4<f32> { self.transform.matrix().invert().unwrap() }
     pub fn view_proj_matrix(&self) -> Matrix4<f32> { self.proj_matrix * self.view_matrix() }
 
-    pub fn on_canvas_resize(&mut self, new_size: PhysicalSize<u32>) {
+    // TODO Rename to set_size() or smth because camera should not know about "surfaces".
+    pub fn on_surface_resize(&mut self, new_size: SurfaceSize) {
         self.aspect = new_size.width as f32 / new_size.height as f32;
         self.proj_matrix = cgmath::perspective(self.fov, self.aspect, self.znear, self.zfar)
     }

@@ -1,6 +1,6 @@
 use winit::{event::*};
-use winit::dpi::PhysicalSize;
 use winit::window::{Window, WindowId};
+use crate::device::SurfaceSize;
 
 pub struct Events {
     pub rmb_down: bool,
@@ -12,7 +12,7 @@ pub struct Events {
     pub down_down: bool,
     pub escape_down: bool,
     pub mouse_delta: (f32, f32),
-    pub new_surface_size: Option<PhysicalSize<u32>>,
+    pub new_surface_size: Option<SurfaceSize>,
 }
 
 impl Events {
