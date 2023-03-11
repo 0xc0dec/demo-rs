@@ -69,10 +69,9 @@ impl Device {
     }
 
     pub fn new_render_encoder(&self, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder {
-        let (color_format, depth_format) = if let Some(ref target) = target {
-            (target.color_tex().format(), target.depth_tex().format())
-        } else {
-            (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
+        let (color_format, depth_format) = match target {
+            Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
+            None => (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
         };
 
         self.device.create_render_bundle_encoder(
