@@ -2,18 +2,11 @@ use cgmath::{Vector3, Zero};
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
-use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
 use crate::scene::entity::Entity;
+use crate::scene::skybox::Skybox;
 use crate::scene::spectator::Spectator;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
-use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
-use crate::texture::Texture;
-
-struct Skybox {
-    mesh: Mesh,
-    shader: SkyboxShader,
-}
 
 pub struct Scene {
     spectator: Spectator,
@@ -58,16 +51,10 @@ impl Scene {
             )
         };
 
-        let skybox_tex = Texture::new_cube_from_file("skybox_bgra.dds", device).await.unwrap();
-        let skybox = Skybox {
-            shader: SkyboxShader::new(device, SkyboxShaderParams { texture: skybox_tex }).await,
-            mesh: Mesh::quad(device)
-        };
-
         Self {
             physics,
             spectator,
-            skybox,
+            skybox: Skybox::new(device).await,
             entities: vec![ground, box1]
         }
     }
@@ -87,9 +74,7 @@ impl Scene {
         self.spectator.camera
             .set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
 
-        self.skybox.shader.update(&device, &self.spectator.camera);
-        self.skybox.shader.apply(frame);
-        frame.draw_mesh(&self.skybox.mesh);
+        self.skybox.render(device, &self.spectator.camera, frame);
 
         for m in &mut self.entities {
             m.render(device, &self.spectator.camera, frame);

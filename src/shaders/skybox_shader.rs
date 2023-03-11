@@ -1,5 +1,4 @@
 use cgmath::{Matrix4, SquareMatrix};
-use wgpu::{BindGroup, RenderPipeline};
 use crate::camera::Camera;
 use crate::model::{ModelVertex, Vertex};
 use crate::device::{Device, Frame};
@@ -8,11 +7,11 @@ use crate::shaders::utils::*;
 use crate::texture::Texture;
 
 pub struct SkyboxShader {
-    pipeline: RenderPipeline,
-    texture_bind_group: BindGroup,
+    pipeline: wgpu::RenderPipeline,
+    texture_bind_group: wgpu::BindGroup,
     data_uniform: DataUniform,
     data_uniform_buf: wgpu::Buffer,
-    data_uniform_bind_group: BindGroup,
+    data_uniform_bind_group: wgpu::BindGroup,
 }
 
 pub struct SkyboxShaderParams {
