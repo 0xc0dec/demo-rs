@@ -6,7 +6,7 @@ use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
 use crate::scene::{Entity, TestEntity, TestEntityParams};
 use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
-use crate::spectator::Spectator;
+use crate::scene::spectator::Spectator;
 use crate::texture::Texture;
 
 struct Skybox {

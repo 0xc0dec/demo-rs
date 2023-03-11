@@ -11,7 +11,6 @@ mod physics;
 mod scene;
 mod frame_context;
 mod render_target;
-mod spectator;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
