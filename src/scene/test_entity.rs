@@ -29,6 +29,7 @@ impl TestEntity {
             .build();
         let collider = ColliderBuilder::cuboid(params.scale.x, params.scale.y, params.scale.z)
             .restitution(0.7)
+            .friction(0.7)
             .build();
         let rigid_body_handle = physics.add_body(body, collider);
 
