@@ -6,6 +6,7 @@ use crate::model::{DrawModel, Mesh};
 use crate::physics::PhysicsWorld;
 use crate::scene::{Entity, TestEntity, TestEntityParams};
 use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
+use crate::spectator::Spectator;
 use crate::texture::Texture;
 
 struct Skybox {
@@ -13,8 +14,9 @@ struct Skybox {
     shader: SkyboxShader,
 }
 
+// TODO Rename to Scene
 pub struct State {
-    camera: Camera,
+    spectator: Spectator,
     skybox: Skybox,
     entities: Vec<Box<dyn Entity>>,
     physics: PhysicsWorld,
@@ -58,7 +60,7 @@ impl State {
 
         Self {
             physics,
-            camera,
+            spectator: Spectator { camera },
             skybox: Skybox {
                 mesh: Mesh::quad(gfx),
                 shader: SkyboxShader::new(gfx, SkyboxShaderParams { texture: skybox_tex }).await,
@@ -69,7 +71,7 @@ impl State {
 
     pub fn update(&mut self, ctx: &FrameContext) {
         self.physics.update(ctx.dt);
-        self.camera.update(ctx.events, ctx.dt);
+        self.spectator.update(ctx);
         for n in &mut self.entities {
             n.update(ctx.dt, &self.physics);
         }
@@ -79,14 +81,15 @@ impl State {
         where 'a: 'b
     {
         // TODO Do this only when the size changes
-        self.camera.set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
+        self.spectator.camera
+            .set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
 
-        self.skybox.shader.update(&device, &self.camera);
+        self.skybox.shader.update(&device, &self.spectator.camera);
         self.skybox.shader.apply(frame);
         frame.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.entities {
-            m.render(device, &self.camera, frame);
+            m.render(device, &self.spectator.camera, frame);
         }
     }
 }
