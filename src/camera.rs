@@ -1,4 +1,4 @@
-use cgmath::{Array, Deg, InnerSpace, Matrix4, Rad, SquareMatrix, Vector3, Zero};
+use cgmath::*;
 use crate::events::Events;
 use crate::transform::{Transform, TransformSpace};
 
@@ -19,8 +19,8 @@ impl Camera {
         let aspect = canvas_size.0 / canvas_size.1;
         let znear = 0.1;
         let zfar = 100.0;
-        let fov = cgmath::Deg(45.0);
-        let proj_matrix = cgmath::perspective(fov, aspect, znear, zfar);
+        let fov = Deg(45.0);
+        let proj_matrix = perspective(fov, aspect, znear, zfar);
 
         Self {
             aspect,
@@ -38,7 +38,7 @@ impl Camera {
 
     pub fn set_fov(&mut self, width: f32, height: f32) {
         self.aspect = width / height;
-        self.proj_matrix = cgmath::perspective(self.fov, self.aspect, self.znear, self.zfar)
+        self.proj_matrix = perspective(self.fov, self.aspect, self.znear, self.zfar)
     }
 
     pub fn update(&mut self, events: &Events, dt: f32) {
