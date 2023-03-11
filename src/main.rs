@@ -34,15 +34,15 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
 
-    let mut gfx = Device::new(&window).await;
-    let mut events = Events::new(&window);
-    let mut state = State::new(&gfx).await;
+    let mut device = Device::new(&window).await;
+    let mut events = Events::new();
+    let mut state = State::new(&device).await;
 
-    let rt = RenderTarget::new(&gfx, Some(SurfaceSize::new(200, 150)));
-    let mut post_process_shader = PostProcessShader::new(&gfx, PostProcessShaderParams {
+    let rt = RenderTarget::new(&device, Some(SurfaceSize::new(200, 150)));
+    let mut post_process_shader = PostProcessShader::new(&device, PostProcessShaderParams {
         texture: rt.color_tex()
     }).await;
-    let post_process_quad = Mesh::quad(&gfx);
+    let post_process_quad = Mesh::quad(&device);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -61,6 +61,24 @@ async fn run() {
                 Event::MainEventsCleared => {
                     *flow = ControlFlow::Exit;
                 }
+
+                Event::WindowEvent {
+                    ref event,
+                    window_id,
+                } if window_id == window.id() => {
+                    match event {
+                        WindowEvent::Resized(new_size) => {
+                            device.resize(*new_size);
+                        },
+
+                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                            device.resize(**new_inner_size);
+                        }
+
+                        _ => ()
+                    }
+                }
+
                 _ => {}
             }
         });
@@ -92,18 +110,14 @@ async fn run() {
 
         state.update(&frame_context);
 
-        if let Some(new_size) = events.new_surface_size {
-            gfx.resize(new_size);
-        }
-
-        gfx.render_to_target(&rt, {
-            let mut encoder = gfx.new_render_encoder(Some(&rt));
-            state.render(&gfx, &mut encoder, &frame_context);
+        device.render_to_target(&rt, {
+            let mut encoder = device.new_render_encoder(Some(&rt));
+            state.render(&device, &mut encoder);
             encoder.finish(&RenderBundleDescriptor { label: None })
         });
 
-        gfx.render_to_surface({
-            let mut encoder = gfx.new_render_encoder(None);
+        device.render_to_surface({
+            let mut encoder = device.new_render_encoder(None);
             post_process_shader.apply(&mut encoder);
             encoder.draw_mesh(&post_process_quad);
             encoder.finish(&RenderBundleDescriptor { label: None })

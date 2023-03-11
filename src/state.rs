@@ -75,19 +75,18 @@ impl State {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, gfx: &'a Device, encoder: &mut wgpu::RenderBundleEncoder<'b>, context: &FrameContext)
+    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, encoder: &mut wgpu::RenderBundleEncoder<'b>)
         where 'a: 'b
     {
-        if let Some(new_surface_size) = context.events.new_surface_size {
-            self.camera.on_surface_resize(new_surface_size)
-        }
+        // TODO Do this only when the size changes
+        self.camera.on_surface_resize(device.surface_size());
 
-        self.skybox.shader.update(&gfx, &self.camera);
+        self.skybox.shader.update(&device, &self.camera);
         self.skybox.shader.apply(encoder);
         encoder.draw_mesh(&self.skybox.mesh);
 
         for m in &mut self.entities {
-            m.render(gfx, &self.camera, encoder);
+            m.render(device, &self.camera, encoder);
         }
     }
 }

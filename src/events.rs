@@ -1,6 +1,5 @@
 use winit::{event::*};
-use winit::window::{Window, WindowId};
-use crate::device::SurfaceSize;
+use winit::window::{WindowId};
 
 pub struct Events {
     pub rmb_down: bool,
@@ -12,11 +11,10 @@ pub struct Events {
     pub down_down: bool,
     pub escape_down: bool,
     pub mouse_delta: (f32, f32),
-    pub new_surface_size: Option<SurfaceSize>,
 }
 
 impl Events {
-    pub fn new(window: &Window) -> Self {
+    pub fn new() -> Self {
         Events {
             rmb_down: false,
             forward_down: false,
@@ -27,15 +25,14 @@ impl Events {
             down_down: false,
             escape_down: false,
             mouse_delta: (0.0, 0.0),
-            new_surface_size: Some(window.inner_size().into())
         }
     }
 
     pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
-        self.new_surface_size = None
     }
 
+    // TODO Move events handling into main
     pub fn process_event(&mut self, event: &Event<()>, own_window_id: &WindowId) {
         match event {
             Event::DeviceEvent {
@@ -79,14 +76,6 @@ impl Events {
                             VirtualKeyCode::Escape => self.escape_down = down,
                             _ => ()
                         }
-                    }
-
-                    WindowEvent::Resized(new_size) => {
-                        self.new_surface_size = Some(*new_size);
-                    },
-
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        self.new_surface_size = Some(**new_inner_size);
                     }
 
                     _ => ()
