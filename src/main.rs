@@ -50,23 +50,47 @@ async fn run() {
 
     let mut running = true;
     while running {
-        events.clear();
+        events.reset();
 
         event_loop.run_return(|event, _, flow| {
             *flow = ControlFlow::Poll;
-
-            events.process_event(&event, &window.id());
 
             match event {
                 Event::MainEventsCleared => {
                     *flow = ControlFlow::Exit;
                 }
 
+                Event::DeviceEvent {
+                    event: DeviceEvent::MouseMotion { delta, },
+                    ..
+                } => {
+                    events.on_mouse_move((delta.0 as f32, delta.1 as f32));
+                },
+
                 Event::WindowEvent {
                     ref event,
                     window_id,
                 } if window_id == window.id() => {
                     match event {
+                        WindowEvent::MouseInput {
+                            state,
+                            button,
+                            ..
+                        } => {
+                            events.on_mouse_button(button, state);
+                        }
+
+                        WindowEvent::KeyboardInput {
+                            input: KeyboardInput {
+                                state: key_state,
+                                virtual_keycode: Some(keycode),
+                                ..
+                            },
+                            ..
+                        } => {
+                            events.on_key(keycode, key_state);
+                        }
+
                         WindowEvent::Resized(new_size) => {
                             device.resize(*new_size);
                         },

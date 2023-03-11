@@ -7,16 +7,14 @@ pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 pub struct Device {
     surface_size: SurfaceSize,
     surface: wgpu::Surface,
+    surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
     queue: wgpu::Queue,
-    surface_config: wgpu::SurfaceConfiguration,
     depth_tex: Option<Texture>,
 }
 
 impl Device {
     pub async fn new(window: &winit::window::Window) -> Self {
-        let surface_size = window.inner_size();
-
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             dx12_shader_compiler: Default::default()
@@ -38,6 +36,8 @@ impl Device {
             },
             None,
         ).await.unwrap();
+
+        let surface_size = window.inner_size();
 
         let surface_config = {
             let caps = surface.get_capabilities(&adapter);
@@ -62,10 +62,10 @@ impl Device {
 
         Self {
             surface_size,
+            surface_config,
             surface,
             device,
             queue,
-            surface_config,
             depth_tex: None
         }
     }

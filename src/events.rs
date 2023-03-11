@@ -1,4 +1,4 @@
-use winit::{event::*};
+use winit::event::*;
 use winit::window::{WindowId};
 
 pub struct Events {
@@ -28,60 +28,30 @@ impl Events {
         }
     }
 
-    pub fn clear(&mut self) {
+    pub fn reset(&mut self) {
         self.mouse_delta = (0.0, 0.0);
     }
 
-    // TODO Move events handling into main
-    pub fn process_event(&mut self, event: &Event<()>, own_window_id: &WindowId) {
-        match event {
-            Event::DeviceEvent {
-                event: DeviceEvent::MouseMotion { delta, },
-                ..
-            } => {
-                self.mouse_delta = (delta.0 as f32, delta.1 as f32);
-            },
+    pub fn on_mouse_move(&mut self, delta: (f32, f32)) {
+        self.mouse_delta = delta;
+    }
 
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == own_window_id => {
-                match event {
-                    WindowEvent::MouseInput {
-                        state,
-                        button,
-                        ..
-                    } => {
-                        if *button == MouseButton::Right {
-                            self.rmb_down = *state == ElementState::Pressed;
-                        }
-                    }
+    pub fn on_mouse_button(&mut self, btn: &MouseButton, state: &ElementState) {
+        if *btn == MouseButton::Right {
+            self.rmb_down = *state == ElementState::Pressed;
+        }
+    }
 
-                    WindowEvent::KeyboardInput {
-                        input: KeyboardInput {
-                            state: key_state,
-                            virtual_keycode: Some(keycode),
-                            ..
-                        },
-                        ..
-                    } => {
-                        let down = *key_state == ElementState::Pressed;
-                        match keycode {
-                            VirtualKeyCode::W => self.forward_down = down,
-                            VirtualKeyCode::A => self.left_down = down,
-                            VirtualKeyCode::S => self.back_down = down,
-                            VirtualKeyCode::D => self.right_down = down,
-                            VirtualKeyCode::E => self.up_down = down,
-                            VirtualKeyCode::Q => self.down_down = down,
-                            VirtualKeyCode::Escape => self.escape_down = down,
-                            _ => ()
-                        }
-                    }
-
-                    _ => ()
-                }
-            }
-
+    pub fn on_key(&mut self, code: &VirtualKeyCode, state: &ElementState) {
+        let down = *state == ElementState::Pressed;
+        match code {
+            VirtualKeyCode::W => self.forward_down = down,
+            VirtualKeyCode::A => self.left_down = down,
+            VirtualKeyCode::S => self.back_down = down,
+            VirtualKeyCode::D => self.right_down = down,
+            VirtualKeyCode::E => self.up_down = down,
+            VirtualKeyCode::Q => self.down_down = down,
+            VirtualKeyCode::Escape => self.escape_down = down,
             _ => ()
         }
     }
