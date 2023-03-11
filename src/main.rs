@@ -10,6 +10,7 @@ mod physics;
 mod scene;
 mod frame_context;
 mod render_target;
+mod post_processor;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
@@ -19,9 +20,7 @@ use events::Events;
 use device::Device;
 use crate::device::SurfaceSize;
 use crate::frame_context::FrameContext;
-use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};
-use crate::model::{DrawModel, Mesh};
-use crate::render_target::RenderTarget;
+use crate::post_processor::PostProcessor;
 use crate::scene::Scene;
 
 async fn run() {
@@ -34,13 +33,9 @@ async fn run() {
 
     let mut device = Device::new(&window).await;
     let mut events = Events::new();
-    let mut scene = Scene::new(&device).await;
 
-    let rt = RenderTarget::new(&device, Some(SurfaceSize::new(200, 150)));
-    let mut post_process_shader = PostProcessShader::new(&device, PostProcessShaderParams {
-        texture: rt.color_tex()
-    }).await;
-    let post_process_quad = Mesh::quad(&device);
+    let mut scene = Scene::new(&device).await;
+    let mut post_processor = PostProcessor::new(&device, (200, 150)).await;
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -133,15 +128,14 @@ async fn run() {
         scene.update(&frame_context);
 
         {
-            let mut frame = device.new_frame(Some(&rt));
+            let mut frame = device.new_frame(Some(post_processor.source_rt()));
             scene.render(&device, &mut frame);
             frame.finish(&device);
         }
 
         {
             let mut frame = device.new_frame(None);
-            post_process_shader.apply(&mut frame);
-            frame.draw_mesh(&post_process_quad);
+            post_processor.render(&mut frame);
             frame.finish(&device);
         }
     }

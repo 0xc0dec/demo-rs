@@ -1,5 +1,5 @@
-use crate::device::{Device, SurfaceSize};
-use crate::texture::Texture;
+use crate::device::{Device};
+use crate::texture::{Texture, TextureSize};
 
 pub struct RenderTarget {
     color_tex: Texture,
@@ -7,8 +7,8 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(device: &Device, size: Option<SurfaceSize>) -> Self {
-        let size = size.unwrap_or(device.surface_size());
+    pub fn new(device: &Device, size: Option<TextureSize>) -> Self {
+        let size = size.unwrap_or(device.surface_size().into());
         let color_tex = Texture::new_render_attachment(device, size.into());
         let depth_tex = Texture::new_depth(&device, size.into());
 
