@@ -50,21 +50,24 @@ impl Scene {
             ).await
         );
 
-        let camera = Camera::new(
-            Vector3::new(10.0, 10.0, 10.0),
-            Vector3::new(0.0, 0.0, 0.0),
-            device.surface_size().into(),
-        );
+        let spectator = Spectator {
+            camera: Camera::new(
+                Vector3::new(10.0, 10.0, 10.0),
+                Vector3::new(0.0, 0.0, 0.0),
+                device.surface_size().into(),
+            )
+        };
 
         let skybox_tex = Texture::new_cube_from_file("skybox_bgra.dds", device).await.unwrap();
+        let skybox = Skybox {
+            shader: SkyboxShader::new(device, SkyboxShaderParams { texture: skybox_tex }).await,
+            mesh: Mesh::quad(device)
+        };
 
         Self {
             physics,
-            spectator: Spectator { camera },
-            skybox: Skybox {
-                mesh: Mesh::quad(device),
-                shader: SkyboxShader::new(device, SkyboxShaderParams { texture: skybox_tex }).await,
-            },
+            spectator,
+            skybox,
             entities: vec![ground, box1]
         }
     }

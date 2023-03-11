@@ -1,7 +1,7 @@
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
-use crate::device::{Device};
+use crate::device::Device;
 use crate::resources::load_binary;
 
 pub type TextureSize = (u32, u32);
@@ -11,6 +11,27 @@ pub struct Texture {
     view: wgpu::TextureView,
     sampler: wgpu::Sampler,
     format: wgpu::TextureFormat,
+}
+
+fn new_sampler(
+    device: &Device,
+    filter: wgpu::FilterMode,
+    mipmap_filter: wgpu::FilterMode,
+    compare: Option<wgpu::CompareFunction>
+) -> wgpu::Sampler {
+    device.device().create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
+        address_mode_u: wgpu::AddressMode::ClampToEdge,
+        address_mode_v: wgpu::AddressMode::ClampToEdge,
+        address_mode_w: wgpu::AddressMode::ClampToEdge,
+        mag_filter: filter,
+        min_filter: filter,
+        mipmap_filter,
+        lod_min_clamp: 0.0,
+        lod_max_clamp: 100.0,
+        compare,
+        ..Default::default()
+    })
 }
 
 // TODO Reduce copypasta
@@ -42,19 +63,11 @@ impl Texture {
         let texture = device.device().create_texture(&desc);
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = device.device().create_sampler(
-            &wgpu::SamplerDescriptor {
-                address_mode_u: wgpu::AddressMode::ClampToEdge,
-                address_mode_v: wgpu::AddressMode::ClampToEdge,
-                address_mode_w: wgpu::AddressMode::ClampToEdge,
-                mag_filter: wgpu::FilterMode::Linear,
-                min_filter: wgpu::FilterMode::Linear,
-                mipmap_filter: wgpu::FilterMode::Nearest,
-                compare: Some(wgpu::CompareFunction::LessEqual),
-                lod_min_clamp: 0.0,
-                lod_max_clamp: 100.0,
-                ..Default::default()
-            }
+        let sampler = new_sampler(
+            device,
+            wgpu::FilterMode::Nearest,
+            wgpu::FilterMode::Nearest,
+            Some(wgpu::CompareFunction::LessEqual)
         );
 
         Self {
@@ -87,15 +100,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
-        });
+        let sampler = new_sampler(device, wgpu::FilterMode::Nearest, wgpu::FilterMode::Nearest, None);
 
         Self {
             _texture: texture,
@@ -142,15 +147,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
-        });
+        let sampler = new_sampler(device, wgpu::FilterMode::Nearest, wgpu::FilterMode::Nearest, None);
 
         Ok(Self {
             _texture: texture,
@@ -198,16 +195,7 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
-            label: None,
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Linear,
-            min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Linear,
-            ..Default::default()
-        });
+        let sampler = new_sampler(device, wgpu::FilterMode::Linear, wgpu::FilterMode::Linear, None);
 
         Ok(Self {
             _texture: texture,
