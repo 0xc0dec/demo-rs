@@ -23,12 +23,12 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(gfx: &Device) -> State {
+    pub async fn new(device: &Device) -> State {
         let mut physics = PhysicsWorld::new();
 
         let ground = Box::new(
             TestEntity::new(
-                gfx,
+                device,
                 &mut physics,
                 TestEntityParams {
                     pos: Vector3::zero(),
@@ -40,7 +40,7 @@ impl State {
 
         let box1 = Box::new(
             TestEntity::new(
-                gfx,
+                device,
                 &mut physics,
                 TestEntityParams {
                     pos: Vector3::unit_y() * 10.0,
@@ -53,17 +53,17 @@ impl State {
         let camera = Camera::new(
             Vector3::new(10.0, 10.0, 10.0),
             Vector3::new(0.0, 0.0, 0.0),
-            gfx.surface_size().into(),
+            device.surface_size().into(),
         );
 
-        let skybox_tex = Texture::new_cube_from_file("skybox_bgra.dds", gfx).await.unwrap();
+        let skybox_tex = Texture::new_cube_from_file("skybox_bgra.dds", device).await.unwrap();
 
         Self {
             physics,
             spectator: Spectator { camera },
             skybox: Skybox {
-                mesh: Mesh::quad(gfx),
-                shader: SkyboxShader::new(gfx, SkyboxShaderParams { texture: skybox_tex }).await,
+                mesh: Mesh::quad(device),
+                shader: SkyboxShader::new(device, SkyboxShaderParams { texture: skybox_tex }).await,
             },
             entities: vec![ground, box1]
         }

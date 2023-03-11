@@ -23,7 +23,7 @@ pub struct TestEntityParams {
 }
 
 impl TestEntity {
-    pub async fn new(gfx: &Device, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
+    pub async fn new(device: &Device, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
         let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
             .translation(vector![params.pos.x, params.pos.y, params.pos.z])
             .build();
@@ -34,9 +34,9 @@ impl TestEntity {
 
         let transform = Transform::new(params.pos, params.scale);
 
-        let model = Model::from_file("cube.obj", gfx).await.expect("Failed to load cube model");
-        let texture = Texture::new_2d_from_file("stonewall.jpg", gfx).await.unwrap();
-        let shader = DiffuseShader::new(gfx, DiffuseShaderParams { texture }).await;
+        let model = Model::from_file("cube.obj", device).await.expect("Failed to load cube model");
+        let texture = Texture::new_2d_from_file("stonewall.jpg", device).await.unwrap();
+        let shader = DiffuseShader::new(device, DiffuseShaderParams { texture }).await;
 
         Self {
             model,
@@ -64,10 +64,10 @@ impl Entity for TestEntity {
         //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, gfx: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
+    fn render<'a, 'b>(&'a mut self, device: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
         where 'a: 'b
     {
-        self.shader.update(gfx, camera, &self.transform);
+        self.shader.update(device, camera, &self.transform);
         self.shader.apply(frame);
         frame.draw_model(&self.model);
     }

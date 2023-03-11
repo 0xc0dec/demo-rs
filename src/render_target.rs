@@ -7,10 +7,10 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(gfx: &Device, size: Option<SurfaceSize>) -> Self {
-        let size = size.unwrap_or(gfx.surface_size());
-        let color_tex = Texture::new_render_attachment(gfx, size.into());
-        let depth_tex = Texture::new_depth(&gfx, size.into());
+    pub fn new(device: &Device, size: Option<SurfaceSize>) -> Self {
+        let size = size.unwrap_or(device.surface_size());
+        let color_tex = Texture::new_render_attachment(device, size.into());
+        let depth_tex = Texture::new_depth(&device, size.into());
 
         Self {
             color_tex,

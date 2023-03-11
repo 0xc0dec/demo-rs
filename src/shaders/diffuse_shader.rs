@@ -21,19 +21,19 @@ pub struct DiffuseShaderParams {
 }
 
 impl DiffuseShader {
-    pub async fn new(gfx: &Device, params: DiffuseShaderParams) -> Self {
+    pub async fn new(device: &Device, params: DiffuseShaderParams) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (
             matrices_uniform_bind_group_layout,
             matrices_uniform_bind_group,
             matrices_uniform_buf
-        ) = new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
+        ) = new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(gfx, &params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
-            gfx,
+            device,
             RenderPipelineParams {
                 shader_file_name: "diffuse.wgsl",
                 depth_write: true,
@@ -55,9 +55,9 @@ impl DiffuseShader {
         }
     }
 
-    pub fn update(&mut self, gfx: &Device, camera: &Camera, transform: &Transform) {
+    pub fn update(&mut self, device: &Device, camera: &Camera, transform: &Transform) {
         self.matrices_uniform.update(camera, transform);
-        gfx.queue().write_buffer(
+        device.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),

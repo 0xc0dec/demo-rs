@@ -15,14 +15,14 @@ pub struct PostProcessShaderParams<'a> {
 }
 
 impl PostProcessShader {
-    pub async fn new(gfx: &Device, params: PostProcessShaderParams<'_>) -> Self {
+    pub async fn new(device: &Device, params: PostProcessShaderParams<'_>) -> Self {
         let (
             texture_bind_group_layout,
             texture_bind_group
-        ) = new_texture_bind_group(gfx, &params.texture, wgpu::TextureViewDimension::D2);
+        ) = new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
-            gfx,
+            device,
             RenderPipelineParams {
                 shader_file_name: "post-process.wgsl",
                 depth_write: true,

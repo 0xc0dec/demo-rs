@@ -21,7 +21,7 @@ impl Texture {
     pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
     pub fn format(&self) -> wgpu::TextureFormat { self.format }
 
-    pub fn new_depth(gfx: &Device, size: TextureSize) -> Self {
+    pub fn new_depth(device: &Device, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,
@@ -39,10 +39,10 @@ impl Texture {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[Self::DEPTH_FORMAT],
         };
-        let texture = gfx.device().create_texture(&desc);
+        let texture = device.device().create_texture(&desc);
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.device().create_sampler(
+        let sampler = device.device().create_sampler(
             &wgpu::SamplerDescriptor {
                 address_mode_u: wgpu::AddressMode::ClampToEdge,
                 address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -65,15 +65,15 @@ impl Texture {
         }
     }
 
-    pub fn new_render_attachment(gfx: &Device, size: TextureSize) -> Self {
+    pub fn new_render_attachment(device: &Device, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,
             depth_or_array_layers: 1,
         };
-        let format = gfx.surface_texture_format(); // TODO Configurable
+        let format = device.surface_texture_format(); // TODO Configurable
 
-        let texture = gfx.device().create_texture(
+        let texture = device.device().create_texture(
             &wgpu::TextureDescriptor {
                 label: None,
                 size,
@@ -87,7 +87,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -105,17 +105,17 @@ impl Texture {
         }
     }
 
-    pub async fn new_2d_from_file(file_name: &str, gfx: &Device) -> Result<Self> {
+    pub async fn new_2d_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_2d_from_mem(gfx, &data)
+        Self::new_2d_from_mem(device, &data)
     }
 
-    pub async fn new_cube_from_file(file_name: &str, gfx: &Device) -> Result<Self> {
+    pub async fn new_cube_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_cube_from_mem(gfx, &data)
+        Self::new_cube_from_mem(device, &data)
     }
 
-    fn new_2d_from_mem(gfx: &Device, bytes: &[u8]) -> Result<Self> {
+    fn new_2d_from_mem(device: &Device, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -126,8 +126,8 @@ impl Texture {
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
-        let texture = gfx.device().create_texture_with_data(
-            gfx.queue(),
+        let texture = device.device().create_texture_with_data(
+            device.queue(),
             &wgpu::TextureDescriptor {
                 label: None,
                 size,
@@ -142,7 +142,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
@@ -160,7 +160,7 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(gfx: &Device, bytes: &[u8]) -> Result<Self> {
+    fn new_cube_from_mem(device: &Device, bytes: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
@@ -177,8 +177,8 @@ impl Texture {
         };
         let max_mips = layer_size.max_mips(wgpu::TextureDimension::D2);
 
-        let texture = gfx.device().create_texture_with_data(
-            gfx.queue(),
+        let texture = device.device().create_texture_with_data(
+            device.queue(),
             &wgpu::TextureDescriptor {
                 size,
                 mip_level_count: max_mips,
@@ -198,7 +198,7 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = gfx.device().create_sampler(&wgpu::SamplerDescriptor {
+        let sampler = device.device().create_sampler(&wgpu::SamplerDescriptor {
             label: None,
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,

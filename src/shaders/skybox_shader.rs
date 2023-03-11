@@ -20,22 +20,22 @@ pub struct SkyboxShaderParams {
 }
 
 impl SkyboxShader {
-    pub async fn new(gfx: &Device, params: SkyboxShaderParams) -> Self {
+    pub async fn new(device: &Device, params: SkyboxShaderParams) -> Self {
         let data_uniform = DataUniform::new();
 
         let (
             data_uniform_bind_group_layout,
             data_uniform_bind_group,
             data_uniform_buf
-        ) = new_uniform_bind_group(gfx, bytemuck::cast_slice(&[data_uniform]));
+        ) = new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
 
         let (
             texture_bind_group_layout,
             texture_bind_group
-        ) = new_texture_bind_group(gfx, &params.texture, wgpu::TextureViewDimension::Cube);
+        ) = new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = new_render_pipeline(
-            gfx,
+            device,
             RenderPipelineParams {
                 shader_file_name: "skybox.wgsl",
                 depth_write: false,
@@ -57,9 +57,9 @@ impl SkyboxShader {
         }
     }
 
-    pub fn update(&mut self, gfx: &Device, camera: &Camera) {
+    pub fn update(&mut self, device: &Device, camera: &Camera) {
         self.data_uniform.update(camera);
-        gfx.queue().write_buffer(
+        device.queue().write_buffer(
             &self.data_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.data_uniform]),

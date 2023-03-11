@@ -7,7 +7,7 @@ pub trait Entity {
 
     fn render<'a, 'b>(
         &'a mut self,
-        gfx: &'a Device,
+        device: &'a Device,
         camera: &'a Camera, // TODO Avoid
         frame: &mut Frame<'b, 'a>
     ) where 'a: 'b;

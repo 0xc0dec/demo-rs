@@ -54,7 +54,7 @@ pub struct Mesh {
 
 impl Mesh {
     // TODO Use different vertex description and remove unused attributes
-    pub fn quad(gfx: &Device) -> Mesh {
+    pub fn quad(device: &Device) -> Mesh {
         let vertices = [
             // Bottom left
             ModelVertex {
@@ -85,12 +85,12 @@ impl Mesh {
         let indices = [0, 1, 2, 0, 2, 3];
 
         // TODO Remove copypasta
-        let vertex_buffer = gfx.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        let vertex_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(&vertices),
             usage: wgpu::BufferUsages::VERTEX,
         });
-        let index_buffer = gfx.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        let index_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(&indices),
             usage: wgpu::BufferUsages::INDEX,
@@ -105,7 +105,7 @@ impl Mesh {
 }
 
 impl Model {
-    pub async fn from_file(file_name: &str, gfx: &Device) -> anyhow::Result<Model> {
+    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<Model> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
@@ -142,12 +142,12 @@ impl Model {
                     })
                     .collect::<Vec<_>>();
 
-                let vertex_buffer = gfx.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                let vertex_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: bytemuck::cast_slice(&vertices),
                     usage: wgpu::BufferUsages::VERTEX,
                 });
-                let index_buffer = gfx.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                let index_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: None,
                     contents: bytemuck::cast_slice(&m.mesh.indices),
                     usage: wgpu::BufferUsages::INDEX,
