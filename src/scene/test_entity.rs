@@ -6,7 +6,6 @@ use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
-use super::entity::Entity;
 use crate::transform::{Transform};
 
 pub struct TestEntity {
@@ -28,7 +27,7 @@ impl TestEntity {
             .translation(vector![params.pos.x, params.pos.y, params.pos.z])
             .build();
         let collider = ColliderBuilder::cuboid(params.scale.x, params.scale.y, params.scale.z)
-            .restitution(0.7)
+            .restitution(0.2)
             .friction(0.7)
             .build();
         let (rigid_body_handle, _) = physics.add_body(body, collider);
@@ -46,10 +45,8 @@ impl TestEntity {
             rigid_body_handle
         }
     }
-}
 
-impl Entity for TestEntity {
-    fn update(&mut self, _dt: f32, physics: &PhysicsWorld) {
+    pub fn update(&mut self, _dt: f32, physics: &PhysicsWorld) {
         let body = physics.bodies.get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();
         let phys_rot = body.rotation();
@@ -58,14 +55,9 @@ impl Entity for TestEntity {
             Vector3::new(phys_pos.x, phys_pos.y, phys_pos.z),
             Quaternion::new(phys_rot.i, phys_rot.j, phys_rot.k, phys_rot.w)
         );
-
-        // self.transform.rotate_around_axis(
-        //     Vector3::unit_z(),
-        //     Rad::from(Deg(45.0 * dt)),
-        //     TransformSpace::Local)
     }
 
-    fn render<'a, 'b>(&'a mut self, device: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
+    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
         where 'a: 'b
     {
         self.shader.update(device, camera, &self.transform);
