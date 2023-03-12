@@ -13,8 +13,10 @@ pub struct Transform {
 // TODO Parent-child relationships
 impl Transform {
     pub fn new(pos: Vector3<f32>, scale: Vector3<f32>) -> Self {
+        let m = Matrix4::from_translation(pos)
+            * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z);
         Self {
-            m: Matrix4::from_translation(pos) * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z),
+            m,
             scale
         }
     }
@@ -39,12 +41,11 @@ impl Transform {
         self.m.transform_point(Point3::from_value(0.0)).to_vec()
     }
 
-    // TODO Don't lose scale
     pub fn look_at(&mut self, target: Vector3<f32>) {
         // For some reason could not make it work with Matrix4::look_at, was getting weird results.
-        let rot_mtx = Matrix4::from(Quaternion::look_at(
-            self.position() - target, Vector3::unit_y())
-        ).transpose();
+        let rot_mtx = Matrix4::from(
+            Quaternion::look_at(self.position() - target, Vector3::unit_y())).transpose()
+            * Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
         self.m.z = rot_mtx.z;

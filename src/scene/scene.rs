@@ -45,14 +45,11 @@ impl Scene {
         );
 
         let character = Character::new(
-            Vector3::new(10.0, 10.0, 10.0),
-            Spectator {
-                camera: Camera::new(
-                    Vector3::new(10.0, 10.0, 10.0), // TODO avoid duplication
-                    Vector3::new(0.0, 0.0, 0.0),
-                    device.surface_size().into(),
-                )
-            },
+            Camera::new(
+                Vector3::new(10.0, 10.0, 10.0),
+                Vector3::new(0.0, 0.0, 0.0),
+                device.surface_size().into(),
+            ),
             &mut physics
         );
 
@@ -76,13 +73,13 @@ impl Scene {
         where 'a: 'b
     {
         // TODO Do this only when the size changes
-        self.character.spectator.camera
+        self.character.camera
             .set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
 
-        self.skybox.render(device, &self.character.spectator.camera, frame);
+        self.skybox.render(device, &self.character.camera, frame);
 
         for m in &mut self.entities {
-            m.render(device, &self.character.spectator.camera, frame);
+            m.render(device, &self.character.camera, frame);
         }
     }
 }
