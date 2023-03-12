@@ -1,7 +1,7 @@
 use cgmath::Vector3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
-use crate::math::to_na_vec3;
+use crate::math::{from_na_vec3, to_na_vec3};
 
 pub struct PhysicsWorld {
     pub bodies: RigidBodySet,
@@ -83,8 +83,8 @@ impl PhysicsWorld {
         };
 
         (
-            Vector3::new(translation.x, translation.y, translation.z),
-            Vector3::new(collider_current_pos.x, collider_current_pos.y, collider_current_pos.z)
+            from_na_vec3(translation),
+            from_na_vec3(collider_current_pos)
         )
     }
 
