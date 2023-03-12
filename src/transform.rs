@@ -1,5 +1,4 @@
-use cgmath::{Array, EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3, Quaternion, Rad, Rotation, Transform as _, Vector3};
-use rapier3d::na::VectorSlice3;
+use cgmath::{InnerSpace, Matrix, Matrix4, Quaternion, Rad, Rotation, Transform as _, Vector3};
 
 pub enum TransformSpace {
     Local,
@@ -61,6 +60,7 @@ impl Transform {
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
         self.m = Matrix4::from_translation(pos);
 
+        // TODO Simplify
         let rot_mtx = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z)
             * Matrix4::from(rotation);
         self.m.x = rot_mtx.x;

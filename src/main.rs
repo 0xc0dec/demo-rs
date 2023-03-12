@@ -15,6 +15,7 @@ mod physics_world;
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::platform::run_return::EventLoopExtRunReturn;
+use winit::window::CursorGrabMode;
 
 use events::Events;
 use device::Device;
@@ -102,6 +103,18 @@ async fn run() {
 
         if events.escape_down {
             running = false;
+        }
+
+        if events.rmb_down_just_switched {
+            if events.rmb_down {
+                window.set_cursor_grab(CursorGrabMode::Confined)
+                    .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
+                    .unwrap();
+                window.set_cursor_visible(false);
+            } else {
+                window.set_cursor_grab(CursorGrabMode::None).unwrap();
+                window.set_cursor_visible(true);
+            }
         }
 
         // Stolen from Kajiya

@@ -2,6 +2,7 @@ use winit::event::*;
 
 pub struct Events {
     pub rmb_down: bool,
+    pub rmb_down_just_switched: bool,
     pub forward_down: bool,
     pub back_down: bool,
     pub left_down: bool,
@@ -16,6 +17,7 @@ impl Events {
     pub fn new() -> Self {
         Events {
             rmb_down: false,
+            rmb_down_just_switched: false,
             forward_down: false,
             back_down: false,
             left_down: false,
@@ -29,6 +31,7 @@ impl Events {
 
     pub fn reset(&mut self) {
         self.mouse_delta = (0.0, 0.0);
+        self.rmb_down_just_switched = false;
     }
 
     pub fn on_mouse_move(&mut self, delta: (f32, f32)) {
@@ -38,6 +41,7 @@ impl Events {
     pub fn on_mouse_button(&mut self, btn: &MouseButton, state: &ElementState) {
         if *btn == MouseButton::Right {
             self.rmb_down = *state == ElementState::Pressed;
+            self.rmb_down_just_switched = true;
         }
     }
 
