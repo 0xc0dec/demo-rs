@@ -1,7 +1,7 @@
 use cgmath::Vector3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
-use crate::math::{from_na_vec3, to_na_vec3};
+use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3};
 
 pub struct PhysicsWorld {
     pub bodies: RigidBodySet,
@@ -86,6 +86,34 @@ impl PhysicsWorld {
             from_na_vec3(translation),
             from_na_vec3(collider_current_pos)
         )
+    }
+
+    pub fn cast_ray(&self, from: Vector3<f32>, dir: Vector3<f32>, exclude: Option<ColliderHandle>)
+        -> Option<(ColliderHandle, Vector3<f32>)>
+    {
+        let ray = Ray {
+            origin: to_na_point(from),
+            dir: to_na_vec3(dir)
+        };
+
+        let mut filter = QueryFilter::default();
+        if let Some(exclude_collider_handle) = exclude {
+            filter = filter.exclude_collider(exclude_collider_handle);
+        }
+
+        if let Some((handle, toi)) = self.query_pipeline.cast_ray(
+            &self.bodies,
+            &self.colliders,
+            &ray,
+            Real::MAX,
+            true,
+            filter
+        ) {
+            let hit_pt = ray.point_at(toi);
+            return Some((handle, from_na_point(hit_pt)))
+        }
+
+        None
     }
 
     pub fn update(&mut self, dt: f32) {

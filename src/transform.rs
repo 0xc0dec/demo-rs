@@ -57,6 +57,12 @@ impl Transform {
         self.m.w.z += v.z;
     }
 
+    pub fn set_position(&mut self, pos: Vector3<f32>) {
+        self.m.w.x = pos.x;
+        self.m.w.y = pos.y;
+        self.m.w.z = pos.z;
+    }
+
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
         self.m = Matrix4::from_translation(pos);
 

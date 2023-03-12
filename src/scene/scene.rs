@@ -6,9 +6,11 @@ use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
 use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
+use crate::scene::tracer::Tracer;
 
 pub struct Scene {
     character: Character,
+    tracer: Tracer,
     skybox: Skybox,
     entities: Vec<TestEntity>,
     physics: PhysicsWorld,
@@ -47,10 +49,14 @@ impl Scene {
             &mut physics
         );
 
+        let tracer = Tracer::new(device).await;
+        let skybox = Skybox::new(device).await;
+
         Self {
             physics,
             character,
-            skybox: Skybox::new(device).await,
+            tracer,
+            skybox,
             entities: vec![ground, box1]
         }
     }
@@ -59,6 +65,7 @@ impl Scene {
         self.physics.update(ctx.dt);
 
         self.character.update(ctx, &mut self.physics);
+        self.tracer.update(&self.physics, &self.character);
 
         for e in &mut self.entities {
             e.update(ctx.dt, &self.physics);
@@ -77,5 +84,7 @@ impl Scene {
         for e in &mut self.entities {
             e.render(device, &self.character.camera, frame);
         }
+
+        self.tracer.render(device, &self.character.camera, frame);
     }
 }
