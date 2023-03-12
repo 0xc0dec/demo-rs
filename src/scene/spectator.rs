@@ -1,5 +1,5 @@
 use cgmath::*;
-use crate::events::Events;
+use crate::input::Input;
 
 pub struct SpectatorRotationDelta {
     pub vertical_rotation: Rad<f32>,
@@ -7,15 +7,15 @@ pub struct SpectatorRotationDelta {
 }
 
 impl crate::transform::Transform {
-    pub fn spectator_rotation(&self, dt: f32, events: &Events) -> Option<SpectatorRotationDelta> {
-        if !events.rmb_down { return None; }
+    pub fn spectator_rotation(&self, dt: f32, input: &Input) -> Option<SpectatorRotationDelta> {
+        if !input.rmb_down { return None; }
 
-        let hdelta = -events.mouse_delta.0 as f32 * dt;
+        let hdelta = -input.mouse_delta.0 as f32 * dt;
         let horizontal_rotation = Rad(hdelta);
 
         let forward = self.forward();
         let angle_to_up = forward.angle(Vector3::unit_y()).0;
-        let mut vdelta = -events.mouse_delta.1 as f32 * dt;
+        let mut vdelta = -input.mouse_delta.1 as f32 * dt;
         if vdelta < 0.0 { // Moving up
             if angle_to_up + vdelta <= 0.1 {
                 vdelta = -(angle_to_up - 0.1);
@@ -32,26 +32,26 @@ impl crate::transform::Transform {
         })
     }
 
-    pub fn spectator_translation(&self, dt: f32, speed: f32, events: &Events) -> Option<Vector3<f32>> {
-        if !events.rmb_down { return None; }
+    pub fn spectator_translation(&self, dt: f32, speed: f32, input: &Input) -> Option<Vector3<f32>> {
+        if !input.rmb_down { return None; }
 
         let mut movement: Vector3<f32> = Vector3::zero();
-        if events.forward_down {
+        if input.forward_down {
             movement -= self.forward();
         }
-        if events.back_down {
+        if input.back_down {
             movement += self.forward();
         }
-        if events.right_down {
+        if input.right_down {
             movement += self.right();
         }
-        if events.left_down {
+        if input.left_down {
             movement -= self.right();
         }
-        if events.up_down {
+        if input.up_down {
             movement += self.up();
         }
-        if events.down_down {
+        if input.down_down {
             movement -= self.up();
         }
 

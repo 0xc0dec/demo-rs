@@ -1,7 +1,7 @@
 mod texture;
 mod camera;
 mod transform;
-mod events;
+mod input;
 mod model;
 mod resources;
 mod device;
@@ -17,7 +17,7 @@ use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilde
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::CursorGrabMode;
 
-use events::Events;
+use input::Input;
 use device::Device;
 use crate::device::SurfaceSize;
 use crate::frame_context::FrameContext;
@@ -33,7 +33,7 @@ async fn run() {
         .unwrap();
 
     let mut device = Device::new(&window).await;
-    let mut events = Events::new();
+    let mut input = Input::new();
 
     let mut scene = Scene::new(&device).await;
     let mut post_processor = PostProcessor::new(&device, (200, 150)).await;
@@ -44,7 +44,7 @@ async fn run() {
 
     let mut running = true;
     while running {
-        events.reset();
+        input.reset();
 
         event_loop.run_return(|event, _, flow| {
             *flow = ControlFlow::Poll;
@@ -58,7 +58,7 @@ async fn run() {
                     event: DeviceEvent::MouseMotion { delta, },
                     ..
                 } => {
-                    events.on_mouse_move((delta.0 as f32, delta.1 as f32));
+                    input.on_mouse_move((delta.0 as f32, delta.1 as f32));
                 },
 
                 Event::WindowEvent {
@@ -71,7 +71,7 @@ async fn run() {
                             button,
                             ..
                         } => {
-                            events.on_mouse_button(button, state);
+                            input.on_mouse_button(button, state);
                         }
 
                         WindowEvent::KeyboardInput {
@@ -82,7 +82,7 @@ async fn run() {
                             },
                             ..
                         } => {
-                            events.on_key(keycode, key_state);
+                            input.on_key(keycode, key_state);
                         }
 
                         WindowEvent::Resized(new_size) => {
@@ -101,12 +101,12 @@ async fn run() {
             }
         });
 
-        if events.escape_down {
+        if input.escape_down {
             running = false;
         }
 
-        if events.rmb_down_just_switched {
-            if events.rmb_down {
+        if input.rmb_down_just_switched {
+            if input.rmb_down {
                 window.set_cursor_grab(CursorGrabMode::Confined)
                     .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
                     .unwrap();
@@ -135,7 +135,7 @@ async fn run() {
 
         let frame_context = FrameContext {
             dt: dt_filtered,
-            events: &events,
+            input: &input,
         };
 
         scene.update(&frame_context);

@@ -1,6 +1,6 @@
 use winit::event::*;
 
-pub struct Events {
+pub struct Input {
     pub rmb_down: bool,
     pub rmb_down_just_switched: bool,
     pub forward_down: bool,
@@ -13,9 +13,9 @@ pub struct Events {
     pub mouse_delta: (f32, f32),
 }
 
-impl Events {
+impl Input {
     pub fn new() -> Self {
-        Events {
+        Input {
             rmb_down: false,
             rmb_down_just_switched: false,
             forward_down: false,

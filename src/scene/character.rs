@@ -30,7 +30,7 @@ impl Character {
     }
 
     pub fn update(&mut self, ctx: &FrameContext, physics: &mut PhysicsWorld) {
-        let spectator_rot = self.camera.transform.spectator_rotation(ctx.dt, ctx.events);
+        let spectator_rot = self.camera.transform.spectator_rotation(ctx.dt, ctx.input);
         if let Some(spectator_rot) = spectator_rot {
             self.camera.transform.rotate_around_axis(
                 Vector3::unit_y(),
@@ -45,7 +45,7 @@ impl Character {
         }
 
         let spectator_translation = self.camera.transform
-            .spectator_translation(ctx.dt, 10.0, ctx.events);
+            .spectator_translation(ctx.dt, 10.0, ctx.input);
         if let Some(spectator_translation) = spectator_translation {
             let (effective_movement, collider_current_pos) = {
                 let (collider_pos, collider_shape) = {
