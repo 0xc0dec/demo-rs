@@ -31,7 +31,7 @@ impl TestEntity {
             .restitution(0.7)
             .friction(0.7)
             .build();
-        let rigid_body_handle = physics.add_body(body, collider);
+        let (rigid_body_handle, _) = physics.add_body(body, collider);
 
         let transform = Transform::new(params.pos, params.scale);
 
@@ -50,7 +50,7 @@ impl TestEntity {
 
 impl Entity for TestEntity {
     fn update(&mut self, _dt: f32, physics: &PhysicsWorld) {
-        let body = physics.rigid_body_set().get(self.rigid_body_handle).unwrap();
+        let body = physics.rigid_bodies().get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();
         let phys_rot = body.rotation();
 

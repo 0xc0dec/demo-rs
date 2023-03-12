@@ -3,13 +3,14 @@ use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
 use crate::physics::PhysicsWorld;
+use crate::scene::character::Character;
 use crate::scene::entity::Entity;
 use crate::scene::skybox::Skybox;
 use crate::scene::spectator::Spectator;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 
 pub struct Scene {
-    spectator: Spectator,
+    character: Character,
     skybox: Skybox,
     entities: Vec<Box<dyn Entity>>,
     physics: PhysicsWorld,
@@ -43,17 +44,21 @@ impl Scene {
             ).await
         );
 
-        let spectator = Spectator {
-            camera: Camera::new(
-                Vector3::new(10.0, 10.0, 10.0),
-                Vector3::new(0.0, 0.0, 0.0),
-                device.surface_size().into(),
-            )
-        };
+        let character = Character::new(
+            Vector3::new(10.0, 10.0, 10.0),
+            Spectator {
+                camera: Camera::new(
+                    Vector3::new(10.0, 10.0, 10.0), // TODO avoid duplication
+                    Vector3::new(0.0, 0.0, 0.0),
+                    device.surface_size().into(),
+                )
+            },
+            &mut physics
+        );
 
         Self {
             physics,
-            spectator,
+            character,
             skybox: Skybox::new(device).await,
             entities: vec![ground, box1]
         }
@@ -61,7 +66,7 @@ impl Scene {
 
     pub fn update(&mut self, ctx: &FrameContext) {
         self.physics.update(ctx.dt);
-        self.spectator.update(ctx);
+        self.character.update(ctx, &mut self.physics);
         for n in &mut self.entities {
             n.update(ctx.dt, &self.physics);
         }
@@ -71,13 +76,13 @@ impl Scene {
         where 'a: 'b
     {
         // TODO Do this only when the size changes
-        self.spectator.camera
+        self.character.spectator.camera
             .set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
 
-        self.skybox.render(device, &self.spectator.camera, frame);
+        self.skybox.render(device, &self.character.spectator.camera, frame);
 
         for m in &mut self.entities {
-            m.render(device, &self.spectator.camera, frame);
+            m.render(device, &self.character.spectator.camera, frame);
         }
     }
 }

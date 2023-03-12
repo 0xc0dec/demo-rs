@@ -4,6 +4,7 @@ pub struct PhysicsWorld {
     bodies: RigidBodySet,
     colliders: ColliderSet,
     pipeline: PhysicsPipeline,
+    query_pipeline: QueryPipeline,
     island_manager: IslandManager,
     broad_phase: BroadPhase,
     narrow_phase: NarrowPhase,
@@ -17,6 +18,7 @@ impl PhysicsWorld {
         let bodies = RigidBodySet::new();
         let colliders = ColliderSet::new();
         let pipeline = PhysicsPipeline::new();
+        let query_pipeline = QueryPipeline::new();
         let island_manager = IslandManager::new();
         let broad_phase = BroadPhase::new();
         let narrow_phase = NarrowPhase::new();
@@ -28,6 +30,7 @@ impl PhysicsWorld {
             bodies,
             colliders,
             pipeline,
+            query_pipeline,
             island_manager,
             broad_phase,
             narrow_phase,
@@ -37,12 +40,30 @@ impl PhysicsWorld {
         }
     }
 
-    pub fn rigid_body_set(&self) -> &RigidBodySet { &self.bodies }
+    pub fn rigid_bodies(&self) -> &RigidBodySet {
+        &self.bodies
+    }
 
-    pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> RigidBodyHandle {
+    pub fn rigid_bodies_mut(&mut self) -> &mut RigidBodySet {
+        &mut self.bodies
+    }
+
+    pub fn colliders(&self) -> &ColliderSet {
+        &self.colliders
+    }
+
+    pub fn colliders_mut(&mut self) -> &mut ColliderSet {
+        &mut self.colliders
+    }
+
+    pub fn query_pipeline(&self) -> &QueryPipeline {
+        &self.query_pipeline
+    }
+
+    pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> (RigidBodyHandle, ColliderHandle) {
         let body_handle = self.bodies.insert(body);
-        self.colliders.insert_with_parent(collider, body_handle, &mut self.bodies);
-        body_handle
+        let collider_handle = self.colliders.insert_with_parent(collider, body_handle, &mut self.bodies);
+        (body_handle, collider_handle)
     }
 
     pub fn update(&mut self, dt: f32) {
@@ -67,5 +88,7 @@ impl PhysicsWorld {
             &(),
             &(),
         );
+
+        self.query_pipeline.update(&self.bodies, &self.colliders);
     }
 }

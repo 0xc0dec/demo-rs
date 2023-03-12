@@ -1,4 +1,4 @@
-use cgmath::{InnerSpace, Matrix, Matrix4, Quaternion, Rad, Rotation, Transform as _, Vector3};
+use cgmath::{Array, EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3, Quaternion, Rad, Rotation, Transform as _, Vector3};
 
 pub enum TransformSpace {
     Local,
@@ -7,7 +7,6 @@ pub enum TransformSpace {
 
 pub struct Transform {
     m: Matrix4<f32>,
-    pos: Vector3<f32>,
     scale: Vector3<f32>,
 }
 
@@ -16,34 +15,52 @@ impl Transform {
     pub fn new(pos: Vector3<f32>, scale: Vector3<f32>) -> Self {
         Self {
             m: Matrix4::from_translation(pos) * Matrix4::from_nonuniform_scale(scale.x, scale.y, scale.z),
-            pos,
             scale
         }
     }
 
-    pub fn matrix(&self) -> Matrix4<f32> { self.m }
-    pub fn forward(&self) -> Vector3<f32> { self.m.z.truncate() }
+    pub fn matrix(&self) -> Matrix4<f32> {
+        self.m
+    }
+
+    pub fn forward(&self) -> Vector3<f32> {
+        self.m.z.truncate()
+    }
+
+    pub fn right(&self) -> Vector3<f32> {
+        self.m.x.truncate()
+    }
+
+    pub fn up(&self) -> Vector3<f32> {
+        self.m.y.truncate()
+    }
+
+    pub fn position(&self) -> Vector3<f32> {
+        self.m.transform_point(Point3::from_value(0.0)).to_vec()
+    }
 
     // TODO Don't lose scale
     pub fn look_at(&mut self, target: Vector3<f32>) {
         // For some reason could not make it work with Matrix4::look_at, was getting weird results.
-        let rot_mtx = Matrix4::from(Quaternion::look_at(self.pos - target, Vector3::unit_y())).transpose();
+        let rot_mtx = Matrix4::from(Quaternion::look_at(
+            self.position() - target, Vector3::unit_y())
+        ).transpose();
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
         self.m.z = rot_mtx.z;
     }
 
-    // TODO Specify space
     pub fn translate(&mut self, v: Vector3<f32>) {
-        self.m = self.m * Matrix4::from_translation(v);
-        self.pos += v;
+        self.m.w.x += v.x;
+        self.m.w.y += v.y;
+        self.m.w.z += v.z;
     }
 
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
         self.m = Matrix4::from_translation(pos);
-        self.pos = pos;
 
-        let rot_mtx = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z) * Matrix4::from(rotation);
+        let rot_mtx = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z)
+            * Matrix4::from(rotation);
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
         self.m.z = rot_mtx.z;

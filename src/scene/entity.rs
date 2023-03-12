@@ -2,6 +2,7 @@ use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::physics::PhysicsWorld;
 
+// TODO Remove? Not much use in it
 pub trait Entity {
     fn update(&mut self, dt: f32, physics: &PhysicsWorld);
 

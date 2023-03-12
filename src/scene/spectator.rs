@@ -3,12 +3,13 @@ use crate::camera::Camera;
 use crate::frame_context::FrameContext;
 use crate::transform::TransformSpace;
 
+// TODO Replace with an associated function on camera
 pub struct Spectator {
     pub camera: Camera,
 }
 
 impl Spectator {
-    pub fn update(&mut self, frame_context: &FrameContext) {
+    pub fn update(&mut self, frame_context: &FrameContext) -> Vector3<f32> {
         let FrameContext { events, dt } = *frame_context;
 
         if events.rmb_down {
@@ -33,27 +34,32 @@ impl Spectator {
 
         let mut movement: Vector3<f32> = Vector3::zero();
         if events.forward_down {
-            movement -= Vector3::unit_z();
+            movement -= self.camera.transform.forward();
         }
         if events.back_down {
-            movement += Vector3::unit_z();
+            movement += self.camera.transform.forward();
         }
         if events.right_down {
-            movement += Vector3::unit_x();
+            movement += self.camera.transform.right();
         }
         if events.left_down {
-            movement -= Vector3::unit_x();
+            movement -= self.camera.transform.right();
         }
         if events.up_down {
-            movement += Vector3::unit_y();
+            movement += self.camera.transform.up();
         }
         if events.down_down {
-            movement -= Vector3::unit_y();
+            movement -= self.camera.transform.up();
         }
-        if !movement.is_zero() {
-            self.camera.transform
-                .translate(movement.normalize() * dt * 10.0);
-        }
+
+        movement.normalize() * dt * 10.0
+
+        // if !movement.is_zero() {
+        //     self.camera.transform
+        //         .translate(movement.normalize() * dt * 10.0);
+        // }
+        //
+        // movement
     }
 }
 
