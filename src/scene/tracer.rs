@@ -4,13 +4,12 @@ use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
-use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
-use crate::texture::Texture;
+use crate::shaders::{ColorShader, Shader};
 use crate::transform::Transform;
 
 pub struct Tracer {
     model: Model,
-    shader: DiffuseShader,
+    shader: ColorShader,
     transform: Transform,
     target_visible: bool
 }
@@ -18,8 +17,7 @@ pub struct Tracer {
 impl Tracer {
     pub async fn new(device: &Device) -> Self {
         let model = Model::from_file("cube.obj", device).await.expect("Failed to load cube model");
-        let texture = Texture::new_2d_from_file("stonewall.jpg", device).await.unwrap();
-        let shader = DiffuseShader::new(device, DiffuseShaderParams { texture }).await;
+        let shader = ColorShader::new(device).await;
         let transform = Transform::new(Vector3::zero(), Vector3::from_value(0.2));
 
         Tracer {
