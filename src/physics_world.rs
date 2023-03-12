@@ -1,10 +1,10 @@
 use rapier3d::prelude::*;
 
 pub struct PhysicsWorld {
-    bodies: RigidBodySet,
-    colliders: ColliderSet,
-    pipeline: PhysicsPipeline,
-    query_pipeline: QueryPipeline,
+    pub bodies: RigidBodySet,
+    pub colliders: ColliderSet,
+    pub query_pipeline: QueryPipeline,
+    physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
     broad_phase: BroadPhase,
     narrow_phase: NarrowPhase,
@@ -17,7 +17,7 @@ impl PhysicsWorld {
     pub fn new() -> Self {
         let bodies = RigidBodySet::new();
         let colliders = ColliderSet::new();
-        let pipeline = PhysicsPipeline::new();
+        let physics_pipeline = PhysicsPipeline::new();
         let query_pipeline = QueryPipeline::new();
         let island_manager = IslandManager::new();
         let broad_phase = BroadPhase::new();
@@ -29,7 +29,7 @@ impl PhysicsWorld {
         Self {
             bodies,
             colliders,
-            pipeline,
+            physics_pipeline,
             query_pipeline,
             island_manager,
             broad_phase,
@@ -38,22 +38,6 @@ impl PhysicsWorld {
             multibody_joints,
             ccd_solver,
         }
-    }
-
-    pub fn rigid_bodies(&self) -> &RigidBodySet {
-        &self.bodies
-    }
-
-    pub fn colliders(&self) -> &ColliderSet {
-        &self.colliders
-    }
-
-    pub fn colliders_mut(&mut self) -> &mut ColliderSet {
-        &mut self.colliders
-    }
-
-    pub fn query_pipeline(&self) -> &QueryPipeline {
-        &self.query_pipeline
     }
 
     pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> (RigidBodyHandle, ColliderHandle) {
@@ -69,7 +53,7 @@ impl PhysicsWorld {
             ..IntegrationParameters::default()
         };
 
-        self.pipeline.step(
+        self.physics_pipeline.step(
             &gravity,
             &integration_parameters,
             &mut self.island_manager,

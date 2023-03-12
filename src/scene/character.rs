@@ -19,7 +19,7 @@ impl Character {
             .restitution(0.7)
             .translation(Vector::new(cam_pos.x, cam_pos.y, cam_pos.z))
             .build();
-        let collider_handle = physics.colliders_mut().insert(collider);
+        let collider_handle = physics.colliders.insert(collider);
         let controller = KinematicCharacterController::default();
 
         Self {
@@ -49,7 +49,7 @@ impl Character {
         if let Some(spectator_translation) = spectator_translation {
             let (effective_movement, collider_current_pos) = {
                 let (collider_pos, collider_shape) = {
-                    let collider = physics.colliders()
+                    let collider = physics.colliders
                         .get(self.collider_handle)
                         .unwrap();
                     (collider.position(), collider.shape())
@@ -57,9 +57,9 @@ impl Character {
 
                 let effective_movement = self.controller.move_shape(
                     ctx.dt,
-                    physics.rigid_bodies(),
-                    physics.colliders(),
-                    physics.query_pipeline(),
+                    &physics.bodies,
+                    &physics.colliders,
+                    &physics.query_pipeline,
                     collider_shape,
                     collider_pos,
                     Vector::new(
@@ -81,7 +81,7 @@ impl Character {
                 effective_movement.translation.z
             ));
 
-            physics.colliders_mut()
+            physics.colliders
                 .get_mut(self.collider_handle)
                 .unwrap()
                 .set_translation(collider_current_pos + effective_movement.translation);

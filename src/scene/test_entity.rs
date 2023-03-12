@@ -50,7 +50,7 @@ impl TestEntity {
 
 impl Entity for TestEntity {
     fn update(&mut self, _dt: f32, physics: &PhysicsWorld) {
-        let body = physics.rigid_bodies().get(self.rigid_body_handle).unwrap();
+        let body = physics.bodies.get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();
         let phys_rot = body.rotation();
 
