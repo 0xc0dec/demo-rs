@@ -2,11 +2,10 @@ use cgmath::{Vector3, Zero};
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
-use crate::physics::PhysicsWorld;
+use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
 use crate::scene::entity::Entity;
 use crate::scene::skybox::Skybox;
-use crate::scene::spectator::Spectator;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 
 pub struct Scene {

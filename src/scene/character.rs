@@ -3,7 +3,7 @@ use rapier3d::control::KinematicCharacterController;
 use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::frame_context::FrameContext;
-use crate::physics::PhysicsWorld;
+use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
 
 pub struct Character {
@@ -44,9 +44,10 @@ impl Character {
             );
         }
 
-        let spectator_translation = self.camera.transform.spectator_translation(ctx.dt, ctx.events);
+        let spectator_translation = self.camera.transform
+            .spectator_translation(ctx.dt, 10.0, ctx.events);
         if let Some(spectator_translation) = spectator_translation {
-            let (effective_movement, current_pos) = {
+            let (effective_movement, collider_current_pos) = {
                 let (collider_pos, collider_shape) = {
                     let collider = physics.colliders()
                         .get(self.collider_handle)
@@ -60,7 +61,7 @@ impl Character {
                     physics.colliders(),
                     physics.query_pipeline(),
                     collider_shape,
-                    &collider_pos,
+                    collider_pos,
                     Vector::new(
                         spectator_translation.x,
                         spectator_translation.y,
@@ -83,7 +84,7 @@ impl Character {
             physics.colliders_mut()
                 .get_mut(self.collider_handle)
                 .unwrap()
-                .set_translation(current_pos + effective_movement.translation);
+                .set_translation(collider_current_pos + effective_movement.translation);
         }
     }
 }

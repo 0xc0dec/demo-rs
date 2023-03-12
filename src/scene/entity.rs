@@ -1,6 +1,6 @@
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
-use crate::physics::PhysicsWorld;
+use crate::physics_world::PhysicsWorld;
 
 // TODO Remove? Not much use in it
 pub trait Entity {

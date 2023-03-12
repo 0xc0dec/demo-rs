@@ -32,7 +32,7 @@ impl crate::transform::Transform {
         })
     }
 
-    pub fn spectator_translation(&self, dt: f32, events: &Events) -> Option<Vector3<f32>> {
+    pub fn spectator_translation(&self, dt: f32, speed: f32, events: &Events) -> Option<Vector3<f32>> {
         if !events.rmb_down { return None; }
 
         let mut movement: Vector3<f32> = Vector3::zero();
@@ -55,7 +55,7 @@ impl crate::transform::Transform {
             movement -= self.up();
         }
 
-        Some(movement.normalize() * dt * 10.0)
+        Some(movement.normalize() * dt * speed)
     }
 }
 

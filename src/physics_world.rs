@@ -44,10 +44,6 @@ impl PhysicsWorld {
         &self.bodies
     }
 
-    pub fn rigid_bodies_mut(&mut self) -> &mut RigidBodySet {
-        &mut self.bodies
-    }
-
     pub fn colliders(&self) -> &ColliderSet {
         &self.colliders
     }

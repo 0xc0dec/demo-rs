@@ -3,7 +3,7 @@ use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
-use crate::physics::PhysicsWorld;
+use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
 use super::entity::Entity;
