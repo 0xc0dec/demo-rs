@@ -1,4 +1,5 @@
 use cgmath::{Array, EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3, Quaternion, Rad, Rotation, Transform as _, Vector3};
+use rapier3d::na::VectorSlice3;
 
 pub enum TransformSpace {
     Local,
@@ -38,7 +39,7 @@ impl Transform {
     }
 
     pub fn position(&self) -> Vector3<f32> {
-        self.m.transform_point(Point3::from_value(0.0)).to_vec()
+        self.m.w.truncate()
     }
 
     pub fn look_at(&mut self, target: Vector3<f32>) {
