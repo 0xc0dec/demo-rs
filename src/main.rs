@@ -11,6 +11,7 @@ mod frame_context;
 mod render_target;
 mod post_processor;
 mod physics_world;
+mod math;
 
 use std::collections::VecDeque;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};

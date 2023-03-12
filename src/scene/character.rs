@@ -1,14 +1,13 @@
 use cgmath::{Vector3};
-use rapier3d::control::KinematicCharacterController;
 use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::frame_context::FrameContext;
+use crate::math::to_na_vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
 
 pub struct Character {
     collider_handle: ColliderHandle,
-    controller: KinematicCharacterController,
     pub camera: Camera,
 }
 
@@ -17,14 +16,12 @@ impl Character {
         let cam_pos = camera.transform.position();
         let collider = ColliderBuilder::ball(0.5)
             .restitution(0.7)
-            .translation(Vector::new(cam_pos.x, cam_pos.y, cam_pos.z))
+            .translation(to_na_vec3(cam_pos))
             .build();
         let collider_handle = physics.colliders.insert(collider);
-        let controller = KinematicCharacterController::default();
 
         Self {
             collider_handle,
-            controller,
             camera
         }
     }
@@ -47,44 +44,15 @@ impl Character {
         let spectator_translation = self.camera.transform
             .spectator_translation(ctx.dt, 10.0, ctx.input);
         if let Some(spectator_translation) = spectator_translation {
-            let (effective_movement, collider_current_pos) = {
-                let (collider_pos, collider_shape) = {
-                    let collider = physics.colliders
-                        .get(self.collider_handle)
-                        .unwrap();
-                    (collider.position(), collider.shape())
-                };
+            let (effective_movement, collider_current_pos) =
+                physics.move_character(ctx.dt, spectator_translation, self.collider_handle);
 
-                let effective_movement = self.controller.move_shape(
-                    ctx.dt,
-                    &physics.bodies,
-                    &physics.colliders,
-                    &physics.query_pipeline,
-                    collider_shape,
-                    collider_pos,
-                    Vector::new(
-                        spectator_translation.x,
-                        spectator_translation.y,
-                        spectator_translation.z
-                    ),
-                    QueryFilter::default()
-                        .exclude_collider(self.collider_handle),
-                    |_| {}
-                );
-
-                (effective_movement, collider_pos.translation.vector)
-            };
-
-            self.camera.transform.translate(Vector3::new(
-                effective_movement.translation.x,
-                effective_movement.translation.y,
-                effective_movement.translation.z
-            ));
+            self.camera.transform.translate(effective_movement);
 
             physics.colliders
                 .get_mut(self.collider_handle)
                 .unwrap()
-                .set_translation(collider_current_pos + effective_movement.translation);
+                .set_translation(to_na_vec3(collider_current_pos + effective_movement));
         }
     }
 }
