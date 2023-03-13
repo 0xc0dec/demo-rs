@@ -5,7 +5,7 @@ for a low-level graphics API. There is no attempt to create an "engine", everyth
 
 ![Screenshot](/screenshot.png?raw=true)
 
-What's implemented so far:
+### Implemented so far
 - Rendering scene objects via WGPU's `RenderBundle` instead of directly via `RenderPass`. This proved to be _very_ useful
 if you wish to decouple scene rendering logic from render passes and make it modular. With render passes I couldn't
 make it work due to Rust borrow checker and different object lifetimes involved - as in many examples I found,
