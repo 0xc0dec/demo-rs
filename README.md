@@ -10,3 +10,5 @@ What's implemented so far:
   - Simple rigid bodies with colliders.
   - Character controller to prevent camera from going through objects.
   - Ray casting.
+
+![Screenshot](/screenshot.png?raw=true)
