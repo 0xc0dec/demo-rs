@@ -13,7 +13,7 @@ the whole rendering code had to be within one function/block in order for lifeti
 things to work together.
 - Skybox rendering on a full-screen quad.
 - First person camera flying camera ("spectator") with protection from overturning.
-- Render to texture.
+- Render to texture: the scene is first rendered into a downsized texture, which is then rendered on a full-screen quad to achieve pixelated effect.
 - Physics via Rapier3D
   - Simple rigid bodies with colliders.
   - Character controller to prevent camera from going through objects.
