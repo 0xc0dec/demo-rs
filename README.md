@@ -12,7 +12,7 @@ make it work due to Rust borrow checker and different object lifetimes involved 
 the whole rendering code had to be within one function/block in order for lifetimes of render passes, textures and other
 things to work together.
 - Skybox rendering on a full-screen quad.
-- First person camera flying camera ("spectator") with protection from overturning.
+- First person flying camera ("spectator") with protection from overturning.
 - Render to texture: the scene is first rendered into a downsized texture, which is then rendered on a full-screen quad to achieve pixelated effect.
 - Physics via [Rapier](https://rapier.rs)
   - Simple rigid bodies with colliders.
