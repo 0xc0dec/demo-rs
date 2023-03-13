@@ -5,8 +5,10 @@ for a low-level graphics API. There is no attempt to create an "engine", everyth
 
 What's implemented so far:
 - Rendering scene objects via WGPU's `RenderBundle` instead of directly via `RenderPass`. This proved to be _very_ useful
-if you wish to decouple scene rendering logic from render passes and make it more modular. With render passes I couldn't
-make it work due to the Rust borrow checker and different object lifetimes involved.
+if you wish to decouple scene rendering logic from render passes and make it modular. With render passes I couldn't
+make it work due to Rust borrow checker and different object lifetimes involved - as in many examples I found,
+the whole rendering code had to be within one function/block in order for lifetimes of render passes, textures and other
+things to work together.
 - Skybox rendering on a full-screen quad.
 - First person camera flying camera ("spectator") with protection from overturning.
 - Render to texture.
