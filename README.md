@@ -5,7 +5,13 @@ for a low-level graphics API. There is no attempt to create an "engine", everyth
 
 ![Screenshot](/screenshot.png?raw=true)
 
-### Implemented so far
+## Building and running
+```
+cargo run
+```
+Right-click to start controlling camera, use `W-A-S-D-Q-E` keys to fly around.
+
+## Implemented so far
 - Rendering scene objects via WGPU's `RenderBundle` instead of directly via `RenderPass`. This proved to be _very_ useful
 if you wish to decouple scene rendering logic from render passes and make it modular. With render passes I couldn't
 make it work due to Rust borrow checker and different object lifetimes involved - as in many examples I found,
@@ -13,6 +19,7 @@ the whole rendering code had to be within one function/block in order for lifeti
 things to work together.
 - Skybox rendering on a full-screen quad.
 - First person flying camera ("spectator") with protection from overturning.
+- Cursor capturing when controlling the camera.
 - Render to texture: the scene is first rendered into a downsized texture, which is then rendered on a full-screen quad to achieve pixelated effect.
 - Physics via [Rapier](https://rapier.rs)
   - Simple rigid bodies with colliders.
