@@ -20,7 +20,7 @@ things to work together.
 - Skybox rendering on a full-screen quad.
 - First person flying camera ("spectator") with protection from overturning.
 - Cursor capturing when controlling the camera.
-- Render to texture: the scene is first rendered into a downsized texture, which is then rendered on a full-screen quad to achieve pixelated effect.
+- Render to texture: the scene is first rendered into a low-res texture, which is then rendered on a full-screen quad to achieve pixelated effect.
 - Physics via [Rapier](https://rapier.rs)
   - Simple rigid bodies with colliders.
   - Character controller to prevent camera from going through objects.
