@@ -12,8 +12,12 @@ mod render_target;
 mod post_processor;
 mod physics_world;
 mod math;
+mod imgui_winit;
 
 use std::collections::VecDeque;
+use std::time::Duration;
+use imgui::{Condition, FontSource};
+use imgui_wgpu::{Renderer, RendererConfig};
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::CursorGrabMode;
@@ -39,9 +43,41 @@ async fn run() {
     let mut scene = Scene::new(&device).await;
     let mut post_processor = PostProcessor::new(&device, (200, 150)).await;
 
+    let mut imgui = imgui::Context::create();
+    let mut platform = imgui_winit::WinitPlatform::init(&mut imgui);
+    platform.attach_window(
+        imgui.io_mut(),
+        &window,
+        imgui_winit::HiDpiMode::Default,
+    );
+    imgui.set_ini_filename(None);
+
+    let font_size = (13.0 * window.scale_factor()) as f32;
+    imgui.io_mut().font_global_scale = (1.0 / window.scale_factor()) as f32;
+
+    imgui.fonts().add_font(&[FontSource::DefaultFontData {
+        config: Some(imgui::FontConfig {
+            oversample_h: 1,
+            pixel_snap_h: true,
+            size_pixels: font_size,
+            ..Default::default()
+        }),
+    }]);
+
+    let renderer_config = RendererConfig {
+        texture_format: device.surface_texture_format(),
+        ..Default::default()
+    };
+
+    let mut renderer = Renderer::new(&mut imgui, device.device(), device.queue(), renderer_config);
+
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
     let mut last_frame_instant = std::time::Instant::now();
+
+    let mut last_cursor = None;
+
+    let mut demo_ui_window_open = true;
 
     let mut running = true;
     while running {
@@ -100,6 +136,8 @@ async fn run() {
 
                 _ => {}
             }
+
+            platform.handle_event(imgui.io_mut(), &window, &event);
         });
 
         if input.escape_down {
@@ -139,19 +177,60 @@ async fn run() {
             input: &input,
         };
 
-        scene.update(&frame_context);
+        imgui.io_mut().update_delta_time(Duration::from_secs_f32(dt_filtered));
+
+        platform
+            .prepare_frame(imgui.io_mut(), &window)
+            .expect("Failed to prepare frame");
+        let ui = imgui.frame();
 
         {
-            let mut frame = device.new_frame(Some(post_processor.source_rt()));
-            scene.render(&device, &mut frame);
-            frame.finish(&device);
+            let window = ui.window("Hello world");
+            window
+                .size([300.0, 100.0], Condition::FirstUseEver)
+                .build(|| {
+                    ui.text("Hello world!");
+                    ui.text("This...is...imgui-rs on WGPU!");
+                    ui.separator();
+                    let mouse_pos = ui.io().mouse_pos;
+                    ui.text(format!(
+                        "Mouse Position: ({:.1},{:.1})",
+                        mouse_pos[0], mouse_pos[1]
+                    ));
+                });
+
+            let window = ui.window("Hello too");
+            window
+                .size([400.0, 200.0], Condition::FirstUseEver)
+                .position([400.0, 200.0], Condition::FirstUseEver)
+                .build(|| {
+                    ui.text(format!("Frametime: {dt_filtered:?}"));
+                });
+
+            ui.show_demo_window(&mut demo_ui_window_open);
         }
 
-        {
-            let mut frame = device.new_frame(None);
-            post_processor.render(&mut frame);
-            frame.finish(&device);
+        if last_cursor != Some(ui.mouse_cursor()) {
+            last_cursor = Some(ui.mouse_cursor());
+            platform.prepare_render(ui, &window);
         }
+
+        let draw_data = imgui.render();
+        device.render_ui(&mut renderer, draw_data);
+
+        // scene.update(&frame_context);
+        //
+        // {
+        //     let mut frame = device.new_frame(Some(post_processor.source_rt()));
+        //     scene.render(&device, &mut frame);
+        //     frame.finish(&device);
+        // }
+        //
+        // {
+        //     let mut frame = device.new_frame(None);
+        //     post_processor.render(&mut frame);
+        //     frame.finish(&device);
+        // }
     }
 }
 

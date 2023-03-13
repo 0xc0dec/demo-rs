@@ -1,5 +1,6 @@
 use std::iter;
 use std::ops::{Deref, DerefMut};
+use imgui::DrawData;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
@@ -67,6 +68,44 @@ impl Device {
             queue,
             depth_tex: None
         }
+    }
+
+    pub fn render_ui(&self, ui_renderer: &mut imgui_wgpu::Renderer, draw_data: &DrawData) {
+        let surface_tex = self.surface
+            .get_current_texture()
+            .expect("Missing surface texture");
+
+        let surface_tex_view = surface_tex.texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+
+        let cmd_buffer = {
+            let mut encoder = self.device
+                .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+            {
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: &surface_tex_view,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color::WHITE),
+                            store: true,
+                        }
+                    })],
+                    depth_stencil_attachment: None
+                });
+
+                ui_renderer
+                    .render(draw_data, &self.queue, &self.device, &mut pass)
+                    .expect("Rendering failed");
+            }
+
+            encoder.finish()
+        };
+
+        self.queue.submit(Some(cmd_buffer));
+        surface_tex.present();
     }
 
     // TODO Add FrameTarget as enum

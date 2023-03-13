@@ -9,6 +9,8 @@ bytemuck = { version = "1.13.0", features = ["derive"] }
 cgmath = "0.18.0"
 ddsfile = "0.5.1"
 image = { version = "0.24.5", features = ["png", "jpeg"], default-features = false }
+imgui = "0.10.0"
+imgui-wgpu = "0.22.0"
 instant = "0.1.12"
 pollster = "0.3.0"
 rapier3d = { version = "0.17.2", features = ["simd-stable"] }
