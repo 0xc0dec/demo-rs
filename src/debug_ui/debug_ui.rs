@@ -66,12 +66,12 @@ impl DebugUI {
     pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
         self.platform
             .prepare_frame(self.imgui.io_mut(), ctx.window)
-            .expect("Failed to prepare frame");
+            .expect("Failed to prepare UI frame");
         let frame = self.imgui.frame();
 
         // TODO Remove after testing
         {
-            frame.window("Hello there!")
+            frame.window("Test window")
                 .size([300.0, 100.0], imgui::Condition::FirstUseEver)
                 .build(|| {
                     frame.text("Some test string.");
@@ -93,6 +93,6 @@ impl DebugUI {
 
         self.renderer
             .render(draw_data, ctx.device.queue(), ctx.device.device(), pass)
-            .expect("Rendering failed");
+            .expect("Failed to render UI");
     }
 }
