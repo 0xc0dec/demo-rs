@@ -63,9 +63,9 @@ impl DebugUI {
         self.imgui.io_mut().update_delta_time(Duration::from_secs_f32(ctx.dt));
     }
 
-    pub fn render<'a>(&'a mut self, window: &Window, device: &Device, rpass: &mut RenderPass<'a>) {
+    pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
         self.platform
-            .prepare_frame(self.imgui.io_mut(), &window)
+            .prepare_frame(self.imgui.io_mut(), ctx.window)
             .expect("Failed to prepare frame");
         let frame = self.imgui.frame();
 
@@ -86,13 +86,13 @@ impl DebugUI {
 
         if self.last_cursor != frame.mouse_cursor() {
             self.last_cursor = frame.mouse_cursor();
-            self.platform.prepare_render(frame, &window);
+            self.platform.prepare_render(frame, ctx.window);
         }
 
         let draw_data = self.imgui.render();
 
         self.renderer
-            .render(draw_data, device.queue(), device.device(), rpass)
+            .render(draw_data, ctx.device.queue(), ctx.device.device(), pass)
             .expect("Rendering failed");
     }
 }

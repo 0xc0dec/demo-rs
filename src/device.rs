@@ -204,7 +204,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
                 });
 
                 pass.execute_bundles(iter::once(&bundle));
-                debug_ui.map(|ui| ui.render(ctx.window, ctx.device, &mut pass));
+                debug_ui.map(|ui| ui.render(&mut pass, ctx));
             }
 
             encoder.finish()
