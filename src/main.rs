@@ -172,52 +172,11 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        let frame_context = FrameContext {
-            dt: dt_filtered,
-            input: &input,
-        };
-
-        imgui.io_mut().update_delta_time(Duration::from_secs_f32(dt_filtered));
-
-        platform
-            .prepare_frame(imgui.io_mut(), &window)
-            .expect("Failed to prepare frame");
-        let ui = imgui.frame();
-
-        {
-            let window = ui.window("Hello world");
-            window
-                .size([300.0, 100.0], Condition::FirstUseEver)
-                .build(|| {
-                    ui.text("Hello world!");
-                    ui.text("This...is...imgui-rs on WGPU!");
-                    ui.separator();
-                    let mouse_pos = ui.io().mouse_pos;
-                    ui.text(format!(
-                        "Mouse Position: ({:.1},{:.1})",
-                        mouse_pos[0], mouse_pos[1]
-                    ));
-                });
-
-            let window = ui.window("Hello too");
-            window
-                .size([400.0, 200.0], Condition::FirstUseEver)
-                .position([400.0, 200.0], Condition::FirstUseEver)
-                .build(|| {
-                    ui.text(format!("Frametime: {dt_filtered:?}"));
-                });
-
-            ui.show_demo_window(&mut demo_ui_window_open);
-        }
-
-        if last_cursor != Some(ui.mouse_cursor()) {
-            last_cursor = Some(ui.mouse_cursor());
-            platform.prepare_render(ui, &window);
-        }
-
-        let draw_data = imgui.render();
-        device.render_ui(&mut renderer, draw_data);
-
+        // let frame_context = FrameContext {
+        //     dt: dt_filtered,
+        //     input: &input,
+        // };
+        //
         // scene.update(&frame_context);
         //
         // {
@@ -231,6 +190,48 @@ async fn run() {
         //     post_processor.render(&mut frame);
         //     frame.finish(&device);
         // }
+
+        // Render UI
+        {
+            imgui.io_mut().update_delta_time(Duration::from_secs_f32(dt_filtered));
+
+            platform
+                .prepare_frame(imgui.io_mut(), &window)
+                .expect("Failed to prepare frame");
+            let ui = imgui.frame();
+
+            {
+                ui.window("Hello world")
+                    .size([300.0, 100.0], Condition::FirstUseEver)
+                    .build(|| {
+                        ui.text("Hello world!");
+                        ui.text("This...is...imgui-rs on WGPU!");
+                        ui.separator();
+                        let mouse_pos = ui.io().mouse_pos;
+                        ui.text(format!(
+                            "Mouse Position: ({:.1},{:.1})",
+                            mouse_pos[0], mouse_pos[1]
+                        ));
+                    });
+
+                ui.window("Hello too")
+                    .size([400.0, 200.0], Condition::FirstUseEver)
+                    .position([400.0, 200.0], Condition::FirstUseEver)
+                    .build(|| {
+                        ui.text(format!("Frametime: {dt_filtered:?}"));
+                    });
+
+                ui.show_demo_window(&mut demo_ui_window_open);
+            }
+
+            if last_cursor != Some(ui.mouse_cursor()) {
+                last_cursor = Some(ui.mouse_cursor());
+                platform.prepare_render(ui, &window);
+            }
+
+            let draw_data = imgui.render();
+            device.render_ui(&mut renderer, draw_data);
+        }
     }
 }
 
