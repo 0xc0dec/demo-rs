@@ -55,7 +55,7 @@ impl DebugUI {
         }
     }
 
-    pub fn handle_event(&mut self, window: &Window, event: &Event<()>) {
+    pub fn handle_window_event(&mut self, window: &Window, event: &Event<()>) {
         self.platform.handle_event(self.imgui.io_mut(), &window, &event);
     }
 

@@ -105,7 +105,7 @@ async fn run() {
                 _ => {}
             }
 
-            debug_ui.handle_event(&window, &event);
+            debug_ui.handle_window_event(&window, &event);
         });
 
         if input.escape_down {
