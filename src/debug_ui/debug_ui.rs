@@ -1,6 +1,6 @@
 use std::time::Duration;
-use imgui::{DrawData, MouseCursor};
-use wgpu::{Queue, RenderPass};
+use imgui::{MouseCursor};
+use wgpu::{RenderPass};
 use winit::event::Event;
 use winit::window::Window;
 use crate::debug_ui::imgui_winit;
@@ -42,7 +42,7 @@ impl DebugUI {
             ..Default::default()
         };
 
-        let mut renderer = imgui_wgpu::Renderer::new(
+        let renderer = imgui_wgpu::Renderer::new(
             &mut imgui, device.device(), device.queue(), renderer_config
         );
 
@@ -70,11 +70,10 @@ impl DebugUI {
 
         // TODO Remove after testing
         {
-            frame.window("Hello world")
+            frame.window("Hello there!")
                 .size([300.0, 100.0], imgui::Condition::FirstUseEver)
                 .build(|| {
-                    frame.text("Hello world!");
-                    frame.text("This...is...imgui-rs on WGPU!");
+                    frame.text("Some test string.");
                     frame.separator();
                     let mouse_pos = frame.io().mouse_pos;
                     frame.text(format!(

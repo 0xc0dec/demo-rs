@@ -15,20 +15,17 @@ mod math;
 mod debug_ui;
 
 use std::collections::VecDeque;
-use std::time::Duration;
-use imgui::{Condition, FontSource};
-use imgui_wgpu::{Renderer, RendererConfig};
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::CursorGrabMode;
 
 use input::Input;
 use device::Device;
-use crate::debug_ui::DebugUI;
-use crate::device::SurfaceSize;
-use crate::frame_context::FrameContext;
-use crate::post_processor::PostProcessor;
-use crate::scene::Scene;
+use debug_ui::DebugUI;
+use device::SurfaceSize;
+use frame_context::FrameContext;
+use post_processor::PostProcessor;
+use scene::Scene;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -42,7 +39,7 @@ async fn run() {
     let mut input = Input::new();
 
     let mut scene = Scene::new(&device).await;
-    let mut post_processor = PostProcessor::new(&device, (200, 150)).await;
+    let mut pp = PostProcessor::new(&device, (200, 150)).await;
 
     let mut debug_ui = DebugUI::new(&device, &window);
 
@@ -154,14 +151,14 @@ async fn run() {
         debug_ui.update(dt);
 
         {
-            let mut frame = device.new_frame(Some(post_processor.source_rt()));
+            let mut frame = device.new_frame(Some(pp.source_rt()));
             scene.render(&device, &mut frame);
             frame.render(&device, &window, None);
         }
 
         {
             let mut frame = device.new_frame(None);
-            post_processor.render(&mut frame);
+            pp.render(&mut frame);
             frame.render(&device, &window, Some(&mut debug_ui));
         }
     }
