@@ -71,11 +71,9 @@ impl DebugUI {
 
         // TODO Remove after testing
         {
-            frame.window("Test window")
+            frame.window("Debug info")
                 .size([300.0, 100.0], imgui::Condition::FirstUseEver)
                 .build(|| {
-                    frame.text("Some test string.");
-                    frame.separator();
                     let mouse_pos = frame.io().mouse_pos;
                     frame.text(format!(
                         "Mouse Position: ({:.1},{:.1})",
