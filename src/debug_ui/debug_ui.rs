@@ -9,26 +9,26 @@ use crate::frame_context::FrameContext;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
-    imgui: imgui::Context,
+    context: imgui::Context,
     platform: imgui_winit::WinitPlatform,
     last_cursor: Option<MouseCursor>,
 }
 
 impl DebugUI {
     pub fn new(device: &Device, window: &Window) -> Self {
-        let mut imgui = imgui::Context::create();
-        let mut platform = imgui_winit::WinitPlatform::init(&mut imgui);
+        let mut context = imgui::Context::create();
+        let mut platform = imgui_winit::WinitPlatform::init(&mut context);
         platform.attach_window(
-            imgui.io_mut(),
+            context.io_mut(),
             &window,
             imgui_winit::HiDpiMode::Default,
         );
-        imgui.set_ini_filename(None);
+        context.set_ini_filename(None);
 
         let font_size = (13.0 * window.scale_factor()) as f32;
-        imgui.io_mut().font_global_scale = (1.0 / window.scale_factor()) as f32;
+        context.io_mut().font_global_scale = (1.0 / window.scale_factor()) as f32;
 
-        imgui.fonts().add_font(&[imgui::FontSource::DefaultFontData {
+        context.fonts().add_font(&[imgui::FontSource::DefaultFontData {
             config: Some(imgui::FontConfig {
                 oversample_h: 1,
                 pixel_snap_h: true,
@@ -44,11 +44,11 @@ impl DebugUI {
         };
 
         let renderer = imgui_wgpu::Renderer::new(
-            &mut imgui, device.device(), device.queue(), renderer_config
+            &mut context, device.device(), device.queue(), renderer_config
         );
 
         Self {
-            imgui,
+            context,
             renderer,
             platform,
             last_cursor: None
@@ -56,18 +56,18 @@ impl DebugUI {
     }
 
     pub fn handle_window_event(&mut self, window: &Window, event: &Event<()>) {
-        self.platform.handle_event(self.imgui.io_mut(), &window, &event);
+        self.platform.handle_event(self.context.io_mut(), &window, &event);
     }
 
     pub fn update(&mut self, ctx: &FrameContext) {
-        self.imgui.io_mut().update_delta_time(Duration::from_secs_f32(ctx.dt));
+        self.context.io_mut().update_delta_time(Duration::from_secs_f32(ctx.dt));
     }
 
     pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
         self.platform
-            .prepare_frame(self.imgui.io_mut(), ctx.window)
+            .prepare_frame(self.context.io_mut(), ctx.window)
             .expect("Failed to prepare UI frame");
-        let frame = self.imgui.frame();
+        let frame = self.context.frame();
 
         // TODO Remove after testing
         {
@@ -89,7 +89,7 @@ impl DebugUI {
             self.platform.prepare_render(frame, ctx.window);
         }
 
-        let draw_data = self.imgui.render();
+        let draw_data = self.context.render();
 
         self.renderer
             .render(draw_data, ctx.device.queue(), ctx.device.device(), pass)
