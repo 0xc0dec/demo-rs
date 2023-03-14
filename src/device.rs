@@ -1,6 +1,7 @@
 use std::iter;
 use std::ops::{Deref, DerefMut};
 use imgui::DrawData;
+use crate::debug_ui::DebugUI;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
@@ -70,7 +71,7 @@ impl Device {
         }
     }
 
-    pub fn render_ui(&self, ui_renderer: &mut imgui_wgpu::Renderer, draw_data: &DrawData) {
+    pub fn render_ui(&self, window: &winit::window::Window, dt: f32, debug_ui: &mut DebugUI) {
         let surface_tex = self.surface
             .get_current_texture()
             .expect("Missing surface texture");
@@ -96,9 +97,7 @@ impl Device {
                     depth_stencil_attachment: None
                 });
 
-                ui_renderer
-                    .render(draw_data, &self.queue, &self.device, &mut pass)
-                    .expect("Rendering failed");
+                debug_ui.render(window, &self, dt, &mut pass);
             }
 
             encoder.finish()

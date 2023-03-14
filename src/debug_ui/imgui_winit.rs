@@ -1,3 +1,5 @@
+// A modified version of imgui_winit_support, with re-export of winit removed.
+
 //! This crate provides a winit-based backend platform for imgui-rs.
 //!
 //! A backend platform handles window/input device events and manages their
