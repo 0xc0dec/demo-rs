@@ -15,6 +15,7 @@ pub struct Device {
     depth_tex: Option<Texture>,
 }
 
+// TODO Remove to Renderer?
 impl Device {
     pub async fn new(window: &winit::window::Window) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {

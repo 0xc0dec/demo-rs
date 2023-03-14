@@ -115,6 +115,7 @@ async fn run() {
             running = false;
         }
 
+        // Grab/release cursor
         if input.rmb_down_just_switched {
             if input.rmb_down {
                 window.set_cursor_grab(CursorGrabMode::Confined)
