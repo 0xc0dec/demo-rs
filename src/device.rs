@@ -164,11 +164,27 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
             .map(|t| t.color_tex().view())
             .or(surface_tex_view.as_ref())
             .unwrap();
+        let color_attachment = Some(wgpu::RenderPassColorAttachment {
+            view: color_tex_view,
+            resolve_target: None,
+            ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+                store: true,
+            }
+        });
 
         let depth_tex_view = self.target
             .map(|t| t.depth_tex().view())
             .or(device.depth_tex.as_ref().map(|t| t.view()))
             .unwrap();
+        let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
+            view: depth_tex_view,
+            depth_ops: Some(wgpu::Operations {
+                load: wgpu::LoadOp::Clear(1.0),
+                store: true,
+            }),
+            stencil_ops: None,
+        });
 
         let bundle = self.bundle_encoder
             .finish(&wgpu::RenderBundleDescriptor { label : None });
@@ -178,23 +194,6 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
                 .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
-                let color_attachment = Some(wgpu::RenderPassColorAttachment {
-                    view: color_tex_view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::RED),
-                        store: true,
-                    }
-                });
-                let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: depth_tex_view,
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: true,
-                    }),
-                    stencil_ops: None,
-                });
-
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
                     color_attachments: &[color_attachment],
