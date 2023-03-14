@@ -12,6 +12,8 @@ pub struct Device {
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
     queue: wgpu::Queue,
+    // TODO Make it non-optional. Currently it is just because Texture's ctor requires
+    // a reference to Device, which we cannot provide before we have constructed the device.
     depth_tex: Option<Texture>,
 }
 
