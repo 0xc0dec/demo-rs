@@ -128,7 +128,7 @@ async fn run() {
         }
 
         // Stolen from Kajiya
-        let dt_filtered = {
+        let dt = {
             let now = std::time::Instant::now();
             let dt_duration = now - last_frame_instant;
             last_frame_instant = now;
@@ -143,34 +143,26 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
+        // TODO Remove?
         let frame_context = FrameContext {
-            dt: dt_filtered,
+            dt,
             input: &input,
         };
 
         scene.update(&frame_context);
+        debug_ui.update(dt);
 
-        // {
-        //     let mut frame = device.new_frame(Some(post_processor.source_rt()));
-        //     scene.render(&device, &mut frame);
-        //     frame.finish(&device);
-        // }
-        //
-        // {
-        //     let mut frame = device.new_frame(Some(post_processor.source_rt()));
-        //     scene.render(&device, &mut frame);
-        //     frame.finish(&device);
-        // }
-        //
-        // {
-        //     let mut frame = device.new_frame(None);
-        //     post_processor.render(&mut frame);
-        //     frame.finish(&device);
-        // }
+        {
+            let mut frame = device.new_frame(Some(post_processor.source_rt()));
+            scene.render(&device, &mut frame);
+            frame.render(&device, &window, None);
+        }
 
-        // Render UI
-        debug_ui.update(dt_filtered);
-        device.render_ui(&window, dt_filtered, &mut debug_ui);
+        {
+            let mut frame = device.new_frame(None);
+            post_processor.render(&mut frame);
+            frame.render(&device, &window, Some(&mut debug_ui));
+        }
     }
 }
 

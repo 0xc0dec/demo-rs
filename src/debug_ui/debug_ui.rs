@@ -38,6 +38,7 @@ impl DebugUI {
 
         let renderer_config = imgui_wgpu::RendererConfig {
             texture_format: device.surface_texture_format(),
+            depth_format: Some(device.depth_texture_format()),
             ..Default::default()
         };
 
@@ -61,7 +62,7 @@ impl DebugUI {
         self.imgui.io_mut().update_delta_time(Duration::from_secs_f32(dt));
     }
 
-    pub fn render<'a>(&'a mut self, window: &Window, device: &Device, dt: f32, rpass: &mut RenderPass<'a>) {
+    pub fn render<'a>(&'a mut self, window: &Window, device: &Device, rpass: &mut RenderPass<'a>) {
         self.platform
             .prepare_frame(self.imgui.io_mut(), &window)
             .expect("Failed to prepare frame");
@@ -80,13 +81,6 @@ impl DebugUI {
                         "Mouse Position: ({:.1},{:.1})",
                         mouse_pos[0], mouse_pos[1]
                     ));
-                });
-
-            frame.window("Hello too")
-                .size([400.0, 200.0], imgui::Condition::FirstUseEver)
-                .position([400.0, 200.0], imgui::Condition::FirstUseEver)
-                .build(|| {
-                    frame.text(format!("Frametime: {dt:?}"));
                 });
         }
 
