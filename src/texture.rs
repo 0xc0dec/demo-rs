@@ -36,11 +36,17 @@ fn new_sampler(
 
 // TODO Reduce copypasta
 impl Texture {
-    pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
+    pub fn view(&self) -> &wgpu::TextureView {
+        &self.view
+    }
 
-    pub fn view(&self) -> &wgpu::TextureView { &self.view }
-    pub fn sampler(&self) -> &wgpu::Sampler { &self.sampler }
-    pub fn format(&self) -> wgpu::TextureFormat { self.format }
+    pub fn sampler(&self) -> &wgpu::Sampler {
+        &self.sampler
+    }
+
+    pub fn format(&self) -> wgpu::TextureFormat {
+        self.format
+    }
 
     pub fn new_depth(device: &Device, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
@@ -48,8 +54,8 @@ impl Texture {
             height: size.1,
             depth_or_array_layers: 1,
         };
-        let format = Self::DEPTH_FORMAT;
 
+        let format = device.depth_texture_format();
         let texture = device.device().create_texture(
             &wgpu::TextureDescriptor {
                 label: None,
@@ -59,7 +65,7 @@ impl Texture {
                 dimension: wgpu::TextureDimension::D2,
                 format,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-                view_formats: &[Self::DEPTH_FORMAT],
+                view_formats: &[format],
             }
         );
 

@@ -117,7 +117,7 @@ impl Device {
     }
 
     pub fn depth_texture_format(&self) -> wgpu::TextureFormat {
-        Texture::DEPTH_FORMAT // TODO Configurable and/or maybe move to Device
+        wgpu::TextureFormat::Depth32Float // TODO Configurable
     }
 
     pub fn surface_size(&self) -> SurfaceSize {
