@@ -141,25 +141,26 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        // TODO Remove?
         let frame_context = FrameContext {
             dt,
             input: &input,
+            device: &device,
+            window: &window
         };
 
         scene.update(&frame_context);
-        debug_ui.update(dt);
+        debug_ui.update(&frame_context);
 
         {
             let mut frame = device.new_frame(Some(pp.source_rt()));
-            scene.render(&device, &mut frame);
-            frame.render(&device, &window, None);
+            scene.render(&mut frame, &frame_context);
+            frame.render(None, &frame_context);
         }
 
         {
             let mut frame = device.new_frame(None);
             pp.render(&mut frame);
-            frame.render(&device, &window, Some(&mut debug_ui));
+            frame.render(Some(&mut debug_ui), &frame_context);
         }
     }
 }

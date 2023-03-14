@@ -72,19 +72,21 @@ impl Scene {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, frame: &mut Frame<'b, 'a>)
+    pub fn render<'a, 'b>(&'a mut self, frame: &mut Frame<'b, 'a>, ctx: &'a FrameContext)
         where 'a: 'b
     {
         // TODO Do this only when the size changes
-        self.character.camera
-            .set_fov(device.surface_size().width as f32, device.surface_size().height as f32);
+        self.character.camera.set_fov(
+            ctx.device.surface_size().width as f32,
+            ctx.device.surface_size().height as f32
+        );
 
-        self.skybox.render(device, &self.character.camera, frame);
+        self.skybox.render(ctx.device, &self.character.camera, frame);
 
         for e in &mut self.entities {
-            e.render(device, &self.character.camera, frame);
+            e.render(ctx.device, &self.character.camera, frame);
         }
 
-        self.tracer.render(device, &self.character.camera, frame);
+        self.tracer.render(ctx.device, &self.character.camera, frame);
     }
 }

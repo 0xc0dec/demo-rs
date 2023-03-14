@@ -5,6 +5,7 @@ use winit::event::Event;
 use winit::window::Window;
 use crate::debug_ui::imgui_winit;
 use crate::device::Device;
+use crate::frame_context::FrameContext;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
@@ -58,8 +59,8 @@ impl DebugUI {
         self.platform.handle_event(self.imgui.io_mut(), &window, &event);
     }
 
-    pub fn update(&mut self, dt: f32) {
-        self.imgui.io_mut().update_delta_time(Duration::from_secs_f32(dt));
+    pub fn update(&mut self, ctx: &FrameContext) {
+        self.imgui.io_mut().update_delta_time(Duration::from_secs_f32(ctx.dt));
     }
 
     pub fn render<'a>(&'a mut self, window: &Window, device: &Device, rpass: &mut RenderPass<'a>) {

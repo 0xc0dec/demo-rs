@@ -1,6 +1,7 @@
 use std::iter;
 use std::ops::{Deref, DerefMut};
 use crate::debug_ui::DebugUI;
+use crate::frame_context::FrameContext;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
@@ -150,9 +151,9 @@ impl<'a, 'b> DerefMut for Frame<'a, 'b> where 'b: 'a {
 }
 
 impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
-    pub fn render(self, device: &Device, window: &winit::window::Window, debug_ui: Option<&mut DebugUI>) {
+    pub fn render(self, debug_ui: Option<&mut DebugUI>, ctx: &FrameContext) {
         let surface_tex = self.target.is_none()
-            .then(|| device.surface
+            .then(|| ctx.device.surface
                 .get_current_texture()
                 .expect("Missing surface texture")
             );
@@ -175,7 +176,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
 
         let depth_tex_view = self.target
             .map(|t| t.depth_tex().view())
-            .or(device.depth_tex.as_ref().map(|t| t.view()))
+            .or(ctx.device.depth_tex.as_ref().map(|t| t.view()))
             .unwrap();
         let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
             view: depth_tex_view,
@@ -190,7 +191,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
             .finish(&wgpu::RenderBundleDescriptor { label : None });
 
         let cmd_buffer = {
-            let mut encoder = device.device
+            let mut encoder = ctx.device.device
                 .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
@@ -201,13 +202,13 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
                 });
 
                 pass.execute_bundles(iter::once(&bundle));
-                debug_ui.map(|ui| ui.render(window, &device, &mut pass));
+                debug_ui.map(|ui| ui.render(ctx.window, ctx.device, &mut pass));
             }
 
             encoder.finish()
         };
 
-        device.queue.submit(Some(cmd_buffer));
+        ctx.device.queue.submit(Some(cmd_buffer));
 
         surface_tex.map(|t| t.present());
     }
