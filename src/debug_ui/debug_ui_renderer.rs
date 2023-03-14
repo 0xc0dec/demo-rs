@@ -7,14 +7,14 @@ use crate::debug_ui::imgui_winit;
 use crate::device::Device;
 use crate::frame_context::FrameContext;
 
-pub struct DebugUI {
+pub struct DebugUIRenderer {
     renderer: imgui_wgpu::Renderer,
     context: imgui::Context,
     platform: imgui_winit::WinitPlatform,
     last_cursor: Option<MouseCursor>,
 }
 
-impl DebugUI {
+impl DebugUIRenderer {
     pub fn new(device: &Device, window: &Window) -> Self {
         let mut context = imgui::Context::create();
         let mut platform = imgui_winit::WinitPlatform::init(&mut context);
@@ -72,7 +72,12 @@ impl DebugUI {
         // TODO Remove after testing
         {
             frame.window("Debug info")
-                .size([300.0, 100.0], imgui::Condition::FirstUseEver)
+                .position([10.0, 10.0], imgui::Condition::FirstUseEver)
+                .movable(false)
+                .resizable(false)
+                .always_auto_resize(true)
+                .collapsible(false)
+                .no_decoration()
                 .build(|| {
                     let mouse_pos = frame.io().mouse_pos;
                     frame.text(format!(

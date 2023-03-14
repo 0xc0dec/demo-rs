@@ -1,6 +1,6 @@
 use std::iter;
 use std::ops::{Deref, DerefMut};
-use crate::debug_ui::DebugUI;
+use crate::debug_ui::DebugUIRenderer;
 use crate::frame_context::FrameContext;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
@@ -153,7 +153,7 @@ impl<'a, 'b> DerefMut for Frame<'a, 'b> where 'b: 'a {
 }
 
 impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
-    pub fn render(self, debug_ui: Option<&mut DebugUI>, ctx: &FrameContext) {
+    pub fn render(self, ui_renderer: Option<&mut DebugUIRenderer>, ctx: &FrameContext) {
         let surface_tex = self.target.is_none()
             .then(|| ctx.device.surface
                 .get_current_texture()
@@ -204,7 +204,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
                 });
 
                 pass.execute_bundles(iter::once(&bundle));
-                debug_ui.map(|ui| ui.render(&mut pass, ctx));
+                ui_renderer.map(|ui| ui.render(&mut pass, ctx));
             }
 
             encoder.finish()
