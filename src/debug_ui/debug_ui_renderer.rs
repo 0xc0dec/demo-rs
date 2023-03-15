@@ -61,12 +61,12 @@ impl DebugUIRenderer {
 
     pub fn update(&mut self, ctx: &FrameContext) {
         self.context.io_mut().update_delta_time(Duration::from_secs_f32(ctx.dt));
-    }
-
-    pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
         self.platform
             .prepare_frame(self.context.io_mut(), ctx.window)
-            .expect("Failed to prepare UI frame");
+            .expect("Failed to prepare debug UI frame");
+    }
+
+    pub fn render<'a>(&'f mut self, pass: &mut RenderPass<'f>, ctx: &FrameContext) {
         let frame = self.context.frame();
 
         // TODO Remove after testing
@@ -96,6 +96,6 @@ impl DebugUIRenderer {
 
         self.renderer
             .render(draw_data, ctx.device.queue(), ctx.device.device(), pass)
-            .expect("Failed to render UI");
+            .expect("Failed to render debug UI");
     }
 }
