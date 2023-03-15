@@ -97,6 +97,7 @@ impl Device {
         );
 
         Frame {
+            device: &self,
             bundle_encoder,
             target,
         }
@@ -133,6 +134,7 @@ impl Device {
 }
 
 pub struct Frame<'a, 'b> where 'b: 'a {
+    device: &'b Device,
     bundle_encoder: wgpu::RenderBundleEncoder<'a>,
     target: Option<&'b RenderTarget>,
 }
@@ -154,7 +156,7 @@ impl<'a, 'b> DerefMut for Frame<'a, 'b> where 'b: 'a {
 impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
     pub fn render(self, ui_renderer: Option<&mut DebugUIRenderer>, ctx: &FrameContext) {
         let surface_tex = self.target.is_none()
-            .then(|| ctx.device.surface
+            .then(|| self.device.surface
                 .get_current_texture()
                 .expect("Missing surface texture")
             );
@@ -177,7 +179,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
 
         let depth_tex_view = self.target
             .map(|t| t.depth_tex().view())
-            .or(ctx.device.depth_tex.as_ref().map(|t| t.view()))
+            .or(self.device.depth_tex.as_ref().map(|t| t.view()))
             .unwrap();
         let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
             view: depth_tex_view,
@@ -192,7 +194,7 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
             .finish(&wgpu::RenderBundleDescriptor { label : None });
 
         let cmd_buffer = {
-            let mut encoder = ctx.device.device
+            let mut encoder = self.device.device
                 .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
@@ -203,13 +205,14 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
                 });
 
                 pass.execute_bundles(iter::once(&bundle));
+                // TODO Remove, this is a hack
                 ui_renderer.map(|ui| ui.render(&mut pass, ctx));
             }
 
             encoder.finish()
         };
 
-        ctx.device.queue.submit(Some(cmd_buffer));
+        self.device.queue.submit(Some(cmd_buffer));
 
         surface_tex.map(|t| t.present());
     }
