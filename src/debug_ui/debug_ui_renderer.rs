@@ -66,7 +66,7 @@ impl DebugUIRenderer {
             .expect("Failed to prepare debug UI frame");
     }
 
-    pub fn render<'a>(&'f mut self, pass: &mut RenderPass<'f>, ctx: &FrameContext) {
+    pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
         let frame = self.context.frame();
 
         // TODO Remove after testing
