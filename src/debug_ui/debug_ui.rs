@@ -7,14 +7,14 @@ use crate::debug_ui::imgui_winit;
 use crate::device::Device;
 use crate::frame_context::FrameContext;
 
-pub struct DebugUIRenderer {
+pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
     context: imgui::Context,
     platform: imgui_winit::WinitPlatform,
     last_cursor: Option<MouseCursor>,
 }
 
-impl DebugUIRenderer {
+impl DebugUI {
     pub fn new(device: &Device, window: &Window) -> Self {
         let mut context = imgui::Context::create();
         let mut platform = imgui_winit::WinitPlatform::init(&mut context);

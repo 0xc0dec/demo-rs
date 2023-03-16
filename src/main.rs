@@ -21,7 +21,7 @@ use winit::window::CursorGrabMode;
 
 use input::Input;
 use device::Device;
-use debug_ui::DebugUIRenderer;
+use debug_ui::DebugUI;
 use device::SurfaceSize;
 use frame_context::FrameContext;
 use post_processor::PostProcessor;
@@ -41,7 +41,7 @@ async fn run() {
     let mut scene = Scene::new(&device).await;
     let mut pp = PostProcessor::new(&device, (200, 150)).await;
 
-    let mut ui_renderer = DebugUIRenderer::new(&device, &window);
+    let mut debug_ui = DebugUI::new(&device, &window);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -105,7 +105,7 @@ async fn run() {
                 _ => {}
             }
 
-            ui_renderer.handle_window_event(&window, &event);
+            debug_ui.handle_window_event(&window, &event);
         });
 
         if input.escape_down {
@@ -149,7 +149,7 @@ async fn run() {
         };
 
         scene.update(&frame_context);
-        ui_renderer.update(&frame_context);
+        debug_ui.update(&frame_context);
 
         {
             let mut frame = device.new_frame(Some(pp.source_rt()));
@@ -160,7 +160,7 @@ async fn run() {
         {
             let mut frame = device.new_frame(None);
             pp.render(&mut frame);
-            frame.render(Some(&mut ui_renderer), &frame_context);
+            frame.render(Some(&mut debug_ui), &frame_context);
         }
     }
 }
