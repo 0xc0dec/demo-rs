@@ -25,4 +25,4 @@ things to work together.
   - Simple rigid bodies with colliders.
   - Character controller to prevent camera from going through objects.
   - Ray casting.
-- Debug UI via ImGui.
+- Debug UI via [ImGui](https://github.com/yatekii/imgui-wgpu-rs).
