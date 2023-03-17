@@ -89,4 +89,21 @@ impl Scene {
 
         self.tracer.render(ctx.device, &self.character.camera, frame);
     }
+
+    pub fn build_debug_ui(&self, ui_frame: &mut imgui::Ui) {
+        ui_frame.window("Debug info")
+            .position([10.0, 10.0], imgui::Condition::FirstUseEver)
+            .movable(false)
+            .resizable(false)
+            .always_auto_resize(true)
+            .collapsible(false)
+            .no_decoration()
+            .build(|| {
+                let mouse_pos = ui_frame.io().mouse_pos;
+                ui_frame.text(format!(
+                    "Mouse Position: ({:.1},{:.1})",
+                    mouse_pos[0], mouse_pos[1]
+                ));
+            });
+    }
 }

@@ -154,13 +154,14 @@ async fn run() {
         {
             let mut frame = device.new_frame(Some(pp.source_rt()));
             scene.render(&mut frame, &frame_context);
-            frame.render(None, &frame_context);
+            frame.finish(None);
         }
 
         {
             let mut frame = device.new_frame(None);
             pp.render(&mut frame);
-            frame.render(Some(&mut debug_ui), &frame_context);
+            debug_ui.build_frame(&window, |frame| scene.build_debug_ui(frame));
+            frame.finish(Some(&mut debug_ui));
         }
     }
 }

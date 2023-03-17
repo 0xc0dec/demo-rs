@@ -66,36 +66,21 @@ impl DebugUI {
             .expect("Failed to prepare debug UI frame");
     }
 
-    pub fn render<'a>(&'a mut self, pass: &mut RenderPass<'a>, ctx: &FrameContext) {
+    pub fn build_frame(&mut self, window: &Window, build: impl Fn(&mut imgui::Ui)) {
         let frame = self.context.frame();
 
-        // TODO Remove after testing
-        {
-            frame.window("Debug info")
-                .position([10.0, 10.0], imgui::Condition::FirstUseEver)
-                .movable(false)
-                .resizable(false)
-                .always_auto_resize(true)
-                .collapsible(false)
-                .no_decoration()
-                .build(|| {
-                    let mouse_pos = frame.io().mouse_pos;
-                    frame.text(format!(
-                        "Mouse Position: ({:.1},{:.1})",
-                        mouse_pos[0], mouse_pos[1]
-                    ));
-                });
-        }
+        build(frame);
 
         if self.last_cursor != frame.mouse_cursor() {
             self.last_cursor = frame.mouse_cursor();
-            self.platform.prepare_render(frame, ctx.window);
+            self.platform.prepare_render(frame, window);
         }
+    }
 
+    pub fn render<'a>(&'a mut self, device: &Device, pass: &mut RenderPass<'a>) {
         let draw_data = self.context.render();
-
         self.renderer
-            .render(draw_data, ctx.device.queue(), ctx.device.device(), pass)
+            .render(draw_data, device.queue(), device.device(), pass)
             .expect("Failed to render debug UI");
     }
 }
