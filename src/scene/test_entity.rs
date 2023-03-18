@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
@@ -5,12 +6,13 @@ use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
 use crate::transform::{Transform};
-use cgmath::{Deg, Quaternion, Rotation, Vector3};
+use cgmath::{Deg, Rotation, Vector3};
 use rapier3d::prelude::*;
 use crate::math::{from_na_rot, from_na_vec3, to_na_vec3};
+use crate::state::State;
 
 pub struct TestEntity {
-    model: Model,
+    model: Rc<Model>,
     transform: Transform,
     shader: DiffuseShader,
     rigid_body_handle: RigidBodyHandle,
@@ -26,7 +28,7 @@ pub struct TestEntityParams {
 
 impl TestEntity {
     pub async fn new(
-        device: &Device,
+        state: &mut State,
         physics: &mut PhysicsWorld,
         params: TestEntityParams,
     ) -> Self {
@@ -52,13 +54,11 @@ impl TestEntity {
         // Not rotating the transform because it'll get synced with the rigid body anyway
         let transform = Transform::new(pos, scale);
 
-        let model = Model::from_file("cube.obj", device)
-            .await
-            .expect("Failed to load cube model");
-        let texture = Texture::new_2d_from_file("stonewall.jpg", device)
+        let model = state.resources.model("cube.obj", &state.device).await;
+        let texture = Texture::new_2d_from_file("stonewall.jpg", &state.device)
             .await
             .unwrap();
-        let shader = DiffuseShader::new(device, DiffuseShaderParams { texture }).await;
+        let shader = DiffuseShader::new(&state.device, DiffuseShaderParams { texture }).await;
 
         Self {
             model,

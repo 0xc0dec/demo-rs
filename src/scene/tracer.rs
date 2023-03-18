@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
@@ -6,20 +7,19 @@ use crate::scene::character::Character;
 use crate::shaders::{ColorShader, Shader};
 use crate::transform::Transform;
 use cgmath::{Array, Vector3, Zero};
+use crate::state::State;
 
 pub struct Tracer {
-    model: Model,
+    model: Rc<Model>,
     shader: ColorShader,
     transform: Transform,
     target_visible: bool,
 }
 
 impl Tracer {
-    pub async fn new(device: &Device) -> Self {
-        let model = Model::from_file("cube.obj", device)
-            .await
-            .expect("Failed to load cube model");
-        let shader = ColorShader::new(device).await;
+    pub async fn new(state: &mut State) -> Self {
+        let model = state.resources.model("cube.obj", &state.device).await;
+        let shader = ColorShader::new(&state.device).await;
         let transform = Transform::new(Vector3::zero(), Vector3::from_value(0.2));
 
         Tracer {

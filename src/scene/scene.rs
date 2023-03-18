@@ -1,5 +1,5 @@
 use crate::camera::Camera;
-use crate::device::{Device, Frame};
+use crate::device::{Frame};
 use crate::frame_context::FrameContext;
 use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
@@ -7,6 +7,7 @@ use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 use crate::scene::tracer::Tracer;
 use cgmath::{Array, Deg, Vector3, Zero};
+use crate::state::State;
 
 pub struct Scene {
     character: Character,
@@ -17,11 +18,11 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub async fn new(device: &Device) -> Scene {
+    pub async fn new(state: &mut State) -> Scene {
         let mut physics = PhysicsWorld::new();
 
         let ground = TestEntity::new(
-            device,
+            state,
             &mut physics,
             TestEntityParams {
                 pos: Vector3::zero(),
@@ -34,7 +35,7 @@ impl Scene {
         .await;
 
         let falling_box = TestEntity::new(
-            device,
+            state,
             &mut physics,
             TestEntityParams {
                 pos: Vector3::unit_y() * 15.0,
@@ -50,13 +51,13 @@ impl Scene {
             Camera::new(
                 Vector3::new(10.0, 10.0, 10.0),
                 Vector3::new(0.0, 0.0, 0.0),
-                device.surface_size().into(),
+                state.device.surface_size().into(),
             ),
             &mut physics,
         );
 
-        let tracer = Tracer::new(device).await;
-        let skybox = Skybox::new(device).await;
+        let tracer = Tracer::new(state).await;
+        let skybox = Skybox::new(&state.device).await;
 
         Self {
             physics,
