@@ -25,7 +25,7 @@ impl Scene {
             &mut physics,
             TestEntityParams {
                 pos: Vector3::zero(),
-                scale: Vector3::new(10.0, 0.1, 10.0),
+                scale: Vector3::new(10.0, 0.5, 10.0),
                 rotation_axis: Vector3::zero(),
                 rotation_angle: Deg(0.0),
                 movable: false,
@@ -33,14 +33,14 @@ impl Scene {
         )
         .await;
 
-        let box1 = TestEntity::new(
+        let falling_box = TestEntity::new(
             device,
             &mut physics,
             TestEntityParams {
-                pos: Vector3::unit_y() * 10.0,
+                pos: Vector3::unit_y() * 15.0,
                 scale: Vector3::new(1.0, 1.0, 1.0),
                 rotation_axis: Vector3::from_value(1.0),
-                rotation_angle: Deg(30.0),
+                rotation_angle: Deg(50.0),
                 movable: true,
             },
         )
@@ -63,7 +63,7 @@ impl Scene {
             character,
             tracer,
             skybox,
-            entities: vec![ground, box1],
+            entities: vec![ground, falling_box],
         }
     }
 

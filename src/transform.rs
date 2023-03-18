@@ -44,7 +44,7 @@ impl Transform {
             self.position() - target,
             Vector3::unit_y(),
         ))
-        .transpose()
+            .transpose()
             * Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
@@ -66,9 +66,9 @@ impl Transform {
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
         self.m = Matrix4::from_translation(pos);
 
-        // TODO Simplify
-        let rot_mtx = Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z)
-            * Matrix4::from(rotation);
+        // Again, not sure why transposition is needed
+        let rot_mtx = Matrix4::from(rotation).transpose()
+            * Matrix4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);
         self.m.x = rot_mtx.x;
         self.m.y = rot_mtx.y;
         self.m.z = rot_mtx.z;
@@ -83,11 +83,11 @@ impl Transform {
         let axis = axis.normalize();
         self.m = self.m
             * match space {
-                TransformSpace::Local => Matrix4::from_axis_angle(axis, angle),
-                TransformSpace::World => {
-                    let axis = self.m.inverse_transform_vector(axis).unwrap();
-                    Matrix4::from_axis_angle(axis, angle)
-                }
-            };
+            TransformSpace::Local => Matrix4::from_axis_angle(axis, angle),
+            TransformSpace::World => {
+                let axis = self.m.inverse_transform_vector(axis).unwrap();
+                Matrix4::from_axis_angle(axis, angle)
+            }
+        };
     }
 }

@@ -5,9 +5,9 @@ use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
 use crate::transform::{Transform};
-use cgmath::{Deg, Quaternion, Vector3};
+use cgmath::{Deg, Quaternion, Rotation, Vector3};
 use rapier3d::prelude::*;
-use crate::math::to_na_vec3;
+use crate::math::{from_na_rot, from_na_vec3, to_na_vec3};
 
 pub struct TestEntity {
     model: Model,
@@ -72,11 +72,7 @@ impl TestEntity {
         let body = physics.bodies.get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();
         let phys_rot = body.rotation();
-
-        self.transform.set(
-            Vector3::new(phys_pos.x, phys_pos.y, phys_pos.z),
-            Quaternion::new(phys_rot.i, phys_rot.j, phys_rot.k, phys_rot.w),
-        );
+        self.transform.set(from_na_vec3(*phys_pos), from_na_rot(*phys_rot));
     }
 
     pub fn render<'a, 'b>(
