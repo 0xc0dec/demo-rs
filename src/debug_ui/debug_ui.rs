@@ -66,7 +66,7 @@ impl DebugUI {
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(ctx.dt));
         self.platform
-            .prepare_frame(self.context.io_mut(), ctx.window)
+            .prepare_frame(self.context.io_mut(), &ctx.app.window)
             .expect("Failed to prepare debug UI frame");
     }
 

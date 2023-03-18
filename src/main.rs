@@ -41,9 +41,11 @@ async fn run() {
         .with_inner_size(SurfaceSize::new(1800, 1200))
         .build(&event_loop)
         .unwrap();
+    let device = Device::new(&window).await;
 
     let mut app = App {
-        device: Device::new(&window).await,
+        window,
+        device,
         resources: Resources::new(),
         input: Input::new()
     };
@@ -51,7 +53,8 @@ async fn run() {
     let mut scene = Scene::new(&mut app).await;
     let mut pp = PostProcessor::new(&app.device, (200, 150)).await;
 
-    let mut debug_ui = DebugUI::new(&app.device, &window);
+    // TODO Pass App
+    let mut debug_ui = DebugUI::new(&app.device, &app.window);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -79,7 +82,7 @@ async fn run() {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == window.id() => match event {
+                } if window_id == app.window.id() => match event {
                     WindowEvent::MouseInput { state, button, .. } => {
                         app.input.on_mouse_button(button, state);
                     }
@@ -110,7 +113,7 @@ async fn run() {
                 _ => {}
             }
 
-            debug_ui.handle_window_event(&window, &event);
+            debug_ui.handle_window_event(&app.window, &event);
         });
 
         if app.input.escape_down {
@@ -120,14 +123,14 @@ async fn run() {
         // Grab/release cursor
         if app.input.rmb_down_just_switched {
             if app.input.rmb_down {
-                window
+                app.window
                     .set_cursor_grab(CursorGrabMode::Confined)
-                    .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
+                    .or_else(|_e| app.window.set_cursor_grab(CursorGrabMode::Locked))
                     .unwrap();
-                window.set_cursor_visible(false);
+                app.window.set_cursor_visible(false);
             } else {
-                window.set_cursor_grab(CursorGrabMode::None).unwrap();
-                window.set_cursor_visible(true);
+                app.window.set_cursor_grab(CursorGrabMode::None).unwrap();
+                app.window.set_cursor_visible(true);
             }
         }
 
@@ -149,9 +152,7 @@ async fn run() {
 
         let frame_context = FrameContext {
             dt,
-            input: &app.input,
-            device: &app.device,
-            window: &window,
+            app: &app,
         };
 
         scene.update(&frame_context);
@@ -166,7 +167,7 @@ async fn run() {
         {
             let mut frame = app.device.new_frame(None);
             pp.render(&mut frame);
-            debug_ui.build_frame(&window, |frame| scene.build_debug_ui(frame));
+            debug_ui.build_frame(&app.window, |frame| scene.build_debug_ui(frame));
             frame.finish(Some(&mut debug_ui));
         }
     }

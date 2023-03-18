@@ -85,19 +85,19 @@ impl Scene {
     {
         // TODO Do this only when the size changes
         self.character.camera.set_fov(
-            ctx.device.surface_size().width as f32,
-            ctx.device.surface_size().height as f32,
+            ctx.app.device.surface_size().width as f32,
+            ctx.app.device.surface_size().height as f32,
         );
 
         self.skybox
-            .render(ctx.device, &self.character.camera, frame);
+            .render(&ctx.app.device, &self.character.camera, frame);
 
         for e in &mut self.entities {
-            e.render(ctx.device, &self.character.camera, frame);
+            e.render(&ctx.app.device, &self.character.camera, frame);
         }
 
         self.tracer
-            .render(ctx.device, &self.character.camera, frame);
+            .render(&ctx.app.device, &self.character.camera, frame);
     }
 
     pub fn build_debug_ui(&self, ui_frame: &mut imgui::Ui) {
