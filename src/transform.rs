@@ -81,8 +81,7 @@ impl Transform {
         space: TransformSpace,
     ) {
         let axis = axis.normalize();
-        self.m = self.m
-            * match space {
+        self.m = self.m * match space {
             TransformSpace::Local => Matrix4::from_axis_angle(axis, angle),
             TransformSpace::World => {
                 let axis = self.m.inverse_transform_vector(axis).unwrap();
