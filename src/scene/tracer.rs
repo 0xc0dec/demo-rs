@@ -7,7 +7,7 @@ use crate::scene::character::Character;
 use crate::shaders::{ColorShader, Shader};
 use crate::transform::Transform;
 use cgmath::{Array, Vector3, Zero};
-use crate::state::State;
+use crate::app::App;
 
 pub struct Tracer {
     model: Rc<Model>,
@@ -17,9 +17,9 @@ pub struct Tracer {
 }
 
 impl Tracer {
-    pub async fn new(state: &mut State) -> Self {
-        let model = state.resources.model("cube.obj", &state.device).await;
-        let shader = ColorShader::new(&state.device).await;
+    pub async fn new(app: &mut App) -> Self {
+        let model = app.resources.model("cube.obj", &app.device).await;
+        let shader = ColorShader::new(&app.device).await;
         let transform = Transform::new(Vector3::zero(), Vector3::from_value(0.2));
 
         Tracer {

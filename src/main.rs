@@ -13,7 +13,7 @@ mod scene;
 mod shaders;
 mod texture;
 mod transform;
-mod state;
+mod app;
 
 use std::collections::VecDeque;
 use winit::platform::run_return::EventLoopExtRunReturn;
@@ -32,7 +32,7 @@ use input::Input;
 use post_processor::PostProcessor;
 use scene::Scene;
 use crate::resources::Resources;
-use crate::state::State;
+use crate::app::App;
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -42,16 +42,16 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
 
-    let mut state = State {
+    let mut app = App {
         device: Device::new(&window).await,
         resources: Resources::new(),
         input: Input::new()
     };
 
-    let mut scene = Scene::new(&mut state).await;
-    let mut pp = PostProcessor::new(&state.device, (200, 150)).await;
+    let mut scene = Scene::new(&mut app).await;
+    let mut pp = PostProcessor::new(&app.device, (200, 150)).await;
 
-    let mut debug_ui = DebugUI::new(&state.device, &window);
+    let mut debug_ui = DebugUI::new(&app.device, &window);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -59,7 +59,7 @@ async fn run() {
 
     let mut running = true;
     while running {
-        state.input.reset();
+        app.input.reset();
 
         event_loop.run_return(|event, _, flow| {
             *flow = ControlFlow::Poll;
@@ -73,15 +73,15 @@ async fn run() {
                     event: DeviceEvent::MouseMotion { delta },
                     ..
                 } => {
-                    state.input.on_mouse_move((delta.0 as f32, delta.1 as f32));
+                    app.input.on_mouse_move((delta.0 as f32, delta.1 as f32));
                 }
 
                 Event::WindowEvent {
                     ref event,
                     window_id,
                 } if window_id == window.id() => match event {
-                    WindowEvent::MouseInput { state: button_state, button, .. } => {
-                        state.input.on_mouse_button(button, button_state);
+                    WindowEvent::MouseInput { state, button, .. } => {
+                        app.input.on_mouse_button(button, state);
                     }
 
                     WindowEvent::KeyboardInput {
@@ -93,15 +93,15 @@ async fn run() {
                             },
                         ..
                     } => {
-                        state.input.on_key(keycode, key_state);
+                        app.input.on_key(keycode, key_state);
                     }
 
                     WindowEvent::Resized(new_size) => {
-                        state.device.resize(*new_size);
+                        app.device.resize(*new_size);
                     }
 
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        state.device.resize(**new_inner_size);
+                        app.device.resize(**new_inner_size);
                     }
 
                     _ => (),
@@ -113,13 +113,13 @@ async fn run() {
             debug_ui.handle_window_event(&window, &event);
         });
 
-        if state.input.escape_down {
+        if app.input.escape_down {
             running = false;
         }
 
         // Grab/release cursor
-        if state.input.rmb_down_just_switched {
-            if state.input.rmb_down {
+        if app.input.rmb_down_just_switched {
+            if app.input.rmb_down {
                 window
                     .set_cursor_grab(CursorGrabMode::Confined)
                     .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
@@ -149,8 +149,8 @@ async fn run() {
 
         let frame_context = FrameContext {
             dt,
-            input: &state.input,
-            device: &state.device,
+            input: &app.input,
+            device: &app.device,
             window: &window,
         };
 
@@ -158,13 +158,13 @@ async fn run() {
         debug_ui.update(&frame_context);
 
         {
-            let mut frame = state.device.new_frame(Some(pp.source_rt()));
+            let mut frame = app.device.new_frame(Some(pp.source_rt()));
             scene.render(&mut frame, &frame_context);
             frame.finish(None);
         }
 
         {
-            let mut frame = state.device.new_frame(None);
+            let mut frame = app.device.new_frame(None);
             pp.render(&mut frame);
             debug_ui.build_frame(&window, |frame| scene.build_debug_ui(frame));
             frame.finish(Some(&mut debug_ui));

@@ -8,7 +8,7 @@ use crate::transform::{Transform};
 use cgmath::{Deg, Vector3};
 use rapier3d::prelude::*;
 use crate::math::{from_na_rot, from_na_vec3, to_na_vec3};
-use crate::state::State;
+use crate::app::App;
 
 pub struct TestEntity {
     model: Rc<Model>,
@@ -27,7 +27,7 @@ pub struct TestEntityParams {
 
 impl TestEntity {
     pub async fn new(
-        state: &mut State,
+        app: &mut App,
         physics: &mut PhysicsWorld,
         params: TestEntityParams,
     ) -> Self {
@@ -52,10 +52,10 @@ impl TestEntity {
 
         // Not rotating the transform because it'll get synced with the rigid body anyway
         let transform = Transform::new(pos, scale);
-        let model = state.resources.model("cube.obj", &state.device).await;
-        let texture = state.resources.texture_2d("stonewall.jpg", &state.device).await;
+        let model = app.resources.model("cube.obj", &app.device).await;
+        let texture = app.resources.texture_2d("stonewall.jpg", &app.device).await;
         let shader = DiffuseShader::new(
-            &state.device,
+            &app.device,
             DiffuseShaderParams {
                 texture: texture.as_ref()
             }
