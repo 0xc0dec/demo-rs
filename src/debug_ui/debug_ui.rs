@@ -6,6 +6,7 @@ use std::time::Duration;
 use wgpu::RenderPass;
 use winit::event::Event;
 use winit::window::Window;
+use crate::app::App;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
@@ -15,14 +16,14 @@ pub struct DebugUI {
 }
 
 impl DebugUI {
-    pub fn new(device: &Device, window: &Window) -> Self {
+    pub fn new(app: &App) -> Self {
         let mut context = imgui::Context::create();
         let mut platform = imgui_winit::WinitPlatform::init(&mut context);
-        platform.attach_window(context.io_mut(), &window, imgui_winit::HiDpiMode::Default);
+        platform.attach_window(context.io_mut(), &app.window, imgui_winit::HiDpiMode::Default);
         context.set_ini_filename(None);
 
-        let font_size = (13.0 * window.scale_factor()) as f32;
-        context.io_mut().font_global_scale = (1.0 / window.scale_factor()) as f32;
+        let font_size = (13.0 * app.window.scale_factor()) as f32;
+        context.io_mut().font_global_scale = (1.0 / app.window.scale_factor()) as f32;
 
         context
             .fonts()
@@ -36,15 +37,15 @@ impl DebugUI {
             }]);
 
         let renderer_config = imgui_wgpu::RendererConfig {
-            texture_format: device.surface_texture_format(),
-            depth_format: Some(device.depth_texture_format()),
+            texture_format: app.device.surface_texture_format(),
+            depth_format: Some(app.device.depth_texture_format()),
             ..Default::default()
         };
 
         let renderer = imgui_wgpu::Renderer::new(
             &mut context,
-            device.device(),
-            device.queue(),
+            app.device.device(),
+            app.device.queue(),
             renderer_config,
         );
 

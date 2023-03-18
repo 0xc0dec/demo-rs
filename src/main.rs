@@ -42,19 +42,20 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
     let device = Device::new(&window).await;
+    let resources = Resources::new();
+    let input = Input::new();
 
     let mut app = App {
         window,
         device,
-        resources: Resources::new(),
-        input: Input::new()
+        resources,
+        input
     };
 
     let mut scene = Scene::new(&mut app).await;
     let mut pp = PostProcessor::new(&app.device, (200, 150)).await;
 
-    // TODO Pass App
-    let mut debug_ui = DebugUI::new(&app.device, &app.window);
+    let mut debug_ui = DebugUI::new(&app);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
