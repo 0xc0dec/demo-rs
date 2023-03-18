@@ -4,9 +4,10 @@ use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
-use crate::transform::Transform;
-use cgmath::{Quaternion, Vector3};
+use crate::transform::{Transform};
+use cgmath::{Deg, Quaternion, Vector3};
 use rapier3d::prelude::*;
+use crate::math::to_na_vec3;
 
 pub struct TestEntity {
     model: Model,
@@ -18,6 +19,8 @@ pub struct TestEntity {
 pub struct TestEntityParams {
     pub pos: Vector3<f32>,
     pub scale: Vector3<f32>,
+    pub rotation_angle: Deg<f32>,
+    pub rotation_axis: Vector3<f32>,
     pub movable: bool,
 }
 
@@ -27,20 +30,27 @@ impl TestEntity {
         physics: &mut PhysicsWorld,
         params: TestEntityParams,
     ) -> Self {
-        let body = if params.movable {
-            RigidBodyBuilder::dynamic()
-        } else {
-            RigidBodyBuilder::fixed()
-        }
-        .translation(vector![params.pos.x, params.pos.y, params.pos.z])
-        .build();
-        let collider = ColliderBuilder::cuboid(params.scale.x, params.scale.y, params.scale.z)
+        let TestEntityParams {
+            pos,
+            scale,
+            rotation_axis,
+            rotation_angle,
+            movable,
+        } = params;
+
+        let body = if movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
+            .translation(vector![pos.x, pos.y, pos.z])
+            // TODO Verify this conversion
+            .rotation(to_na_vec3(rotation_axis) * rotation_angle.0)
+            .build();
+        let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
             .restitution(0.2)
             .friction(0.7)
             .build();
         let (rigid_body_handle, _) = physics.add_body(body, collider);
 
-        let transform = Transform::new(params.pos, params.scale);
+        // Not rotating the transform because it'll get synced with the rigid body anyway
+        let transform = Transform::new(pos, scale);
 
         let model = Model::from_file("cube.obj", device)
             .await
