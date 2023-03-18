@@ -57,12 +57,5 @@ impl Character {
                 .unwrap()
                 .set_translation(to_na_vec3(collider_current_pos + effective_movement));
         }
-
-        // Testing raycasting - TODO remove
-        physics.cast_ray(
-            self.camera.transform.position(),
-            -self.camera.transform.forward(), // For some reason the ray is inverted here :(
-            Some(self.collider_handle),
-        );
     }
 }
