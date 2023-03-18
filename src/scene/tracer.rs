@@ -33,10 +33,7 @@ impl Tracer {
     pub fn update(&mut self, physics: &PhysicsWorld, character: &Character) {
         if let Some((_, hit_pt, _)) = physics.cast_ray(
             character.camera.transform.position(),
-            // For some reason the ray needs to be inverted here, perhaps the physics engine uses
-            // a different axis orientation?
-            // TODO Somehow fix
-            -character.camera.transform.forward(),
+            character.camera.transform.forward(),
             Some(character.collider_handle),
         ) {
             self.target_visible = true;
