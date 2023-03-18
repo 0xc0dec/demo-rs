@@ -16,18 +16,18 @@ pub struct DiffuseShader {
     pipeline: RenderPipeline,
 }
 
-pub struct DiffuseShaderParams {
-    pub texture: Texture,
+pub struct DiffuseShaderParams<'t> {
+    pub texture: &'t Texture,
 }
 
 impl DiffuseShader {
-    pub async fn new(device: &Device, params: DiffuseShaderParams) -> Self {
+    pub async fn new(device: &Device, params: DiffuseShaderParams<'_>) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
             device,

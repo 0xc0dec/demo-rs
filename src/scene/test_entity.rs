@@ -4,9 +4,8 @@ use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
-use crate::texture::Texture;
 use crate::transform::{Transform};
-use cgmath::{Deg, Rotation, Vector3};
+use cgmath::{Deg, Vector3};
 use rapier3d::prelude::*;
 use crate::math::{from_na_rot, from_na_vec3, to_na_vec3};
 use crate::state::State;
@@ -53,12 +52,14 @@ impl TestEntity {
 
         // Not rotating the transform because it'll get synced with the rigid body anyway
         let transform = Transform::new(pos, scale);
-
         let model = state.resources.model("cube.obj", &state.device).await;
-        let texture = Texture::new_2d_from_file("stonewall.jpg", &state.device)
-            .await
-            .unwrap();
-        let shader = DiffuseShader::new(&state.device, DiffuseShaderParams { texture }).await;
+        let texture = state.resources.texture_2d("stonewall.jpg", &state.device).await;
+        let shader = DiffuseShader::new(
+            &state.device,
+            DiffuseShaderParams {
+                texture: texture.as_ref()
+            }
+        ).await;
 
         Self {
             model,
