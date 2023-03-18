@@ -53,7 +53,7 @@ async fn run() {
     };
 
     let mut scene = Scene::new(&mut app).await;
-    let mut pp = PostProcessor::new(&app.device, (200, 150)).await;
+    let mut pp = PostProcessor::new(&app.device, None).await;
 
     let mut debug_ui = DebugUI::new(&app);
 

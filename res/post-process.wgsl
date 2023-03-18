@@ -21,6 +21,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
 
     out.clip_position = vec4<f32>(in.position, 1.0);
+    // Intentionally inverting the coordinates, they're messed
     out.tex_coords = vec2<f32>(in.tex_coords.x, 1.0 - in.tex_coords.y);
 
     return out;
@@ -36,5 +37,7 @@ var texSampler: sampler;
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return textureSample(texture, texSampler, in.tex_coords);
+    // Basic vignetting
+    var m = max(0.0, 1.0 - length(in.tex_coords - vec2<f32>(0.5, 0.5)) / 1.0);
+    return textureSample(texture, texSampler, in.tex_coords) * m;
 }

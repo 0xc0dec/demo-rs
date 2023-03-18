@@ -15,8 +15,8 @@ impl PostProcessor {
         &self.rt
     }
 
-    pub async fn new(device: &Device, size: TextureSize) -> Self {
-        let rt = RenderTarget::new(device, Some(size));
+    pub async fn new(device: &Device, size: Option<TextureSize>) -> Self {
+        let rt = RenderTarget::new(device, size);
         let shader = PostProcessShader::new(
             &device,
             PostProcessShaderParams {
