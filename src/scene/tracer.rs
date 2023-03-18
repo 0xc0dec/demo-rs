@@ -31,7 +31,7 @@ impl Tracer {
     }
 
     pub fn update(&mut self, physics: &PhysicsWorld, character: &Character) {
-        if let Some((_, hit_pt)) = physics.cast_ray(
+        if let Some((_, hit_pt, _)) = physics.cast_ray(
             character.camera.transform.position(),
             // For some reason the ray needs to be inverted here, perhaps the physics engine uses
             // a different axis orientation?

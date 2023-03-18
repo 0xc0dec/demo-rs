@@ -96,7 +96,7 @@ impl PhysicsWorld {
         from: Vector3<f32>,
         dir: Vector3<f32>,
         exclude: Option<ColliderHandle>,
-    ) -> Option<(ColliderHandle, Vector3<f32>)> {
+    ) -> Option<(ColliderHandle, Vector3<f32>, Vector3<f32>)> {
         let ray = Ray {
             origin: to_na_point(from),
             dir: to_na_vec3(dir),
@@ -107,7 +107,7 @@ impl PhysicsWorld {
             filter = filter.exclude_collider(exclude_collider_handle);
         }
 
-        if let Some((handle, toi)) = self.query_pipeline.cast_ray(
+        if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(
             &self.bodies,
             &self.colliders,
             &ray,
@@ -115,8 +115,8 @@ impl PhysicsWorld {
             true,
             filter,
         ) {
-            let hit_pt = ray.point_at(toi);
-            return Some((handle, from_na_point(hit_pt)));
+            let hit_pt = ray.point_at(intersection.toi);
+            return Some((handle, from_na_point(hit_pt), from_na_vec3(intersection.normal)));
         }
 
         None
