@@ -1,5 +1,6 @@
 use crate::input::Input;
 use cgmath::*;
+use crate::math::Vec3;
 
 pub struct SpectatorRotationDelta {
     pub vertical_rotation: Rad<f32>,
@@ -16,7 +17,7 @@ impl crate::transform::Transform {
         let horizontal_rotation = Rad(hdelta);
 
         let forward = self.forward();
-        let angle_to_up = forward.angle(Vector3::unit_y()).0;
+        let angle_to_up = forward.angle(Vec3::unit_y()).0;
         let mut vdelta = -input.mouse_delta.1 as f32 * dt;
         if vdelta < 0.0 {
             // Moving up
@@ -40,12 +41,12 @@ impl crate::transform::Transform {
         dt: f32,
         speed: f32,
         input: &Input,
-    ) -> Option<Vector3<f32>> {
+    ) -> Option<Vec3> {
         if !input.rmb_down {
             return None;
         }
 
-        let mut movement: Vector3<f32> = Vector3::zero();
+        let mut movement: Vec3 = Vec3::zero();
         if input.forward_down {
             movement -= self.forward();
         }

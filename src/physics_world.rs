@@ -1,5 +1,4 @@
-use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3};
-use cgmath::Vector3;
+use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3, Vec3};
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
 
@@ -61,9 +60,9 @@ impl PhysicsWorld {
     pub fn move_character(
         &self,
         dt: f32,
-        desired_translation: Vector3<f32>,
+        desired_translation: Vec3,
         collider_handle: ColliderHandle,
-    ) -> (Vector3<f32>, Vector3<f32>) {
+    ) -> (Vec3, Vec3) {
         let (EffectiveCharacterMovement { translation, .. }, collider_current_pos) = {
             let (collider_pos, collider_shape) = {
                 let collider = self.colliders.get(collider_handle).unwrap();
@@ -93,10 +92,10 @@ impl PhysicsWorld {
 
     pub fn cast_ray(
         &self,
-        from: Vector3<f32>,
-        dir: Vector3<f32>,
+        from: Vec3,
+        dir: Vec3,
         exclude: Option<ColliderHandle>,
-    ) -> Option<(Vector3<f32>, Vector3<f32>, ColliderHandle)> {
+    ) -> Option<(Vec3, Vec3, ColliderHandle)> {
         let ray = Ray {
             origin: to_na_point(from),
             // Inverting the dir because I don't know why :(

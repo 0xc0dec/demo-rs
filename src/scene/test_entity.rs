@@ -5,9 +5,8 @@ use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::transform::{Transform};
-use cgmath::{Deg, Vector3};
 use rapier3d::prelude::*;
-use crate::math::{from_na_rot, from_na_vec3, to_na_vec3};
+use crate::math::{Degrees, from_na_rot, from_na_vec3, to_na_vec3, Vec3};
 use crate::app::App;
 
 pub struct TestEntity {
@@ -18,10 +17,10 @@ pub struct TestEntity {
 }
 
 pub struct TestEntityParams {
-    pub pos: Vector3<f32>,
-    pub scale: Vector3<f32>,
-    pub rotation_angle: Deg<f32>,
-    pub rotation_axis: Vector3<f32>,
+    pub pos: Vec3,
+    pub scale: Vec3,
+    pub rotation_angle: Degrees,
+    pub rotation_axis: Vec3,
     pub movable: bool,
 }
 

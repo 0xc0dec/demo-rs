@@ -4,8 +4,8 @@ use crate::device::{Device, Frame};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::transform::Transform;
-use cgmath::Matrix4;
 use wgpu::{BindGroup, RenderPipeline};
+use crate::math::Mat4;
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,
@@ -70,7 +70,7 @@ struct MatricesUniform {
 impl MatricesUniform {
     // TODO Remove copypasta
     #[rustfmt::skip]
-    const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
+    const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::new(
         1.0, 0.0, 0.0, 0.0,
         0.0, 1.0, 0.0, 0.0,
         0.0, 0.0, 0.5, 0.0,
@@ -80,8 +80,8 @@ impl MatricesUniform {
     fn new() -> Self {
         use cgmath::SquareMatrix;
         Self {
-            view_proj: Matrix4::identity().into(),
-            world: Matrix4::identity().into(),
+            view_proj: Mat4::identity().into(),
+            world: Mat4::identity().into(),
         }
     }
 

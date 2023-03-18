@@ -6,8 +6,9 @@ use crate::scene::character::Character;
 use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 use crate::scene::tracer::Tracer;
-use cgmath::{Array, Deg, Vector3, Zero};
+use cgmath::{Array, Deg, Zero};
 use crate::app::App;
+use crate::math::{Vec3};
 
 pub struct Scene {
     character: Character,
@@ -25,9 +26,9 @@ impl Scene {
             app,
             &mut physics,
             TestEntityParams {
-                pos: Vector3::zero(),
-                scale: Vector3::new(10.0, 0.5, 10.0),
-                rotation_axis: Vector3::zero(),
+                pos: Vec3::zero(),
+                scale: Vec3::new(10.0, 0.5, 10.0),
+                rotation_axis: Vec3::zero(),
                 rotation_angle: Deg(0.0),
                 movable: false,
             },
@@ -38,9 +39,9 @@ impl Scene {
             app,
             &mut physics,
             TestEntityParams {
-                pos: Vector3::unit_y() * 15.0,
-                scale: Vector3::new(1.0, 1.0, 1.0),
-                rotation_axis: Vector3::from_value(1.0),
+                pos: Vec3::unit_y() * 15.0,
+                scale: Vec3::new(1.0, 1.0, 1.0),
+                rotation_axis: Vec3::from_value(1.0),
                 rotation_angle: Deg(50.0),
                 movable: true,
             },
@@ -49,8 +50,8 @@ impl Scene {
 
         let character = Character::new(
             Camera::new(
-                Vector3::new(10.0, 10.0, 10.0),
-                Vector3::new(0.0, 0.0, 0.0),
+                Vec3::new(10.0, 10.0, 10.0),
+                Vec3::new(0.0, 0.0, 0.0),
                 app.device.surface_size().into(),
             ),
             &mut physics,

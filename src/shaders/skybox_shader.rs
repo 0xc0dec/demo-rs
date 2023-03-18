@@ -4,7 +4,8 @@ use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
 use crate::texture::Texture;
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::{SquareMatrix};
+use crate::math::Mat4;
 
 pub struct SkyboxShader {
     pipeline: wgpu::RenderPipeline,
@@ -80,7 +81,7 @@ struct DataUniform {
 
 impl DataUniform {
     #[rustfmt::skip]
-    const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
+    const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::new(
         1.0, 0.0, 0.0, 0.0,
         0.0, 1.0, 0.0, 0.0,
         0.0, 0.0, 0.5, 0.0,
@@ -89,8 +90,8 @@ impl DataUniform {
 
     fn new() -> Self {
         Self {
-            proj_mat_inv: Matrix4::identity().into(),
-            view_mat: Matrix4::identity().into(),
+            proj_mat_inv: Mat4::identity().into(),
+            view_mat: Mat4::identity().into(),
         }
     }
 

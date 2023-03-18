@@ -1,9 +1,8 @@
 use crate::camera::Camera;
 use crate::frame_context::FrameContext;
-use crate::math::to_na_vec3;
+use crate::math::{to_na_vec3, Vec3};
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
-use cgmath::Vector3;
 use rapier3d::prelude::*;
 
 pub struct Character {
@@ -30,12 +29,12 @@ impl Character {
         let spectator_rot = self.camera.transform.spectator_rotation(ctx.dt, &ctx.app.input);
         if let Some(spectator_rot) = spectator_rot {
             self.camera.transform.rotate_around_axis(
-                Vector3::unit_y(),
+                Vec3::unit_y(),
                 spectator_rot.horizontal_rotation,
                 TransformSpace::World,
             );
             self.camera.transform.rotate_around_axis(
-                Vector3::unit_x(),
+                Vec3::unit_x(),
                 spectator_rot.vertical_rotation,
                 TransformSpace::Local,
             );

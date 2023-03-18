@@ -1,18 +1,19 @@
 use crate::transform::Transform;
 use cgmath::*;
+use crate::math::{Degrees, Mat4, Vec3};
 
 pub struct Camera {
     aspect: f32,
     znear: f32,
     zfar: f32,
-    fov: Deg<f32>,
-    proj_matrix: Matrix4<f32>,
+    fov: Degrees,
+    proj_matrix: Mat4,
     pub transform: Transform,
 }
 
 impl Camera {
-    pub fn new(pos: Vector3<f32>, target: Vector3<f32>, canvas_size: (f32, f32)) -> Self {
-        let mut transform = Transform::new(pos, Vector3::from_value(1.0));
+    pub fn new(pos: Vec3, target: Vec3, canvas_size: (f32, f32)) -> Self {
+        let mut transform = Transform::new(pos, Vec3::from_value(1.0));
         transform.look_at(target);
 
         let aspect = canvas_size.0 / canvas_size.1;
@@ -31,15 +32,15 @@ impl Camera {
         }
     }
 
-    pub fn proj_matrix(&self) -> Matrix4<f32> {
+    pub fn proj_matrix(&self) -> Mat4 {
         self.proj_matrix
     }
 
-    pub fn view_matrix(&self) -> Matrix4<f32> {
+    pub fn view_matrix(&self) -> Mat4 {
         self.transform.matrix().invert().unwrap()
     }
 
-    pub fn view_proj_matrix(&self) -> Matrix4<f32> {
+    pub fn view_proj_matrix(&self) -> Mat4 {
         self.proj_matrix * self.view_matrix()
     }
 
