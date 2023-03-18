@@ -96,7 +96,7 @@ impl PhysicsWorld {
         from: Vector3<f32>,
         dir: Vector3<f32>,
         exclude: Option<ColliderHandle>,
-    ) -> Option<(ColliderHandle, Vector3<f32>, Vector3<f32>)> {
+    ) -> Option<(Vector3<f32>, Vector3<f32>, ColliderHandle)> {
         let ray = Ray {
             origin: to_na_point(from),
             // Inverting the dir because I don't know why :(
@@ -118,7 +118,7 @@ impl PhysicsWorld {
             filter,
         ) {
             let hit_pt = ray.point_at(intersection.toi);
-            return Some((handle, from_na_point(hit_pt), from_na_vec3(intersection.normal)));
+            return Some((from_na_point(hit_pt), from_na_vec3(intersection.normal), handle));
         }
 
         None
