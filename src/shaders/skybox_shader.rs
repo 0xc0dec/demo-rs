@@ -1,10 +1,10 @@
-use cgmath::{Matrix4, SquareMatrix};
 use crate::camera::Camera;
-use crate::model::{ModelVertex, Vertex};
 use crate::device::{Device, Frame};
-use crate::shaders::Shader;
+use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
+use crate::shaders::Shader;
 use crate::texture::Texture;
+use cgmath::{Matrix4, SquareMatrix};
 
 pub struct SkyboxShader {
     pipeline: wgpu::RenderPipeline,
@@ -22,16 +22,11 @@ impl SkyboxShader {
     pub async fn new(device: &Device, params: SkyboxShaderParams) -> Self {
         let data_uniform = DataUniform::new();
 
-        let (
-            data_uniform_bind_group_layout,
-            data_uniform_bind_group,
-            data_uniform_buf
-        ) = new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
+        let (data_uniform_bind_group_layout, data_uniform_bind_group, data_uniform_buf) =
+            new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
 
-        let (
-            texture_bind_group_layout,
-            texture_bind_group
-        ) = new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::Cube);
+        let (texture_bind_group_layout, texture_bind_group) =
+            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = new_render_pipeline(
             device,
@@ -39,20 +34,18 @@ impl SkyboxShader {
                 shader_file_name: "skybox.wgsl",
                 depth_write: false,
                 depth_enabled: true,
-                bind_group_layouts: &[
-                    &data_uniform_bind_group_layout,
-                    &texture_bind_group_layout
-                ],
-                vertex_buffer_layouts: &[ModelVertex::desc()]
-            }
-        ).await;
+                bind_group_layouts: &[&data_uniform_bind_group_layout, &texture_bind_group_layout],
+                vertex_buffer_layouts: &[ModelVertex::desc()],
+            },
+        )
+        .await;
 
         Self {
             pipeline,
             texture_bind_group,
             data_uniform,
             data_uniform_buf,
-            data_uniform_bind_group
+            data_uniform_bind_group,
         }
     }
 
@@ -66,7 +59,10 @@ impl SkyboxShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for SkyboxShader where 'a: 'b {
+impl<'a, 'b> Shader<'a, 'b> for SkyboxShader
+where
+    'a: 'b,
+{
     fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
         frame.set_pipeline(&self.pipeline);
         frame.set_bind_group(0, &self.data_uniform_bind_group, &[]);
@@ -100,6 +96,9 @@ impl DataUniform {
 
     fn update(&mut self, camera: &Camera) {
         self.view_mat = camera.view_matrix().into();
-        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix()).invert().unwrap().into();
+        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
+            .invert()
+            .unwrap()
+            .into();
     }
 }

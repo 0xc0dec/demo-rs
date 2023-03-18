@@ -1,11 +1,11 @@
-use cgmath::{Matrix4};
-use wgpu::{BindGroup, RenderPipeline};
-use crate::camera::Camera;
-use crate::model::{ModelVertex, Vertex};
-use crate::device::{Device, Frame};
-use crate::shaders::utils::*;
 use super::Shader;
-use crate::transform::{Transform};
+use crate::camera::Camera;
+use crate::device::{Device, Frame};
+use crate::model::{ModelVertex, Vertex};
+use crate::shaders::utils::*;
+use crate::transform::Transform;
+use cgmath::Matrix4;
+use wgpu::{BindGroup, RenderPipeline};
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,
@@ -17,11 +17,8 @@ pub struct ColorShader {
 impl ColorShader {
     pub async fn new(device: &Device) -> Self {
         let matrices_uniform = MatricesUniform::new();
-        let (
-            matrices_uniform_bind_group_layout,
-            matrices_uniform_bind_group,
-            matrices_uniform_buf
-        ) = new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
+        let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
+            new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let pipeline = new_render_pipeline(
             device,
@@ -29,12 +26,11 @@ impl ColorShader {
                 shader_file_name: "color.wgsl",
                 depth_write: true,
                 depth_enabled: true,
-                bind_group_layouts: &[
-                    &matrices_uniform_bind_group_layout
-                ],
-                vertex_buffer_layouts: &[ModelVertex::desc()]
-            }
-        ).await;
+                bind_group_layouts: &[&matrices_uniform_bind_group_layout],
+                vertex_buffer_layouts: &[ModelVertex::desc()],
+            },
+        )
+        .await;
 
         Self {
             matrices_uniform,
@@ -54,7 +50,10 @@ impl ColorShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for ColorShader where 'a: 'b  {
+impl<'a, 'b> Shader<'a, 'b> for ColorShader
+where
+    'a: 'b,
+{
     fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
         frame.set_pipeline(&self.pipeline);
         frame.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);

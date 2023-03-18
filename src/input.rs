@@ -55,7 +55,7 @@ impl Input {
             VirtualKeyCode::E => self.up_down = down,
             VirtualKeyCode::Q => self.down_down = down,
             VirtualKeyCode::Escape => self.escape_down = down,
-            _ => ()
+            _ => (),
         }
     }
 }

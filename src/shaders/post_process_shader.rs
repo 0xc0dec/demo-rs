@@ -1,9 +1,9 @@
-use wgpu::{BindGroup, RenderPipeline};
-use crate::model::{ModelVertex, Vertex};
 use crate::device::{Device, Frame};
-use crate::shaders::Shader;
+use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
+use crate::shaders::Shader;
 use crate::texture::Texture;
+use wgpu::{BindGroup, RenderPipeline};
 
 pub struct PostProcessShader {
     pipeline: RenderPipeline,
@@ -16,10 +16,8 @@ pub struct PostProcessShaderParams<'a> {
 
 impl PostProcessShader {
     pub async fn new(device: &Device, params: PostProcessShaderParams<'_>) -> Self {
-        let (
-            texture_bind_group_layout,
-            texture_bind_group
-        ) = new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
+        let (texture_bind_group_layout, texture_bind_group) =
+            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
             device,
@@ -27,12 +25,11 @@ impl PostProcessShader {
                 shader_file_name: "post-process.wgsl",
                 depth_write: true,
                 depth_enabled: true,
-                bind_group_layouts: &[
-                    &texture_bind_group_layout
-                ],
-                vertex_buffer_layouts: &[ModelVertex::desc()]
-            }
-        ).await;
+                bind_group_layouts: &[&texture_bind_group_layout],
+                vertex_buffer_layouts: &[ModelVertex::desc()],
+            },
+        )
+        .await;
 
         Self {
             pipeline,
@@ -41,7 +38,10 @@ impl PostProcessShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for PostProcessShader where 'a: 'b {
+impl<'a, 'b> Shader<'a, 'b> for PostProcessShader
+where
+    'a: 'b,
+{
     fn apply(&'a mut self, pass: &mut Frame<'b, 'a>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);

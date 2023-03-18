@@ -1,12 +1,12 @@
-use cgmath::{Quaternion, Vector3};
-use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::texture::Texture;
-use crate::transform::{Transform};
+use crate::transform::Transform;
+use cgmath::{Quaternion, Vector3};
+use rapier3d::prelude::*;
 
 pub struct TestEntity {
     model: Model,
@@ -22,10 +22,18 @@ pub struct TestEntityParams {
 }
 
 impl TestEntity {
-    pub async fn new(device: &Device, physics: &mut PhysicsWorld, params: TestEntityParams) -> Self {
-        let body = if params.movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
-            .translation(vector![params.pos.x, params.pos.y, params.pos.z])
-            .build();
+    pub async fn new(
+        device: &Device,
+        physics: &mut PhysicsWorld,
+        params: TestEntityParams,
+    ) -> Self {
+        let body = if params.movable {
+            RigidBodyBuilder::dynamic()
+        } else {
+            RigidBodyBuilder::fixed()
+        }
+        .translation(vector![params.pos.x, params.pos.y, params.pos.z])
+        .build();
         let collider = ColliderBuilder::cuboid(params.scale.x, params.scale.y, params.scale.z)
             .restitution(0.2)
             .friction(0.7)
@@ -34,15 +42,19 @@ impl TestEntity {
 
         let transform = Transform::new(params.pos, params.scale);
 
-        let model = Model::from_file("cube.obj", device).await.expect("Failed to load cube model");
-        let texture = Texture::new_2d_from_file("stonewall.jpg", device).await.unwrap();
+        let model = Model::from_file("cube.obj", device)
+            .await
+            .expect("Failed to load cube model");
+        let texture = Texture::new_2d_from_file("stonewall.jpg", device)
+            .await
+            .unwrap();
         let shader = DiffuseShader::new(device, DiffuseShaderParams { texture }).await;
 
         Self {
             model,
             transform,
             shader,
-            rigid_body_handle
+            rigid_body_handle,
         }
     }
 
@@ -53,12 +65,17 @@ impl TestEntity {
 
         self.transform.set(
             Vector3::new(phys_pos.x, phys_pos.y, phys_pos.z),
-            Quaternion::new(phys_rot.i, phys_rot.j, phys_rot.k, phys_rot.w)
+            Quaternion::new(phys_rot.i, phys_rot.j, phys_rot.k, phys_rot.w),
         );
     }
 
-    pub fn render<'a, 'b>(&'a mut self, device: &'a Device, camera: &'a Camera, frame: &mut Frame<'b, 'a>)
-        where 'a: 'b
+    pub fn render<'a, 'b>(
+        &'a mut self,
+        device: &'a Device,
+        camera: &'a Camera,
+        frame: &mut Frame<'b, 'a>,
+    ) where
+        'a: 'b,
     {
         self.shader.update(device, camera, &self.transform);
         self.shader.apply(frame);

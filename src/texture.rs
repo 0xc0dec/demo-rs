@@ -1,8 +1,8 @@
+use crate::device::Device;
+use crate::resources::load_binary;
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
-use crate::device::Device;
-use crate::resources::load_binary;
 
 pub type TextureSize = (u32, u32);
 
@@ -17,7 +17,7 @@ fn new_sampler(
     device: &Device,
     filter: wgpu::FilterMode,
     mipmap_filter: wgpu::FilterMode,
-    compare: Option<wgpu::CompareFunction>
+    compare: Option<wgpu::CompareFunction>,
 ) -> wgpu::Sampler {
     device.device().create_sampler(&wgpu::SamplerDescriptor {
         label: None,
@@ -56,32 +56,30 @@ impl Texture {
         };
 
         let format = device.depth_texture_format();
-        let texture = device.device().create_texture(
-            &wgpu::TextureDescriptor {
-                label: None,
-                size,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-                view_formats: &[format],
-            }
-        );
+        let texture = device.device().create_texture(&wgpu::TextureDescriptor {
+            label: None,
+            size,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
+            view_formats: &[format],
+        });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = new_sampler(
             device,
             wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
-            Some(wgpu::CompareFunction::LessEqual)
+            Some(wgpu::CompareFunction::LessEqual),
         );
 
         Self {
             _texture: texture,
             view,
             sampler,
-            format
+            format,
         }
     }
 
@@ -93,27 +91,30 @@ impl Texture {
         };
         let format = device.surface_texture_format(); // TODO Configurable
 
-        let texture = device.device().create_texture(
-            &wgpu::TextureDescriptor {
-                label: None,
-                size,
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format,
-                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
-                view_formats: &[],
-            },
-        );
+        let texture = device.device().create_texture(&wgpu::TextureDescriptor {
+            label: None,
+            size,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = new_sampler(device, wgpu::FilterMode::Nearest, wgpu::FilterMode::Nearest, None);
+        let sampler = new_sampler(
+            device,
+            wgpu::FilterMode::Nearest,
+            wgpu::FilterMode::Nearest,
+            None,
+        );
 
         Self {
             _texture: texture,
             view,
             sampler,
-            format
+            format,
         }
     }
 
@@ -150,17 +151,22 @@ impl Texture {
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 view_formats: &[],
             },
-            &rgba
+            &rgba,
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = new_sampler(device, wgpu::FilterMode::Nearest, wgpu::FilterMode::Nearest, None);
+        let sampler = new_sampler(
+            device,
+            wgpu::FilterMode::Nearest,
+            wgpu::FilterMode::Nearest,
+            None,
+        );
 
         Ok(Self {
             _texture: texture,
             view,
             sampler,
-            format
+            format,
         })
     }
 
@@ -193,7 +199,7 @@ impl Texture {
                 label: None,
                 view_formats: &[],
             },
-            &image.data
+            &image.data,
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor {
@@ -202,13 +208,18 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = new_sampler(device, wgpu::FilterMode::Linear, wgpu::FilterMode::Linear, None);
+        let sampler = new_sampler(
+            device,
+            wgpu::FilterMode::Linear,
+            wgpu::FilterMode::Linear,
+            None,
+        );
 
         Ok(Self {
             _texture: texture,
             view,
             sampler,
-            format
+            format,
         })
     }
 }

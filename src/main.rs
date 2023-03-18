@@ -1,29 +1,33 @@
-mod texture;
 mod camera;
-mod transform;
-mod input;
-mod model;
-mod resources;
-mod device;
-mod shaders;
-mod scene;
-mod frame_context;
-mod render_target;
-mod post_processor;
-mod physics_world;
-mod math;
 mod debug_ui;
+mod device;
+mod frame_context;
+mod input;
+mod math;
+mod model;
+mod physics_world;
+mod post_processor;
+mod render_target;
+mod resources;
+mod scene;
+mod shaders;
+mod texture;
+mod transform;
 
 use std::collections::VecDeque;
-use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::CursorGrabMode;
+use winit::{
+    event::*,
+    event_loop::{ControlFlow, EventLoop},
+    window::WindowBuilder,
+};
 
-use input::Input;
-use device::Device;
 use debug_ui::DebugUI;
+use device::Device;
 use device::SurfaceSize;
 use frame_context::FrameContext;
+use input::Input;
 use post_processor::PostProcessor;
 use scene::Scene;
 
@@ -60,47 +64,42 @@ async fn run() {
                 }
 
                 Event::DeviceEvent {
-                    event: DeviceEvent::MouseMotion { delta, },
+                    event: DeviceEvent::MouseMotion { delta },
                     ..
                 } => {
                     input.on_mouse_move((delta.0 as f32, delta.1 as f32));
-                },
+                }
 
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == window.id() => {
-                    match event {
-                        WindowEvent::MouseInput {
-                            state,
-                            button,
-                            ..
-                        } => {
-                            input.on_mouse_button(button, state);
-                        }
+                } if window_id == window.id() => match event {
+                    WindowEvent::MouseInput { state, button, .. } => {
+                        input.on_mouse_button(button, state);
+                    }
 
-                        WindowEvent::KeyboardInput {
-                            input: KeyboardInput {
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
                                 state: key_state,
                                 virtual_keycode: Some(keycode),
                                 ..
                             },
-                            ..
-                        } => {
-                            input.on_key(keycode, key_state);
-                        }
-
-                        WindowEvent::Resized(new_size) => {
-                            device.resize(*new_size);
-                        },
-
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            device.resize(**new_inner_size);
-                        }
-
-                        _ => ()
+                        ..
+                    } => {
+                        input.on_key(keycode, key_state);
                     }
-                }
+
+                    WindowEvent::Resized(new_size) => {
+                        device.resize(*new_size);
+                    }
+
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        device.resize(**new_inner_size);
+                    }
+
+                    _ => (),
+                },
 
                 _ => {}
             }
@@ -115,7 +114,8 @@ async fn run() {
         // Grab/release cursor
         if input.rmb_down_just_switched {
             if input.rmb_down {
-                window.set_cursor_grab(CursorGrabMode::Confined)
+                window
+                    .set_cursor_grab(CursorGrabMode::Confined)
                     .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
                     .unwrap();
                 window.set_cursor_visible(false);
@@ -145,7 +145,7 @@ async fn run() {
             dt,
             input: &input,
             device: &device,
-            window: &window
+            window: &window,
         };
 
         scene.update(&frame_context);

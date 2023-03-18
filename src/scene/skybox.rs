@@ -11,7 +11,9 @@ pub struct Skybox {
 
 impl Skybox {
     pub async fn new(device: &Device) -> Self {
-        let texture = Texture::new_cube_from_file("skybox_bgra.dds", device).await.unwrap();
+        let texture = Texture::new_cube_from_file("skybox_bgra.dds", device)
+            .await
+            .unwrap();
 
         Self {
             mesh: Mesh::quad(device),
@@ -19,9 +21,14 @@ impl Skybox {
         }
     }
 
-    pub fn render<'a, 'b, 'c>(&'c mut self, device: &Device, camera: &Camera, frame: &mut Frame<'b, 'a>)
-        where 'a: 'b,
-              'c: 'a
+    pub fn render<'a, 'b, 'c>(
+        &'c mut self,
+        device: &Device,
+        camera: &Camera,
+        frame: &mut Frame<'b, 'a>,
+    ) where
+        'a: 'b,
+        'c: 'a,
     {
         self.shader.update(&device, camera);
         self.shader.apply(frame);

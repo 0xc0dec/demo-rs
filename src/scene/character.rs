@@ -1,10 +1,10 @@
-use cgmath::{Vector3};
-use rapier3d::prelude::*;
 use crate::camera::Camera;
 use crate::frame_context::FrameContext;
 use crate::math::to_na_vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
+use cgmath::Vector3;
+use rapier3d::prelude::*;
 
 pub struct Character {
     pub collider_handle: ColliderHandle,
@@ -22,7 +22,7 @@ impl Character {
 
         Self {
             collider_handle,
-            camera
+            camera,
         }
     }
 
@@ -32,16 +32,18 @@ impl Character {
             self.camera.transform.rotate_around_axis(
                 Vector3::unit_y(),
                 spectator_rot.horizontal_rotation,
-                TransformSpace::World
+                TransformSpace::World,
             );
             self.camera.transform.rotate_around_axis(
                 Vector3::unit_x(),
                 spectator_rot.vertical_rotation,
-                TransformSpace::Local
+                TransformSpace::Local,
             );
         }
 
-        let spectator_translation = self.camera.transform
+        let spectator_translation = self
+            .camera
+            .transform
             .spectator_translation(ctx.dt, 10.0, ctx.input);
         if let Some(spectator_translation) = spectator_translation {
             let (effective_movement, collider_current_pos) =
@@ -49,7 +51,8 @@ impl Character {
 
             self.camera.transform.translate(effective_movement);
 
-            physics.colliders
+            physics
+                .colliders
                 .get_mut(self.collider_handle)
                 .unwrap()
                 .set_translation(to_na_vec3(collider_current_pos + effective_movement));
@@ -59,7 +62,7 @@ impl Character {
         physics.cast_ray(
             self.camera.transform.position(),
             -self.camera.transform.forward(), // For some reason the ray is inverted here :(
-            Some(self.collider_handle)
+            Some(self.collider_handle),
         );
     }
 }

@@ -1,7 +1,7 @@
-use std::io::{BufReader, Cursor};
-use wgpu::util::DeviceExt;
 use crate::device::{Device, Frame};
 use crate::resources::load_string;
+use std::io::{BufReader, Cursor};
+use wgpu::util::DeviceExt;
 
 pub trait Vertex {
     fn desc<'a>() -> wgpu::VertexBufferLayout<'a>;
@@ -79,22 +79,26 @@ impl Mesh {
                 position: [1.0, -1.0, 0.0],
                 tex_coords: [1.0, 0.0],
                 normal: [0.0, 0.0, 0.0], // unused
-            }
+            },
         ];
 
         let indices = [0, 1, 2, 0, 2, 3];
 
         // TODO Remove copypasta
-        let vertex_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: None,
-            contents: bytemuck::cast_slice(&vertices),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
-        let index_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: None,
-            contents: bytemuck::cast_slice(&indices),
-            usage: wgpu::BufferUsages::INDEX,
-        });
+        let vertex_buffer = device
+            .device()
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: None,
+                contents: bytemuck::cast_slice(&vertices),
+                usage: wgpu::BufferUsages::VERTEX,
+            });
+        let index_buffer = device
+            .device()
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: None,
+                contents: bytemuck::cast_slice(&indices),
+                usage: wgpu::BufferUsages::INDEX,
+            });
 
         Mesh {
             vertex_buffer,
@@ -121,7 +125,8 @@ impl Model {
                 let mat_text = load_string(&p).await.unwrap();
                 tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
             },
-        ).await?;
+        )
+        .await?;
 
         let meshes = models
             .into_iter()
@@ -142,16 +147,22 @@ impl Model {
                     })
                     .collect::<Vec<_>>();
 
-                let vertex_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: None,
-                    contents: bytemuck::cast_slice(&vertices),
-                    usage: wgpu::BufferUsages::VERTEX,
-                });
-                let index_buffer = device.device().create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: None,
-                    contents: bytemuck::cast_slice(&m.mesh.indices),
-                    usage: wgpu::BufferUsages::INDEX,
-                });
+                let vertex_buffer =
+                    device
+                        .device()
+                        .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                            label: None,
+                            contents: bytemuck::cast_slice(&vertices),
+                            usage: wgpu::BufferUsages::VERTEX,
+                        });
+                let index_buffer =
+                    device
+                        .device()
+                        .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                            label: None,
+                            contents: bytemuck::cast_slice(&m.mesh.indices),
+                            usage: wgpu::BufferUsages::INDEX,
+                        });
 
                 Mesh {
                     vertex_buffer,
@@ -170,7 +181,10 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a, 'b> DrawModel<'b> for Frame<'a, 'b> where 'b: 'a {
+impl<'a, 'b> DrawModel<'b> for Frame<'a, 'b>
+where
+    'b: 'a,
+{
     fn draw_mesh(&mut self, mesh: &'b Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);

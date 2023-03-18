@@ -1,7 +1,7 @@
+use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3};
 use cgmath::Vector3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
-use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3};
 
 pub struct PhysicsWorld {
     pub bodies: RigidBodySet,
@@ -42,13 +42,19 @@ impl PhysicsWorld {
             impulse_joints,
             multibody_joints,
             ccd_solver,
-            char_controller
+            char_controller,
         }
     }
 
-    pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> (RigidBodyHandle, ColliderHandle) {
+    pub fn add_body(
+        &mut self,
+        body: RigidBody,
+        collider: Collider,
+    ) -> (RigidBodyHandle, ColliderHandle) {
         let body_handle = self.bodies.insert(body);
-        let collider_handle = self.colliders.insert_with_parent(collider, body_handle, &mut self.bodies);
+        let collider_handle =
+            self.colliders
+                .insert_with_parent(collider, body_handle, &mut self.bodies);
         (body_handle, collider_handle)
     }
 
@@ -56,13 +62,11 @@ impl PhysicsWorld {
         &self,
         dt: f32,
         desired_translation: Vector3<f32>,
-        collider_handle: ColliderHandle
+        collider_handle: ColliderHandle,
     ) -> (Vector3<f32>, Vector3<f32>) {
         let (EffectiveCharacterMovement { translation, .. }, collider_current_pos) = {
             let (collider_pos, collider_shape) = {
-                let collider = self.colliders
-                    .get(collider_handle)
-                    .unwrap();
+                let collider = self.colliders.get(collider_handle).unwrap();
                 (collider.position(), collider.shape())
             };
 
@@ -74,9 +78,8 @@ impl PhysicsWorld {
                 collider_shape,
                 collider_pos,
                 to_na_vec3(desired_translation),
-                QueryFilter::default()
-                    .exclude_collider(collider_handle),
-                |_| {}
+                QueryFilter::default().exclude_collider(collider_handle),
+                |_| {},
             );
 
             (effective_movement, collider_pos.translation.vector)
@@ -84,16 +87,19 @@ impl PhysicsWorld {
 
         (
             from_na_vec3(translation),
-            from_na_vec3(collider_current_pos)
+            from_na_vec3(collider_current_pos),
         )
     }
 
-    pub fn cast_ray(&self, from: Vector3<f32>, dir: Vector3<f32>, exclude: Option<ColliderHandle>)
-        -> Option<(ColliderHandle, Vector3<f32>)>
-    {
+    pub fn cast_ray(
+        &self,
+        from: Vector3<f32>,
+        dir: Vector3<f32>,
+        exclude: Option<ColliderHandle>,
+    ) -> Option<(ColliderHandle, Vector3<f32>)> {
         let ray = Ray {
             origin: to_na_point(from),
-            dir: to_na_vec3(dir)
+            dir: to_na_vec3(dir),
         };
 
         let mut filter = QueryFilter::default();
@@ -107,10 +113,10 @@ impl PhysicsWorld {
             &ray,
             Real::MAX,
             true,
-            filter
+            filter,
         ) {
             let hit_pt = ray.point_at(toi);
-            return Some((handle, from_na_point(hit_pt)))
+            return Some((handle, from_na_point(hit_pt)));
         }
 
         None

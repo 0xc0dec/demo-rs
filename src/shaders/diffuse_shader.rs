@@ -1,12 +1,12 @@
-use cgmath::{Matrix4};
-use wgpu::{BindGroup, RenderPipeline};
-use crate::camera::Camera;
-use crate::model::{ModelVertex, Vertex};
-use crate::device::{Device, Frame};
-use crate::shaders::utils::*;
 use super::Shader;
+use crate::camera::Camera;
+use crate::device::{Device, Frame};
+use crate::model::{ModelVertex, Vertex};
+use crate::shaders::utils::*;
 use crate::texture::Texture;
-use crate::transform::{Transform};
+use crate::transform::Transform;
+use cgmath::Matrix4;
+use wgpu::{BindGroup, RenderPipeline};
 
 pub struct DiffuseShader {
     texture_bind_group: BindGroup,
@@ -23,11 +23,8 @@ pub struct DiffuseShaderParams {
 impl DiffuseShader {
     pub async fn new(device: &Device, params: DiffuseShaderParams) -> Self {
         let matrices_uniform = MatricesUniform::new();
-        let (
-            matrices_uniform_bind_group_layout,
-            matrices_uniform_bind_group,
-            matrices_uniform_buf
-        ) = new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
+        let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
+            new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
             new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
@@ -40,11 +37,12 @@ impl DiffuseShader {
                 depth_enabled: true,
                 bind_group_layouts: &[
                     &texture_bind_group_layout,
-                    &matrices_uniform_bind_group_layout
+                    &matrices_uniform_bind_group_layout,
                 ],
-                vertex_buffer_layouts: &[ModelVertex::desc()]
-            }
-        ).await;
+                vertex_buffer_layouts: &[ModelVertex::desc()],
+            },
+        )
+        .await;
 
         Self {
             texture_bind_group,
@@ -65,7 +63,10 @@ impl DiffuseShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for DiffuseShader where 'a: 'b  {
+impl<'a, 'b> Shader<'a, 'b> for DiffuseShader
+where
+    'a: 'b,
+{
     fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
         frame.set_pipeline(&self.pipeline);
         frame.set_bind_group(0, &self.texture_bind_group, &[]);

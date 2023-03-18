@@ -1,8 +1,8 @@
-mod test_entity;
-mod spectator;
-mod scene;
 mod character;
+mod scene;
 mod skybox;
+mod spectator;
+mod test_entity;
 mod tracer;
 
 pub use scene::*;

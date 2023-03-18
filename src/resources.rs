@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use anyhow::*;
+use std::path::PathBuf;
 
 fn full_res_path(relative_path: &str) -> PathBuf {
     std::path::Path::new("./res").join(relative_path)

@@ -1,5 +1,5 @@
-use cgmath::*;
 use crate::transform::Transform;
+use cgmath::*;
 
 pub struct Camera {
     aspect: f32,

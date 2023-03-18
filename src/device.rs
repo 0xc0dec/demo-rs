@@ -1,8 +1,8 @@
-use std::iter;
-use std::ops::{Deref, DerefMut};
 use crate::debug_ui::DebugUI;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
+use std::iter;
+use std::ops::{Deref, DerefMut};
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -17,35 +17,46 @@ pub struct Device {
 }
 
 impl Device {
+    // TODO Configurable?
+    const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
+
     pub async fn new(window: &winit::window::Window) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
-            dx12_shader_compiler: Default::default()
+            dx12_shader_compiler: Default::default(),
         });
 
         let surface = unsafe { instance.create_surface(&window) }.unwrap();
 
-        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::HighPerformance,
-            compatible_surface: Some(&surface),
-            force_fallback_adapter: false
-        }).await.unwrap();
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                compatible_surface: Some(&surface),
+                force_fallback_adapter: false,
+            })
+            .await
+            .unwrap();
 
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                label: None,
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default()
-            },
-            None,
-        ).await.unwrap();
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    label: None,
+                    features: wgpu::Features::empty(),
+                    limits: wgpu::Limits::default(),
+                },
+                None,
+            )
+            .await
+            .unwrap();
 
         let surface_size = window.inner_size();
 
         let surface_config = {
             let caps = surface.get_capabilities(&adapter);
 
-            let format = caps.formats.iter()
+            let format = caps
+                .formats
+                .iter()
                 .copied()
                 .filter(|f| f.describe().srgb)
                 .next()
@@ -68,32 +79,36 @@ impl Device {
             surface,
             device,
             queue,
-            depth_tex: None
+            depth_tex: None,
         }
     }
 
     // TODO Add FrameTarget as enum
-    pub fn new_frame<'a, 'b>(&'b self, target: Option<&'b RenderTarget>)
-        -> Frame<'a, 'b> where 'b: 'a
+    pub fn new_frame<'a, 'b>(&'b self, target: Option<&'b RenderTarget>) -> Frame<'a, 'b>
+    where
+        'b: 'a,
     {
         let (color_format, depth_format) = match target {
             Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
-            None => (self.surface_config.format, self.depth_tex.as_ref().unwrap().format())
+            None => (
+                self.surface_config.format,
+                self.depth_tex.as_ref().unwrap().format(),
+            ),
         };
 
-        let bundle_encoder = self.device.create_render_bundle_encoder(
-            &wgpu::RenderBundleEncoderDescriptor {
-                label: None,
-                multiview: None,
-                sample_count: 1,
-                color_formats: &[Some(color_format)],
-                depth_stencil: Some(wgpu::RenderBundleDepthStencil {
-                    format: depth_format,
-                    depth_read_only: false,
-                    stencil_read_only: false
-                })
-            }
-        );
+        let bundle_encoder =
+            self.device
+                .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+                    label: None,
+                    multiview: None,
+                    sample_count: 1,
+                    color_formats: &[Some(color_format)],
+                    depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+                        format: depth_format,
+                        depth_read_only: false,
+                        stencil_read_only: false,
+                    }),
+                });
 
         Frame {
             device: &self,
@@ -116,7 +131,7 @@ impl Device {
     }
 
     pub fn depth_texture_format(&self) -> wgpu::TextureFormat {
-        wgpu::TextureFormat::Depth32Float // TODO Configurable
+        Self::DEPTH_TEX_FORMAT
     }
 
     pub fn surface_size(&self) -> SurfaceSize {
@@ -132,13 +147,19 @@ impl Device {
     }
 }
 
-pub struct Frame<'a, 'b> where 'b: 'a {
+pub struct Frame<'a, 'b>
+where
+    'b: 'a,
+{
     device: &'b Device,
     bundle_encoder: wgpu::RenderBundleEncoder<'a>,
     target: Option<&'b RenderTarget>,
 }
 
-impl<'a, 'b> Deref for Frame<'a, 'b> where 'b: 'a {
+impl<'a, 'b> Deref for Frame<'a, 'b>
+where
+    'b: 'a,
+{
     type Target = wgpu::RenderBundleEncoder<'a>;
 
     fn deref(&self) -> &Self::Target {
@@ -146,24 +167,33 @@ impl<'a, 'b> Deref for Frame<'a, 'b> where 'b: 'a {
     }
 }
 
-impl<'a, 'b> DerefMut for Frame<'a, 'b> where 'b: 'a {
+impl<'a, 'b> DerefMut for Frame<'a, 'b>
+where
+    'b: 'a,
+{
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.bundle_encoder
     }
 }
 
-impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
+impl<'a, 'b> Frame<'a, 'b>
+where
+    'b: 'a,
+{
     pub fn finish(self, debug_ui: Option<&mut DebugUI>) {
-        let surface_tex = self.target.is_none()
-            .then(|| self.device.surface
+        let surface_tex = self.target.is_none().then(|| {
+            self.device
+                .surface
                 .get_current_texture()
                 .expect("Missing surface texture")
-            );
-        let surface_tex_view = surface_tex
-            .as_ref()
-            .map(|t| t.texture.create_view(&wgpu::TextureViewDescriptor::default()));
+        });
+        let surface_tex_view = surface_tex.as_ref().map(|t| {
+            t.texture
+                .create_view(&wgpu::TextureViewDescriptor::default())
+        });
 
-        let color_tex_view = self.target
+        let color_tex_view = self
+            .target
             .map(|t| t.color_tex().view())
             .or(surface_tex_view.as_ref())
             .unwrap();
@@ -173,10 +203,11 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
             ops: wgpu::Operations {
                 load: wgpu::LoadOp::Clear(wgpu::Color::RED),
                 store: true,
-            }
+            },
         });
 
-        let depth_tex_view = self.target
+        let depth_tex_view = self
+            .target
             .map(|t| t.depth_tex().view())
             .or(self.device.depth_tex.as_ref().map(|t| t.view()))
             .unwrap();
@@ -189,18 +220,21 @@ impl<'a, 'b> Frame<'a, 'b> where 'b: 'a {
             stencil_ops: None,
         });
 
-        let bundle = self.bundle_encoder
-            .finish(&wgpu::RenderBundleDescriptor { label : None });
+        let bundle = self
+            .bundle_encoder
+            .finish(&wgpu::RenderBundleDescriptor { label: None });
 
         let cmd_buffer = {
-            let mut encoder = self.device.device
+            let mut encoder = self
+                .device
+                .device
                 .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
             {
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: None,
                     color_attachments: &[color_attachment],
-                    depth_stencil_attachment: depth_attachment
+                    depth_stencil_attachment: depth_attachment,
                 });
 
                 pass.execute_bundles(iter::once(&bundle));

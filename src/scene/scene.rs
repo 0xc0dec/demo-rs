@@ -1,4 +1,3 @@
-use cgmath::{Vector3, Zero};
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::frame_context::FrameContext;
@@ -7,6 +6,7 @@ use crate::scene::character::Character;
 use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 use crate::scene::tracer::Tracer;
+use cgmath::{Vector3, Zero};
 
 pub struct Scene {
     character: Character,
@@ -27,8 +27,9 @@ impl Scene {
                 pos: Vector3::zero(),
                 scale: Vector3::new(10.0, 0.1, 10.0),
                 movable: false,
-            }
-        ).await;
+            },
+        )
+        .await;
 
         let box1 = TestEntity::new(
             device,
@@ -37,8 +38,9 @@ impl Scene {
                 pos: Vector3::unit_y() * 10.0,
                 scale: Vector3::new(1.0, 1.0, 1.0),
                 movable: true,
-            }
-        ).await;
+            },
+        )
+        .await;
 
         let character = Character::new(
             Camera::new(
@@ -46,7 +48,7 @@ impl Scene {
                 Vector3::new(0.0, 0.0, 0.0),
                 device.surface_size().into(),
             ),
-            &mut physics
+            &mut physics,
         );
 
         let tracer = Tracer::new(device).await;
@@ -57,7 +59,7 @@ impl Scene {
             character,
             tracer,
             skybox,
-            entities: vec![ground, box1]
+            entities: vec![ground, box1],
         }
     }
 
@@ -73,25 +75,29 @@ impl Scene {
     }
 
     pub fn render<'a, 'b>(&'a mut self, frame: &mut Frame<'b, 'a>, ctx: &'a FrameContext)
-        where 'a: 'b
+    where
+        'a: 'b,
     {
         // TODO Do this only when the size changes
         self.character.camera.set_fov(
             ctx.device.surface_size().width as f32,
-            ctx.device.surface_size().height as f32
+            ctx.device.surface_size().height as f32,
         );
 
-        self.skybox.render(ctx.device, &self.character.camera, frame);
+        self.skybox
+            .render(ctx.device, &self.character.camera, frame);
 
         for e in &mut self.entities {
             e.render(ctx.device, &self.character.camera, frame);
         }
 
-        self.tracer.render(ctx.device, &self.character.camera, frame);
+        self.tracer
+            .render(ctx.device, &self.character.camera, frame);
     }
 
     pub fn build_debug_ui(&self, ui_frame: &mut imgui::Ui) {
-        ui_frame.window("Debug info")
+        ui_frame
+            .window("Debug info")
             .position([10.0, 10.0], imgui::Condition::FirstUseEver)
             .movable(false)
             .resizable(false)
