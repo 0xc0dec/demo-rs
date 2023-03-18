@@ -6,7 +6,7 @@ use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
 use crate::shaders::{ColorShader, Shader};
 use crate::transform::Transform;
-use cgmath::{Array, Vector3, Zero};
+use cgmath::{Array, InnerSpace, Vector3, Zero};
 use crate::app::App;
 
 pub struct Tracer {
@@ -20,7 +20,7 @@ impl Tracer {
     pub async fn new(app: &mut App) -> Self {
         let model = app.resources.model("cube.obj", &app.device).await;
         let shader = ColorShader::new(&app.device).await;
-        let transform = Transform::new(Vector3::zero(), Vector3::from_value(0.2));
+        let transform = Transform::new(Vector3::zero(), Vector3::from_value(1.0));
 
         Tracer {
             model,
@@ -38,6 +38,10 @@ impl Tracer {
         ) {
             self.target_visible = true;
             self.transform.set_position(hit_pt);
+
+            let dist_to_camera = (character.camera.transform.position() - hit_pt).magnitude();
+            let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
+            self.transform.set_scale(Vector3::from_value(scale));
         } else {
             self.target_visible = false;
         }

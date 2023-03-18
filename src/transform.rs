@@ -1,4 +1,4 @@
-use cgmath::{InnerSpace, Matrix, Matrix4, Quaternion, Rad, Rotation, Transform as _, Vector3};
+use cgmath::{ElementWise, InnerSpace, Matrix, Matrix4, Quaternion, Rad, Rotation, Transform as _, Vector3, Vector4};
 
 pub enum TransformSpace {
     Local,
@@ -61,6 +61,12 @@ impl Transform {
         self.m.w.x = pos.x;
         self.m.w.y = pos.y;
         self.m.w.z = pos.z;
+    }
+
+    pub fn set_scale(&mut self, scale: Vector3<f32>) {
+        self.m.x = self.m.x.normalize().mul_element_wise(scale.extend(1.0));
+        self.m.y = self.m.y.normalize().mul_element_wise(scale.extend(1.0));
+        self.m.z = self.m.z.normalize().mul_element_wise(scale.extend(1.0));
     }
 
     pub fn set(&mut self, pos: Vector3<f32>, rotation: Quaternion<f32>) {
