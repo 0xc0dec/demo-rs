@@ -112,7 +112,7 @@ impl Scene {
             .build(|| {
                 let mouse_pos = ui_frame.io().mouse_pos;
                 ui_frame.text(format!(
-                    "Mouse Position: ({:.1},{:.1})",
+                    "Mouse position: ({:.1},{:.1})",
                     mouse_pos[0], mouse_pos[1]
                 ));
             });
