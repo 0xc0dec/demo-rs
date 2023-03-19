@@ -1,5 +1,6 @@
-use cgmath::{ElementWise, InnerSpace, Matrix, Rad, Rotation, Transform as _, Vector3};
-use crate::math::{Mat4, Quat, Vec3};
+use cgmath::{InnerSpace, Rad, Transform as _};
+use rapier3d::na;
+use crate::math::{from_na_vec3, Mat4, Quat, to_na_vec3, to_na_vec4, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -9,14 +10,36 @@ pub enum TransformSpace {
 pub struct Transform {
     m: Mat4,
     scale: Vec3,
+    pos: Vec3,
+    rot: na::UnitQuaternion<f32>
+}
+
+fn to_na_matrix(m: &Mat4) -> na::Matrix4<f32> {
+    na::Matrix4::from_columns(&[
+        to_na_vec4(m.x),
+        to_na_vec4(m.y),
+        to_na_vec4(m.z),
+        to_na_vec4(m.w),
+    ])
+}
+
+fn from_na_matrix(m: na::Matrix4<f32>) -> Mat4 {
+    Mat4::from(*m.as_ref())
 }
 
 // TODO Parent-child relationships
 impl Transform {
     pub fn new(pos: Vec3, scale: Vec3) -> Self {
-        let m = Mat4::from_translation(pos)
-            * Mat4::from_nonuniform_scale(scale.x, scale.y, scale.z);
-        Self { m, scale }
+        let m = na::Matrix4::identity();
+        let rot = na::UnitQuaternion::identity();
+        let mut res = Self {
+            m: from_na_matrix(m),
+            rot,
+            scale,
+            pos
+        };
+        res.rebuild_matrix();
+        res
     }
 
     pub fn matrix(&self) -> Mat4 {
@@ -24,61 +47,57 @@ impl Transform {
     }
 
     pub fn forward(&self) -> Vec3 {
-        self.m.z.truncate()
+        let m = to_na_matrix(&self.m);
+        from_na_vec3(m.column(2).xyz())
     }
 
     pub fn right(&self) -> Vec3 {
-        self.m.x.truncate()
+        let m = to_na_matrix(&self.m);
+        from_na_vec3(m.column(0).xyz())
     }
 
     pub fn up(&self) -> Vec3 {
-        self.m.y.truncate()
+        let m = to_na_matrix(&self.m);
+        from_na_vec3(m.column(1).xyz())
     }
 
     pub fn position(&self) -> Vec3 {
-        self.m.w.truncate()
+        let m = to_na_matrix(&self.m);
+        from_na_vec3(m.column(3).xyz())
     }
 
     pub fn look_at(&mut self, target: Vec3) {
-        // For some reason could not make it work with Mat4::look_at, was getting weird results.
-        let rot_mtx = Mat4::from(Quat::look_at(
-            self.position() - target,
-            Vec3::unit_y(),
-        ))
-            .transpose()
-            * Mat4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);
-        self.m.x = rot_mtx.x;
-        self.m.y = rot_mtx.y;
-        self.m.z = rot_mtx.z;
+        self.rot = na::UnitQuaternion::look_at_rh(
+            &to_na_vec3(target - self.pos),
+            &na::Vector3::new(0.0, 1.0, 0.0)
+        );
+        self.rebuild_matrix();
     }
 
     pub fn translate(&mut self, v: Vec3) {
-        self.m.w.x += v.x;
-        self.m.w.y += v.y;
-        self.m.w.z += v.z;
+        let mut m = to_na_matrix(&self.m);
+        m.append_translation_mut(&to_na_vec3(v));
+        self.m = from_na_matrix(m);
+        self.pos += v;
     }
 
     pub fn set_position(&mut self, pos: Vec3) {
-        self.m.w.x = pos.x;
-        self.m.w.y = pos.y;
-        self.m.w.z = pos.z;
+        self.pos = pos;
+        self.rebuild_matrix();
     }
 
     pub fn set_scale(&mut self, scale: Vec3) {
-        self.m.x = self.m.x.normalize().mul_element_wise(scale.extend(1.0));
-        self.m.y = self.m.y.normalize().mul_element_wise(scale.extend(1.0));
-        self.m.z = self.m.z.normalize().mul_element_wise(scale.extend(1.0));
+        self.scale = scale;
+        self.rebuild_matrix();
     }
 
+    // TODO Fix, the visuals don't always match physics
     pub fn set(&mut self, pos: Vec3, rotation: Quat) {
-        self.m = Mat4::from_translation(pos);
-
-        // Again, not sure why transposition is needed
-        let rot_mtx = Mat4::from(rotation).transpose()
-            * Mat4::from_nonuniform_scale(self.scale.x, self.scale.y, self.scale.z);
-        self.m.x = rot_mtx.x;
-        self.m.y = rot_mtx.y;
-        self.m.z = rot_mtx.z;
+        self.rot = na::UnitQuaternion::from_quaternion(
+            na::Quaternion::new(rotation.v.x, rotation.v.y, rotation.v.z, rotation.s)
+        );
+        self.pos = pos;
+        self.rebuild_matrix();
     }
 
     pub fn rotate_around_axis(
@@ -88,12 +107,22 @@ impl Transform {
         space: TransformSpace,
     ) {
         let axis = axis.normalize();
-        self.m = self.m * match space {
-            TransformSpace::Local => Mat4::from_axis_angle(axis, angle),
-            TransformSpace::World => {
-                let axis = self.m.inverse_transform_vector(axis).unwrap();
-                Mat4::from_axis_angle(axis, angle)
-            }
+        let axis = match space {
+            TransformSpace::Local => axis,
+            TransformSpace::World => self.m.inverse_transform_vector(axis).unwrap()
         };
+
+        self.rot = na::UnitQuaternion::from_scaled_axis(to_na_vec3(axis * angle.0)) * self.rot;
+        self.rebuild_matrix();
+    }
+
+    fn rebuild_matrix(&mut self) {
+        let rot_m = na::Rotation3::from(self.rot).transpose();
+        let tr_m = na::Translation3::new(self.pos.x, self.pos.y, self.pos.z);
+        let rot_and_tr_m = tr_m * rot_m;
+        let m = rot_and_tr_m
+            .to_matrix()
+            .prepend_nonuniform_scaling(&to_na_vec3(self.scale));
+        self.m = from_na_matrix(m);
     }
 }
