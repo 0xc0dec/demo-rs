@@ -1,6 +1,7 @@
 use crate::transform::Transform;
 use cgmath::*;
-use crate::math::{Degrees, Mat4, Vec3};
+use rapier3d::na;
+use crate::math::{Degrees, from_na_matrix, Mat4, Vec3};
 
 pub struct Camera {
     aspect: f32,
@@ -20,7 +21,9 @@ impl Camera {
         let znear = 0.1;
         let zfar = 100.0;
         let fov = Deg(45.0);
-        let proj_matrix = perspective(fov, aspect, znear, zfar);
+        let proj_matrix = from_na_matrix(
+            na::Perspective3::new(aspect, fov.0, znear, zfar).to_homogeneous()
+        );
 
         Self {
             aspect,

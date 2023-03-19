@@ -13,12 +13,12 @@ impl crate::transform::Transform {
             return None;
         }
 
-        let hdelta = -input.mouse_delta.0 as f32 * dt;
+        let hdelta = input.mouse_delta.0 as f32 * dt;
         let horizontal_rotation = Rad(hdelta);
 
         let forward = self.forward();
         let angle_to_up = forward.angle(Vec3::unit_y()).0;
-        let mut vdelta = -input.mouse_delta.1 as f32 * dt;
+        let mut vdelta = input.mouse_delta.1 as f32 * dt;
         if vdelta < 0.0 {
             // Moving up
             if angle_to_up + vdelta <= 0.1 {
@@ -48,10 +48,10 @@ impl crate::transform::Transform {
 
         let mut movement: Vec3 = Vec3::zero();
         if input.forward_down {
-            movement -= self.forward();
+            movement += self.forward();
         }
         if input.back_down {
-            movement += self.forward();
+            movement -= self.forward();
         }
         if input.right_down {
             movement += self.right();

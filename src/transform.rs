@@ -1,6 +1,6 @@
 use cgmath::{InnerSpace, Rad, Transform as _};
 use rapier3d::na;
-use crate::math::{from_na_vec3, Mat4, Quat, to_na_vec3, to_na_vec4, Vec3};
+use crate::math::{from_na_matrix, from_na_vec3, Mat4, Quat, to_na_matrix, to_na_vec3, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -12,19 +12,6 @@ pub struct Transform {
     scale: Vec3,
     pos: Vec3,
     rot: na::UnitQuaternion<f32>
-}
-
-fn to_na_matrix(m: &Mat4) -> na::Matrix4<f32> {
-    na::Matrix4::from_columns(&[
-        to_na_vec4(m.x),
-        to_na_vec4(m.y),
-        to_na_vec4(m.z),
-        to_na_vec4(m.w),
-    ])
-}
-
-fn from_na_matrix(m: na::Matrix4<f32>) -> Mat4 {
-    Mat4::from(*m.as_ref())
 }
 
 // TODO Parent-child relationships
@@ -48,7 +35,7 @@ impl Transform {
 
     pub fn forward(&self) -> Vec3 {
         let m = to_na_matrix(&self.m);
-        from_na_vec3(m.column(2).xyz())
+        -from_na_vec3(m.column(2).xyz())
     }
 
     pub fn right(&self) -> Vec3 {

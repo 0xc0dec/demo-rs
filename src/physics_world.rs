@@ -98,9 +98,7 @@ impl PhysicsWorld {
     ) -> Option<(Vec3, Vec3, ColliderHandle)> {
         let ray = Ray {
             origin: to_na_point(from),
-            // Inverting the dir because I don't know why :(
-            // Maybe Rapier uses a different basis orientation or smth.
-            dir: to_na_vec3(-dir),
+            dir: to_na_vec3(dir),
         };
 
         let mut filter = QueryFilter::default();
