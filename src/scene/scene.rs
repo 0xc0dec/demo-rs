@@ -6,7 +6,7 @@ use crate::scene::character::Character;
 use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 use crate::scene::tracer::Tracer;
-use cgmath::{Array, Deg, Zero};
+use cgmath::{Deg, Zero};
 use crate::app::App;
 use crate::math::{Vec3};
 
@@ -39,9 +39,9 @@ impl Scene {
             app,
             &mut physics,
             TestEntityParams {
-                pos: Vec3::unit_y() * 15.0,
+                pos: Vec3::y_axis().xyz() * 15.0,
                 scale: Vec3::new(1.0, 1.0, 1.0),
-                rotation_axis: Vec3::from_value(1.0),
+                rotation_axis: Vec3::from_element(1.0),
                 rotation_angle: Deg(50.0),
                 movable: true,
             },

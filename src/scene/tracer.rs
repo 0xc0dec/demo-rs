@@ -21,7 +21,7 @@ impl Tracer {
     pub async fn new(app: &mut App) -> Self {
         let model = app.resources.model("cube.obj", &app.device).await;
         let shader = ColorShader::new(&app.device).await;
-        let transform = Transform::new(Vec3::zero(), Vec3::from_value(1.0));
+        let transform = Transform::new(Vec3::zero(), Vec3::from_element(1.0));
 
         Tracer {
             model,
@@ -42,7 +42,7 @@ impl Tracer {
 
             let dist_to_camera = (character.camera.transform.position() - hit_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
-            self.transform.set_scale(Vec3::from_value(scale));
+            self.transform.set_scale(Vec3::from_element(scale));
         } else {
             self.target_visible = false;
         }

@@ -14,7 +14,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(pos: Vec3, target: Vec3, canvas_size: (f32, f32)) -> Self {
-        let mut transform = Transform::new(pos, Vec3::from_value(1.0));
+        let mut transform = Transform::new(pos, Vec3::from_element(1.0));
         transform.look_at(target);
 
         let aspect = canvas_size.0 / canvas_size.1;

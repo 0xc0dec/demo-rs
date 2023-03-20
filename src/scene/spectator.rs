@@ -17,7 +17,7 @@ impl crate::transform::Transform {
         let horizontal_rotation = Rad(hdelta);
 
         let forward = self.forward();
-        let angle_to_up = forward.angle(Vec3::unit_y()).0;
+        let angle_to_up = forward.angle(&Vec3::y_axis());
         let mut vdelta = input.mouse_delta.1 as f32 * dt;
         if vdelta < 0.0 {
             // Moving up

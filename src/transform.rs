@@ -1,4 +1,4 @@
-use cgmath::{InnerSpace, Rad, Transform as _};
+use cgmath::{Rad};
 use rapier3d::na;
 use crate::math::{from_na_matrix, from_na_vec3, Mat4, Mat4_, Quat, to_na_matrix, to_na_vec3, Vec3};
 
@@ -40,29 +40,25 @@ impl Transform {
     }
 
     pub fn forward(&self) -> Vec3 {
-        let m = to_na_matrix(&self.m);
-        -from_na_vec3(m.column(2).xyz())
+        -self.m2.column(2).xyz()
     }
 
     pub fn right(&self) -> Vec3 {
-        let m = to_na_matrix(&self.m);
-        from_na_vec3(m.column(0).xyz())
+        self.m2.column(0).xyz()
     }
 
     pub fn up(&self) -> Vec3 {
-        let m = to_na_matrix(&self.m);
-        from_na_vec3(m.column(1).xyz())
+        self.m2.column(1).xyz()
     }
 
     pub fn position(&self) -> Vec3 {
-        let m = to_na_matrix(&self.m);
-        from_na_vec3(m.column(3).xyz())
+        self.pos
     }
 
     pub fn look_at(&mut self, target: Vec3) {
         self.rot = na::UnitQuaternion::look_at_rh(
-            &to_na_vec3(target - self.pos),
-            &na::Vector3::new(0.0, 1.0, 0.0)
+            &(target - self.pos),
+            &na::Vector3::y_axis()
         );
         self.rebuild_matrix();
     }
@@ -103,7 +99,7 @@ impl Transform {
         let axis = axis.normalize();
         let axis = match space {
             TransformSpace::Local => axis,
-            TransformSpace::World => self.m.inverse_transform_vector(axis).unwrap()
+            TransformSpace::World => self.m2.try_inverse().unwrap().transform_vector(&axis)
         };
 
         self.rot = na::UnitQuaternion::from_scaled_axis(to_na_vec3(axis * angle.0)) * self.rot;

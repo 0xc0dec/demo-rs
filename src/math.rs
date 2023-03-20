@@ -41,7 +41,7 @@ pub fn from_na_matrix(m: na::Matrix4<f32>) -> Mat4 {
     Mat4::from(*m.as_ref())
 }
 
-pub type Vec3 = Vector3<f32>;
+pub type Vec3 = na::Vector3<f32>;
 pub type Mat4 = Matrix4<f32>;
 pub type Mat4_ = na::Matrix4<f32>;
 pub type Quat = Quaternion<f32>;

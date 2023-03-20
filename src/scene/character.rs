@@ -29,12 +29,12 @@ impl Character {
         let spectator_rot = self.camera.transform.spectator_rotation(ctx.dt, &ctx.app.input);
         if let Some(spectator_rot) = spectator_rot {
             self.camera.transform.rotate_around_axis(
-                Vec3::unit_y(),
+                Vec3::y_axis().xyz(),
                 spectator_rot.horizontal_rotation,
                 TransformSpace::World,
             );
             self.camera.transform.rotate_around_axis(
-                Vec3::unit_x(),
+                Vec3::x_axis().xyz(),
                 spectator_rot.vertical_rotation,
                 TransformSpace::Local,
             );
