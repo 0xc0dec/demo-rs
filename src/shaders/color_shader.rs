@@ -87,6 +87,6 @@ impl MatricesUniform {
 
     fn update(&mut self, camera: &Camera, model_transform: &Transform) {
         self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
-        self.world = model_transform.matrix().into();
+        self.world = model_transform.matrix2().into();
     }
 }

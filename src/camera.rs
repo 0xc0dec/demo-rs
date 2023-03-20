@@ -49,6 +49,8 @@ impl Camera {
 
     pub fn set_fov(&mut self, width: f32, height: f32) {
         self.aspect = width / height;
-        self.proj_matrix = perspective(self.fov, self.aspect, self.znear, self.zfar)
+        self.proj_matrix = from_na_matrix(
+            na::Perspective3::new(self.aspect, self.fov.0, self.znear, self.zfar).to_homogeneous()
+        );
     }
 }

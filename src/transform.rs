@@ -1,6 +1,6 @@
 use cgmath::{InnerSpace, Rad, Transform as _};
 use rapier3d::na;
-use crate::math::{from_na_matrix, from_na_vec3, Mat4, Quat, to_na_matrix, to_na_vec3, Vec3};
+use crate::math::{from_na_matrix, from_na_vec3, Mat4, Mat4_, Quat, to_na_matrix, to_na_vec3, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -9,6 +9,7 @@ pub enum TransformSpace {
 
 pub struct Transform {
     m: Mat4,
+    m2: Mat4_,
     scale: Vec3,
     pos: Vec3,
     rot: na::UnitQuaternion<f32>
@@ -21,6 +22,7 @@ impl Transform {
         let rot = na::UnitQuaternion::identity();
         let mut res = Self {
             m: from_na_matrix(m),
+            m2: m,
             rot,
             scale,
             pos
@@ -31,6 +33,10 @@ impl Transform {
 
     pub fn matrix(&self) -> Mat4 {
         self.m
+    }
+
+    pub fn matrix2(&self) -> Mat4_ {
+        self.m2
     }
 
     pub fn forward(&self) -> Vec3 {
@@ -64,7 +70,8 @@ impl Transform {
     pub fn translate(&mut self, v: Vec3) {
         let mut m = to_na_matrix(&self.m);
         m.append_translation_mut(&to_na_vec3(v));
-        self.m = from_na_matrix(m);
+        self.m2 = m;
+        self.m = from_na_matrix(self.m2);
         self.pos += v;
     }
 
@@ -107,9 +114,9 @@ impl Transform {
         let rot_m = na::Rotation3::from(self.rot).transpose();
         let tr_m = na::Translation3::new(self.pos.x, self.pos.y, self.pos.z);
         let rot_and_tr_m = tr_m * rot_m;
-        let m = rot_and_tr_m
+        self.m2 = rot_and_tr_m
             .to_matrix()
             .prepend_nonuniform_scaling(&to_na_vec3(self.scale));
-        self.m = from_na_matrix(m);
+        self.m = from_na_matrix(self.m2);
     }
 }
