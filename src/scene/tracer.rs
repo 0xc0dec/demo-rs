@@ -6,7 +6,6 @@ use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
 use crate::shaders::{ColorShader, Shader};
 use crate::transform::Transform;
-use cgmath::{Array, InnerSpace, Vector3, Zero};
 use crate::app::App;
 use crate::math::Vec3;
 
@@ -21,7 +20,7 @@ impl Tracer {
     pub async fn new(app: &mut App) -> Self {
         let model = app.resources.model("cube.obj", &app.device).await;
         let shader = ColorShader::new(&app.device).await;
-        let transform = Transform::new(Vec3::zero(), Vec3::from_element(1.0));
+        let transform = Transform::new(Vec3::from_element(0.0), Vec3::from_element(1.0));
 
         Tracer {
             model,

@@ -78,7 +78,6 @@ impl MatricesUniform {
     );
 
     fn new() -> Self {
-        use cgmath::SquareMatrix;
         Self {
             view_proj: Mat4::identity().into(),
             world: Mat4::identity().into(),

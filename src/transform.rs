@@ -1,4 +1,3 @@
-use cgmath::{Rad};
 use rapier3d::na;
 use crate::math::{Mat4, Quat, Vec3};
 
@@ -82,7 +81,7 @@ impl Transform {
     pub fn rotate_around_axis(
         &mut self,
         axis: Vec3,
-        angle: Rad<f32>,
+        angle: f32,
         space: TransformSpace,
     ) {
         let axis = axis.normalize();
@@ -91,7 +90,7 @@ impl Transform {
             TransformSpace::World => self.m2.try_inverse().unwrap().transform_vector(&axis)
         };
 
-        self.rot = na::UnitQuaternion::from_scaled_axis(axis * angle.0) * self.rot;
+        self.rot = na::UnitQuaternion::from_scaled_axis(axis * angle) * self.rot;
         self.rebuild_matrix();
     }
 

@@ -1,13 +1,12 @@
 use crate::transform::Transform;
-use cgmath::*;
 use rapier3d::na;
-use crate::math::{Degrees, Mat4, Vec3};
+use crate::math::{Mat4, Vec3};
 
 pub struct Camera {
     aspect: f32,
     znear: f32,
     zfar: f32,
-    fov: Degrees,
+    fov: f32,
     proj_matrix: Mat4,
     pub transform: Transform,
 }
@@ -20,8 +19,8 @@ impl Camera {
         let aspect = canvas_size.0 / canvas_size.1;
         let znear = 0.1;
         let zfar = 100.0;
-        let fov = Deg(45.0);
-        let proj_matrix = na::Perspective3::new(aspect, fov.0, znear, zfar).to_homogeneous();
+        let fov = 45.0;
+        let proj_matrix = na::Perspective3::new(aspect, fov, znear, zfar).to_homogeneous();
 
         Self {
             aspect,
@@ -47,7 +46,7 @@ impl Camera {
 
     pub fn set_fov(&mut self, width: f32, height: f32) {
         self.aspect = width / height;
-        self.proj_matrix = na::Perspective3::new(self.aspect, self.fov.0, self.znear, self.zfar)
+        self.proj_matrix = na::Perspective3::new(self.aspect, self.fov, self.znear, self.zfar)
             .to_homogeneous();
     }
 }
