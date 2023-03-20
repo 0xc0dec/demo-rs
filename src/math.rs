@@ -1,4 +1,4 @@
-use cgmath::{Deg, Matrix4, Quaternion, Vector3};
+use cgmath::{Deg, Quaternion};
 use rapier3d::math::Rotation;
 use rapier3d::na;
 use rapier3d::na::Point3;
@@ -28,21 +28,7 @@ pub fn from_na_rot(r: Rotation<Real>) -> Quat {
     Quat::new(r.i, r.j, r.k, r.w)
 }
 
-pub fn to_na_matrix(m: &Mat4) -> na::Matrix4<f32> {
-    na::Matrix4::from_columns(&[
-        to_na_vec4(m.x),
-        to_na_vec4(m.y),
-        to_na_vec4(m.z),
-        to_na_vec4(m.w),
-    ])
-}
-
-pub fn from_na_matrix(m: na::Matrix4<f32>) -> Mat4 {
-    Mat4::from(*m.as_ref())
-}
-
 pub type Vec3 = na::Vector3<f32>;
-pub type Mat4 = Matrix4<f32>;
 pub type Mat4_ = na::Matrix4<f32>;
 pub type Quat = Quaternion<f32>;
 pub type Degrees = Deg<f32>;

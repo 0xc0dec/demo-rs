@@ -1,7 +1,7 @@
 use crate::transform::Transform;
 use cgmath::*;
 use rapier3d::na;
-use crate::math::{Degrees, from_na_matrix, Mat4, Mat4_, Vec3};
+use crate::math::{Degrees, Mat4_, Vec3};
 
 pub struct Camera {
     aspect: f32,

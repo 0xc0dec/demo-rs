@@ -4,8 +4,7 @@ use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
 use crate::texture::Texture;
-use cgmath::{SquareMatrix};
-use crate::math::{from_na_matrix, Mat4, Mat4_};
+use crate::math::{Mat4_};
 
 pub struct SkyboxShader {
     pipeline: wgpu::RenderPipeline,
@@ -90,13 +89,13 @@ impl DataUniform {
 
     fn new() -> Self {
         Self {
-            proj_mat_inv: Mat4::identity().into(),
-            view_mat: Mat4::identity().into(),
+            proj_mat_inv: Mat4_::identity().into(),
+            view_mat: Mat4_::identity().into(),
         }
     }
 
     fn update(&mut self, camera: &Camera) {
-        self.view_mat = from_na_matrix(camera.view_matrix()).into();
+        self.view_mat = camera.view_matrix().into();
         self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
             .try_inverse()
             .unwrap()

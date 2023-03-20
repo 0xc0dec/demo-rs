@@ -6,7 +6,7 @@ use crate::shaders::utils::*;
 use crate::texture::Texture;
 use crate::transform::Transform;
 use wgpu::{BindGroup, RenderPipeline};
-use crate::math::{from_na_matrix, Mat4, Mat4_};
+use crate::math::{Mat4_};
 
 pub struct DiffuseShader {
     texture_bind_group: BindGroup,
@@ -93,8 +93,8 @@ impl MatricesUniform {
     fn new() -> Self {
         use cgmath::SquareMatrix;
         Self {
-            view_proj: Mat4::identity().into(),
-            world: Mat4::identity().into(),
+            view_proj: Mat4_::identity().into(),
+            world: Mat4_::identity().into(),
         }
     }
 
