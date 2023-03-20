@@ -1,6 +1,6 @@
 use cgmath::{Rad};
 use rapier3d::na;
-use crate::math::{Mat4, Quat, to_na_vec3, Vec3};
+use crate::math::{Mat4, Quat, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -58,7 +58,7 @@ impl Transform {
     }
 
     pub fn translate(&mut self, v: Vec3) {
-        self.m2.append_translation_mut(&to_na_vec3(v));
+        self.m2.append_translation_mut(&v);
         self.pos += v;
     }
 
@@ -74,9 +74,7 @@ impl Transform {
 
     // TODO Fix, the visuals don't always match physics
     pub fn set(&mut self, pos: Vec3, rotation: Quat) {
-        self.rot = na::UnitQuaternion::from_quaternion(
-            na::Quaternion::new(rotation.v.x, rotation.v.y, rotation.v.z, rotation.s)
-        );
+        self.rot = na::UnitQuaternion::from_quaternion(rotation);
         self.pos = pos;
         self.rebuild_matrix();
     }
@@ -93,7 +91,7 @@ impl Transform {
             TransformSpace::World => self.m2.try_inverse().unwrap().transform_vector(&axis)
         };
 
-        self.rot = na::UnitQuaternion::from_scaled_axis(to_na_vec3(axis * angle.0)) * self.rot;
+        self.rot = na::UnitQuaternion::from_scaled_axis(axis * angle.0) * self.rot;
         self.rebuild_matrix();
     }
 
@@ -103,6 +101,6 @@ impl Transform {
         let rot_and_tr_m = tr_m * rot_m;
         self.m2 = rot_and_tr_m
             .to_matrix()
-            .prepend_nonuniform_scaling(&to_na_vec3(self.scale));
+            .prepend_nonuniform_scaling(&self.scale);
     }
 }

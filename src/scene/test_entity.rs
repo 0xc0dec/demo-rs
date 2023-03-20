@@ -6,7 +6,7 @@ use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams, Shader};
 use crate::transform::{Transform};
 use rapier3d::prelude::*;
-use crate::math::{Degrees, from_na_rot, from_na_vec3, to_na_vec3, Vec3};
+use crate::math::{Degrees, Vec3};
 use crate::app::App;
 
 pub struct TestEntity {
@@ -41,7 +41,7 @@ impl TestEntity {
         let body = if movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
             .translation(vector![pos.x, pos.y, pos.z])
             // TODO Verify this conversion
-            .rotation(to_na_vec3(rotation_axis) * rotation_angle.0)
+            .rotation(rotation_axis * rotation_angle.0)
             .build();
         let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
             .restitution(0.2)
@@ -72,7 +72,7 @@ impl TestEntity {
         let body = physics.bodies.get(self.rigid_body_handle).unwrap();
         let phys_pos = body.translation();
         let phys_rot = body.rotation();
-        self.transform.set(from_na_vec3(*phys_pos), from_na_rot(*phys_rot));
+        self.transform.set(*phys_pos, *phys_rot.quaternion());
     }
 
     pub fn render<'a, 'b>(

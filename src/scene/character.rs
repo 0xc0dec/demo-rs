@@ -1,6 +1,6 @@
 use crate::camera::Camera;
 use crate::frame_context::FrameContext;
-use crate::math::{to_na_vec3, Vec3};
+use crate::math::{Vec3};
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
 use rapier3d::prelude::*;
@@ -15,7 +15,7 @@ impl Character {
         let cam_pos = camera.transform.position();
         let collider = ColliderBuilder::ball(0.5)
             .restitution(0.7)
-            .translation(to_na_vec3(cam_pos))
+            .translation(cam_pos)
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
@@ -54,7 +54,7 @@ impl Character {
                 .colliders
                 .get_mut(self.collider_handle)
                 .unwrap()
-                .set_translation(to_na_vec3(collider_current_pos + effective_movement));
+                .set_translation(collider_current_pos + effective_movement);
         }
     }
 }

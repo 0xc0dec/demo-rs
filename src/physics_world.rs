@@ -1,4 +1,4 @@
-use crate::math::{from_na_point, from_na_vec3, to_na_point, to_na_vec3, Vec3};
+use crate::math::{Vec3};
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
 
@@ -76,7 +76,7 @@ impl PhysicsWorld {
                 &self.query_pipeline,
                 collider_shape,
                 collider_pos,
-                to_na_vec3(desired_translation),
+                desired_translation,
                 QueryFilter::default().exclude_collider(collider_handle),
                 |_| {},
             );
@@ -85,8 +85,8 @@ impl PhysicsWorld {
         };
 
         (
-            from_na_vec3(translation),
-            from_na_vec3(collider_current_pos),
+            translation,
+            collider_current_pos,
         )
     }
 
@@ -97,8 +97,8 @@ impl PhysicsWorld {
         exclude: Option<ColliderHandle>,
     ) -> Option<(Vec3, Vec3, ColliderHandle)> {
         let ray = Ray {
-            origin: to_na_point(from),
-            dir: to_na_vec3(dir),
+            origin: from.into(),
+            dir,
         };
 
         let mut filter = QueryFilter::default();
@@ -115,7 +115,7 @@ impl PhysicsWorld {
             filter,
         ) {
             let hit_pt = ray.point_at(intersection.toi);
-            return Some((from_na_point(hit_pt), from_na_vec3(intersection.normal), handle));
+            return Some((hit_pt.coords, intersection.normal, handle));
         }
 
         None
