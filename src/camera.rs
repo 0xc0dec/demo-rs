@@ -8,7 +8,7 @@ pub struct Camera {
     znear: f32,
     zfar: f32,
     fov: Degrees,
-    proj_matrix: Mat4,
+    proj_matrix: Mat4_,
     pub transform: Transform,
 }
 
@@ -21,9 +21,7 @@ impl Camera {
         let znear = 0.1;
         let zfar = 100.0;
         let fov = Deg(45.0);
-        let proj_matrix = from_na_matrix(
-            na::Perspective3::new(aspect, fov.0, znear, zfar).to_homogeneous()
-        );
+        let proj_matrix = na::Perspective3::new(aspect, fov.0, znear, zfar).to_homogeneous();
 
         Self {
             aspect,
@@ -35,7 +33,7 @@ impl Camera {
         }
     }
 
-    pub fn proj_matrix(&self) -> Mat4 {
+    pub fn proj_matrix(&self) -> Mat4_ {
         self.proj_matrix
     }
 
@@ -44,13 +42,12 @@ impl Camera {
     }
 
     pub fn view_proj_matrix(&self) -> Mat4 {
-        self.proj_matrix * from_na_matrix(self.view_matrix())
+        from_na_matrix(self.proj_matrix) * from_na_matrix(self.view_matrix())
     }
 
     pub fn set_fov(&mut self, width: f32, height: f32) {
         self.aspect = width / height;
-        self.proj_matrix = from_na_matrix(
-            na::Perspective3::new(self.aspect, self.fov.0, self.znear, self.zfar).to_homogeneous()
-        );
+        self.proj_matrix = na::Perspective3::new(self.aspect, self.fov.0, self.znear, self.zfar)
+            .to_homogeneous();
     }
 }
