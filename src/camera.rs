@@ -41,8 +41,8 @@ impl Camera {
         self.transform.matrix2().try_inverse().unwrap()
     }
 
-    pub fn view_proj_matrix(&self) -> Mat4 {
-        from_na_matrix(self.proj_matrix) * from_na_matrix(self.view_matrix())
+    pub fn view_proj_matrix(&self) -> Mat4_ {
+        self.proj_matrix * self.view_matrix()
     }
 
     pub fn set_fov(&mut self, width: f32, height: f32) {
