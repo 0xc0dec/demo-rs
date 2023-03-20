@@ -16,10 +16,6 @@ pub fn to_na_vec3(vec: Vec3) -> Vector<Real> {
     Vector::new(vec.x, vec.y, vec.z)
 }
 
-pub fn to_na_vec4(vec: cgmath::Vector4<f32>) -> na::Vector4<Real> {
-    na::Vector4::new(vec.x, vec.y, vec.z, vec.w)
-}
-
 pub fn from_na_vec3(vec: Vector<Real>) -> Vec3 {
     Vec3::new(vec.x, vec.y, vec.z)
 }
@@ -29,6 +25,6 @@ pub fn from_na_rot(r: Rotation<Real>) -> Quat {
 }
 
 pub type Vec3 = na::Vector3<f32>;
-pub type Mat4_ = na::Matrix4<f32>;
+pub type Mat4 = na::Matrix4<f32>;
 pub type Quat = Quaternion<f32>;
 pub type Degrees = Deg<f32>;

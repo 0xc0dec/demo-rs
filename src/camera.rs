@@ -1,14 +1,14 @@
 use crate::transform::Transform;
 use cgmath::*;
 use rapier3d::na;
-use crate::math::{Degrees, Mat4_, Vec3};
+use crate::math::{Degrees, Mat4, Vec3};
 
 pub struct Camera {
     aspect: f32,
     znear: f32,
     zfar: f32,
     fov: Degrees,
-    proj_matrix: Mat4_,
+    proj_matrix: Mat4,
     pub transform: Transform,
 }
 
@@ -33,15 +33,15 @@ impl Camera {
         }
     }
 
-    pub fn proj_matrix(&self) -> Mat4_ {
+    pub fn proj_matrix(&self) -> Mat4 {
         self.proj_matrix
     }
 
-    pub fn view_matrix(&self) -> Mat4_ {
+    pub fn view_matrix(&self) -> Mat4 {
         self.transform.matrix2().try_inverse().unwrap()
     }
 
-    pub fn view_proj_matrix(&self) -> Mat4_ {
+    pub fn view_proj_matrix(&self) -> Mat4 {
         self.proj_matrix * self.view_matrix()
     }
 

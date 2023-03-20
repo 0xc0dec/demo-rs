@@ -1,6 +1,6 @@
 use cgmath::{Rad};
 use rapier3d::na;
-use crate::math::{Mat4_, Quat, to_na_vec3, Vec3};
+use crate::math::{Mat4, Quat, to_na_vec3, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -8,7 +8,7 @@ pub enum TransformSpace {
 }
 
 pub struct Transform {
-    m2: Mat4_,
+    m2: Mat4,
     scale: Vec3,
     pos: Vec3,
     rot: na::UnitQuaternion<f32>
@@ -29,7 +29,7 @@ impl Transform {
         res
     }
 
-    pub fn matrix2(&self) -> Mat4_ {
+    pub fn matrix2(&self) -> Mat4 {
         self.m2
     }
 
