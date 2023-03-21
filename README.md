@@ -19,7 +19,8 @@ Right mouse click to control camera, use `W-A-S-D-Q-E` keys to fly around.
   - Prevention of camera passing through objects (via character controller).
   - Ray casting.
 - Skybox rendering on a full-screen quad.
-- Render to texture: the scene is first rendered into a low-res texture, which is then rendered on a full-screen quad to achieve pixelated effect.
+- Post-processing: the scene is first rendered into a texture, which is then rendered on a full-screen quad
+with a separate shader (currently applying vignette).
 - Debug UI via [ImGui](https://github.com/yatekii/imgui-wgpu-rs).
 - Rendering scene objects via WGPU's `RenderBundle` instead of directly via `RenderPass`. This proved to be _very_ useful
 if you wish to decouple scene rendering logic from render passes and make it modular. With render passes I couldn't
