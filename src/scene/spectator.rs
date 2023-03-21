@@ -17,13 +17,14 @@ impl crate::transform::Transform {
 
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-        let forward = self.forward();
-        let angle_to_up = forward.angle(&Vec3::y_axis());
+        let angle_to_top = self.forward().angle(&Vec3::y_axis());
         let mut v_rot = input.mouse_delta.1 as f32 * dt;
-        if angle_to_up + v_rot <= MIN_TOP_ANGLE {
-            v_rot = -(angle_to_up - MIN_TOP_ANGLE);
-        } else if angle_to_up + v_rot >= MIN_BOTTOM_ANGLE {
-            v_rot = MIN_BOTTOM_ANGLE - angle_to_up;
+        // Protect from overturning - prevent camera from reaching the vertical line with small
+        // margin angles.
+        if angle_to_top + v_rot <= MIN_TOP_ANGLE {
+            v_rot = -(angle_to_top - MIN_TOP_ANGLE);
+        } else if angle_to_top + v_rot >= MIN_BOTTOM_ANGLE {
+            v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
         }
 
         Some(SpectatorRotationDelta {
