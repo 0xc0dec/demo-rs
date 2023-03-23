@@ -16,7 +16,7 @@ mod transform;
 mod app;
 mod frame_time;
 
-use bevy_ecs::prelude::{NonSend, Res, Resource, Schedule, World};
+use bevy_ecs::prelude::{NonSend, Resource, Schedule, World};
 use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{CursorGrabMode, Window};
@@ -29,12 +29,8 @@ use winit::{
 use debug_ui::DebugUI;
 use device::Device;
 use device::SurfaceSize;
-use frame_context::FrameContext;
 use input::Input;
-use post_processor::PostProcessor;
-use scene::Scene;
 use crate::assets::Assets;
-use crate::app::App;
 use crate::frame_time::FrameTime;
 
 #[derive(Resource)]
@@ -146,14 +142,14 @@ async fn run() {
     world.insert_non_send_resource(input);
     world.insert_non_send_resource(debug_ui);
 
-    let mut update_schedule = Schedule::default();
-    update_schedule.add_system(update);
+    let mut schedule = Schedule::default();
+    schedule.add_system(update);
 
     // let mut scene = Scene::new(&mut app).await;
     // let mut pp = PostProcessor::new(&device, None).await;
 
     while world.get_resource::<State>().unwrap().running {
-        update_schedule.run(&mut world);
+        schedule.run(&mut world);
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
