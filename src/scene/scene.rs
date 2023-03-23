@@ -68,6 +68,10 @@ impl Scene {
         }
     }
 
+    pub fn update_physics(&mut self, dt: f32) {
+        self.physics.update(dt);
+    }
+
     pub fn update(&mut self, ctx: &FrameContext) {
         self.physics.update(ctx.dt);
 

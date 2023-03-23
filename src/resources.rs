@@ -20,6 +20,7 @@ pub async fn load_string(res_file_path: &str) -> Result<String> {
     Ok(std::fs::read_to_string(path)?)
 }
 
+// TODO Rename to assets
 pub struct Resources {
     models: HashMap<String, Rc<Model>>,
     textures: HashMap<String, Rc<Texture>>,

@@ -16,6 +16,8 @@ mod transform;
 mod app;
 
 use std::collections::VecDeque;
+use bevy_ecs::prelude::{Res, Resource, Schedule, World};
+use bevy_ecs::system::NonSendMut;
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::CursorGrabMode;
 use winit::{
@@ -33,6 +35,13 @@ use post_processor::PostProcessor;
 use scene::Scene;
 use crate::resources::Resources;
 use crate::app::App;
+
+#[derive(Resource)]
+struct DeltaTime(f32);
+
+fn update_scene(mut scene: NonSendMut<Scene>, dt: Res<DeltaTime>) {
+    scene.update_physics(dt.0);
+}
 
 async fn run() {
     let mut event_loop = EventLoop::new();
@@ -56,6 +65,12 @@ async fn run() {
     let mut pp = PostProcessor::new(&app.device, None).await;
 
     let mut debug_ui = DebugUI::new(&app);
+
+    let mut world = World::default();
+    let mut schedule = Schedule::default();
+    world.insert_non_send_resource(scene);
+
+    schedule.add_system(update_scene);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
@@ -156,21 +171,24 @@ async fn run() {
             app: &app,
         };
 
-        scene.update(&frame_context);
-        debug_ui.update(&frame_context);
+        world.insert_resource(DeltaTime(dt));
+        schedule.run(&mut world);
 
-        {
-            let mut frame = app.device.new_frame(Some(pp.source_rt()));
-            scene.render(&mut frame, &frame_context);
-            frame.finish(None);
-        }
-
-        {
-            let mut frame = app.device.new_frame(None);
-            pp.render(&mut frame);
-            debug_ui.build_frame(&app.window, |frame| scene.build_debug_ui(frame));
-            frame.finish(Some(&mut debug_ui));
-        }
+        // scene.update(&frame_context);
+        // debug_ui.update(&frame_context);
+        //
+        // {
+        //     let mut frame = app.device.new_frame(Some(pp.source_rt()));
+        //     scene.render(&mut frame, &frame_context);
+        //     frame.finish(None);
+        // }
+        //
+        // {
+        //     let mut frame = app.device.new_frame(None);
+        //     pp.render(&mut frame);
+        //     debug_ui.build_frame(&app.window, |frame| scene.build_debug_ui(frame));
+        //     frame.finish(Some(&mut debug_ui));
+        // }
     }
 }
 
