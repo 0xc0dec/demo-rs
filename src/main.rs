@@ -19,9 +19,9 @@ mod scene2;
 mod state;
 mod systems;
 
-use bevy_ecs::prelude::{IntoSystemConfig, Schedule, World, run_once};
+use bevy_ecs::prelude::{IntoSystemConfig, run_once, Schedule, World};
 
-use crate::scene2::Scene2;
+use crate::scene2::{Player};
 use crate::state::State;
 use crate::systems::{before_update, init, render_frame};
 
@@ -30,14 +30,15 @@ fn main() {
 
     Schedule::default()
         .add_system(init)
-        .add_system(Scene2::init.after(init))
+        .add_system(Player::spawn.after(init))
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();
-    preupdate_schedule.add_system(before_update.after(Scene2::init));
+    preupdate_schedule.add_system(before_update);
 
     let mut update_schedule = Schedule::default();
-    Scene2::configure_update_systems(&mut update_schedule);
+    update_schedule
+        .add_system(Player::update);
 
     let mut render_schedule = Schedule::default();
     render_schedule.add_system(render_frame);

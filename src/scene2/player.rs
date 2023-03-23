@@ -1,10 +1,11 @@
-use bevy_ecs::prelude::{Component, NonSend, Query, Res};
+use bevy_ecs::prelude::{Commands, Component, NonSend, Query, Res};
 use bevy_ecs::system::NonSendMut;
 use crate::camera::Camera;
 use crate::math::{Vec3};
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
 use rapier3d::prelude::*;
+use crate::device::Device;
 use crate::input::Input;
 use crate::state::State;
 
@@ -16,22 +17,29 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(camera: Camera, physics: &mut PhysicsWorld) -> Self {
-        let cam_pos = camera.transform.position();
-        let collider = ColliderBuilder::ball(0.5)
-            .restitution(0.7)
-            .translation(cam_pos)
-            .build();
-        let collider_handle = physics.colliders.insert(collider);
+    pub fn spawn(
+        device: NonSend<Device>,
+        mut physics: NonSendMut<PhysicsWorld>,
+        mut commands: Commands,
+    ) {
+        let canvas_size: (f32, f32) = device.surface_size().into();
 
-        Self {
-            collider_handle,
-            camera,
-        }
+        commands.spawn((
+            Self::new(
+                Camera::new(
+                    Vec3::new(10.0, 10.0, 10.0),
+                    Vec3::new(0.0, 0.0, 0.0),
+                    canvas_size,
+                ),
+                &mut physics,
+            ),
+        ));
+
+        println!("Spawned player");
     }
 
     pub fn update(
-        mut q: Query<&mut Player>,
+        mut q: Query<&mut Self>,
         state: Res<State>,
         mut physics: NonSendMut<PhysicsWorld>,
         input: NonSend<Input>
@@ -68,6 +76,20 @@ impl Player {
                 .get_mut(player.collider_handle)
                 .unwrap()
                 .set_translation(collider_current_pos + effective_movement);
+        }
+    }
+
+    fn new(camera: Camera, physics: &mut PhysicsWorld) -> Self {
+        let cam_pos = camera.transform.position();
+        let collider = ColliderBuilder::ball(0.5)
+            .restitution(0.7)
+            .translation(cam_pos)
+            .build();
+        let collider_handle = physics.colliders.insert(collider);
+
+        Self {
+            collider_handle,
+            camera,
         }
     }
 }
