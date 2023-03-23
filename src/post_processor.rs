@@ -29,11 +29,11 @@ impl PostProcessor {
         Self { rt, shader, mesh }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, frame: &mut Frame<'b, 'a>)
-    where
-        'a: 'b,
-    {
-        self.shader.apply(frame);
-        frame.draw_mesh(&self.mesh);
-    }
+    // pub fn render<'a, 'b>(&'a mut self, frame: &mut Frame<'b, 'a>)
+    // where
+    //     'a: 'b,
+    // {
+    //     self.shader.apply(frame);
+    //     frame.draw_mesh(&self.mesh);
+    // }
 }

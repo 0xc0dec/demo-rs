@@ -1,3 +1,5 @@
+use wgpu::RenderPass;
+use crate::components::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
@@ -48,24 +50,24 @@ impl SkyboxShader {
         }
     }
 
-    // pub fn update(&mut self, device: &Device, camera: &Camera) {
-    //     self.data_uniform.update(camera);
-    //     device.queue().write_buffer(
-    //         &self.data_uniform_buf,
-    //         0,
-    //         bytemuck::cast_slice(&[self.data_uniform]),
-    //     );
-    // }
+    pub fn update(&mut self, device: &Device, camera: &Camera) {
+        self.data_uniform.update(camera);
+        device.queue().write_buffer(
+            &self.data_uniform_buf,
+            0,
+            bytemuck::cast_slice(&[self.data_uniform]),
+        );
+    }
 }
 
 impl<'a, 'b> Shader<'a, 'b> for SkyboxShader
 where
     'a: 'b,
 {
-    fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
-        frame.set_pipeline(&self.pipeline);
-        frame.set_bind_group(0, &self.data_uniform_bind_group, &[]);
-        frame.set_bind_group(1, &self.texture_bind_group, &[]);
+    fn apply(&'a mut self, pass: &mut RenderPass<'b>) {
+        pass.set_pipeline(&self.pipeline);
+        pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
+        pass.set_bind_group(1, &self.texture_bind_group, &[]);
     }
 }
 
@@ -93,11 +95,11 @@ impl DataUniform {
         }
     }
 
-    // fn update(&mut self, camera: &Camera) {
-    //     self.view_mat = camera.view_matrix().into();
-    //     self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
-    //         .try_inverse()
-    //         .unwrap()
-    //         .into();
-    // }
+    fn update(&mut self, camera: &Camera) {
+        self.view_mat = camera.view_matrix().into();
+        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
+            .try_inverse()
+            .unwrap()
+            .into();
+    }
 }

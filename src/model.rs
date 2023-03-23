@@ -181,17 +181,17 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a, 'b> DrawModel<'b> for Frame<'a, 'b>
+impl<'a, 'b> DrawModel<'a> for wgpu::RenderPass<'b>
 where
-    'b: 'a,
+    'a: 'b,
 {
-    fn draw_mesh(&mut self, mesh: &'b Mesh) {
+    fn draw_mesh(&mut self, mesh: &'a Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
         self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
-    fn draw_model(&mut self, model: &'b Model) {
+    fn draw_model(&mut self, model: &'a Model) {
         for mesh in &model.meshes {
             self.draw_mesh(mesh);
         }

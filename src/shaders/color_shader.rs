@@ -53,9 +53,9 @@ impl<'a, 'b> Shader<'a, 'b> for ColorShader
 where
     'a: 'b,
 {
-    fn apply(&'a mut self, frame: &mut Frame<'b, 'a>) {
-        frame.set_pipeline(&self.pipeline);
-        frame.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
+    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
+        pass.set_pipeline(&self.pipeline);
+        pass.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
 }
 

@@ -1,13 +1,17 @@
-use bevy_ecs::prelude::NonSend;
+use bevy_ecs::prelude::{Commands, NonSend, Query};
+use crate::components::{Camera, Skybox};
 use crate::device::Device;
 
-pub fn render_frame(device: NonSend<Device>) {
+pub fn render_frame(
+    mut q_skybox: Query<&mut Skybox>,
+    q_camera: Query<&Camera>,
+    device: NonSend<Device>
+) {
     let surface_tex = device
         .surface
         .get_current_texture()
         .expect("Missing surface texture");
     let surface_tex_view = surface_tex.texture.create_view(&wgpu::TextureViewDescriptor::default());
-
     let color_attachment = Some(wgpu::RenderPassColorAttachment {
         view: &surface_tex_view,
         resolve_target: None,
@@ -32,11 +36,16 @@ pub fn render_frame(device: NonSend<Device>) {
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
-            let _pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            let mut skybox = q_skybox.iter_mut().next().unwrap();
+            let camera = q_camera.iter().next().unwrap();
+
+            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
             });
+
+            skybox.render(&device, camera, &mut pass);
         }
 
         encoder.finish()
