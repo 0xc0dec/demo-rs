@@ -81,7 +81,7 @@ struct State {
     dt: DeltaTime,
 }
 
-fn handle_events(
+fn update(
     window: NonSend<Window>,
     mut state: ResMut<State>,
     mut event_loop: NonSendMut<EventLoop<()>>,
@@ -159,9 +159,7 @@ fn handle_events(
             window.set_cursor_visible(true);
         }
     }
-}
 
-fn update_dt(mut state: ResMut<State>) {
     state.dt.update();
 }
 
@@ -183,11 +181,8 @@ async fn run() {
 
     let mut world = World::default();
 
-    let mut handle_events_schedule = Schedule::default();
-    handle_events_schedule.add_system(handle_events);
-
     let mut update_schedule = Schedule::default();
-    update_schedule.add_system(update_dt);
+    update_schedule.add_system(update);
 
     world.insert_resource(State { running: true, dt: DeltaTime::new() });
     world.insert_non_send_resource(window);
@@ -196,7 +191,6 @@ async fn run() {
     world.insert_non_send_resource(input);
 
     while world.get_resource::<State>().unwrap().running {
-        handle_events_schedule.run(&mut world);
         update_schedule.run(&mut world);
 
         // scene.update(&frame_context);
