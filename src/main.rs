@@ -27,25 +27,27 @@ use crate::systems::{before_update, init, render_frame};
 
 fn main() {
     let mut world = World::default();
-    let mut schedule = Schedule::default();
-    schedule
-        .add_system(init.run_if(run_once()))
-        .add_system(Scene2::init
-            .after(init)
-            .run_if(run_once())
-        )
-        .add_system(before_update.after(Scene2::init))
-        // TODO add update systems
-        // Scene2::configure_update_systems(&mut schedule);
-        .add_system(render_frame.after(before_update));
 
-    // let mut update = Schedule::default();
-    // // TODO Ensure before_update always runs before all other updates
-    // update.add_system(before_update);
-    // Scene2::configure_update_systems(&mut update);
+    Schedule::default()
+        .add_system(init.run_if(run_once()))
+        .add_system(Scene2::init.after(init))
+        .run(&mut world);
+
+    let mut preupdate_schedule = Schedule::default();
+    preupdate_schedule.add_system(before_update.after(Scene2::init));
+
+    let mut update_schedule = Schedule::default();
+    Scene2::configure_update_systems(&mut update_schedule);
+
+    let mut render_schedule = Schedule::default();
+    render_schedule.add_system(render_frame);
+
+    // Could have used a single schedule but it seems easier for now to use separate
 
     loop {
-        schedule.run(&mut world);
+        preupdate_schedule.run(&mut world);
+        update_schedule.run(&mut world);
+        render_schedule.run(&mut world);
 
         if !world.get_resource::<State>().unwrap().running { return; }
 
