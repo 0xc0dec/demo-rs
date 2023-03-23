@@ -139,7 +139,7 @@ async fn run() {
     // let mut scene = Scene::new(&mut app).await;
     // let mut pp = PostProcessor::new(&device, None).await;
 
-    // let mut debug_ui = DebugUI::new(&app);
+    let debug_ui = DebugUI::new(&device, &window);
 
     let mut world = World::default();
 
@@ -151,6 +151,7 @@ async fn run() {
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(device);
     world.insert_non_send_resource(input);
+    world.insert_non_send_resource(debug_ui);
 
     while world.get_resource::<State>().unwrap().running {
         update_schedule.run(&mut world);
