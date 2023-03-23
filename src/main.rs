@@ -16,10 +16,10 @@ mod transform;
 mod app;
 
 use std::collections::VecDeque;
-use bevy_ecs::prelude::{Res, Resource, Schedule, World};
-use bevy_ecs::system::NonSendMut;
+use bevy_ecs::prelude::{NonSend, Res, Resource, Schedule, World};
+use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
-use winit::window::CursorGrabMode;
+use winit::window::{CursorGrabMode, Window};
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
@@ -39,12 +39,93 @@ use crate::app::App;
 #[derive(Resource)]
 struct DeltaTime(f32);
 
-fn update_scene(mut scene: NonSendMut<Scene>, dt: Res<DeltaTime>) {
-    scene.update_physics(dt.0);
+#[derive(Resource)]
+struct State {
+    running: bool
+}
+
+fn handle_events(
+    window: NonSend<Window>,
+    mut state: ResMut<State>,
+    mut event_loop: NonSendMut<EventLoop<()>>,
+    mut input: NonSendMut<Input>,
+    mut device: NonSendMut<Device>
+) {
+    input.reset();
+
+    event_loop.run_return(|event, _, flow| {
+        *flow = ControlFlow::Poll;
+
+        match event {
+            Event::MainEventsCleared => {
+                *flow = ControlFlow::Exit;
+            }
+
+            Event::DeviceEvent {
+                event: DeviceEvent::MouseMotion { delta },
+                ..
+            } => {
+                input.on_mouse_move((delta.0 as f32, delta.1 as f32));
+            }
+
+            Event::WindowEvent {
+                ref event,
+                window_id,
+            } if window_id == window.id() => match event {
+                WindowEvent::MouseInput { state, button, .. } => {
+                    input.on_mouse_button(button, state);
+                }
+
+                WindowEvent::KeyboardInput {
+                    input:
+                    KeyboardInput {
+                        state: key_state,
+                        virtual_keycode: Some(keycode),
+                        ..
+                    },
+                    ..
+                } => {
+                    input.on_key(keycode, key_state);
+                }
+
+                WindowEvent::Resized(new_size) => {
+                    device.resize(*new_size);
+                }
+
+                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                    device.resize(**new_inner_size);
+                }
+
+                _ => (),
+            },
+
+            _ => {}
+        }
+
+        // debug_ui.handle_window_event(&app.window, &event);
+    });
+
+    if input.escape_down {
+        state.running = false;
+    }
+
+    // Grab/release cursor
+    if input.rmb_down_just_switched {
+        if input.rmb_down {
+            window
+                .set_cursor_grab(CursorGrabMode::Confined)
+                .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
+                .unwrap();
+            window.set_cursor_visible(false);
+        } else {
+            window.set_cursor_grab(CursorGrabMode::None).unwrap();
+            window.set_cursor_visible(true);
+        }
+    }
 }
 
 async fn run() {
-    let mut event_loop = EventLoop::new();
+    let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")
         .with_inner_size(SurfaceSize::new(1800, 1200))
@@ -54,100 +135,41 @@ async fn run() {
     let resources = Resources::new();
     let input = Input::new();
 
-    let mut app = App {
-        window,
-        device,
-        resources,
-        input
-    };
+    // let mut app = App {
+    //     window,
+    //     resources,
+    //     input
+    // };
 
-    let mut scene = Scene::new(&mut app).await;
-    let mut pp = PostProcessor::new(&app.device, None).await;
+    // let mut scene = Scene::new(&mut app).await;
+    // let mut pp = PostProcessor::new(&device, None).await;
 
-    let mut debug_ui = DebugUI::new(&app);
+    // let mut debug_ui = DebugUI::new(&app);
 
     let mut world = World::default();
-    let mut schedule = Schedule::default();
-    world.insert_non_send_resource(scene);
 
-    schedule.add_system(update_scene);
+    let mut handle_events_schedule = Schedule::default();
+    handle_events_schedule.add_system(handle_events);
+
+    let mut update_schedule = Schedule::default();
+
+    world.insert_resource(State { running: true });
+    world.insert_non_send_resource(window);
+    world.insert_non_send_resource(event_loop);
+    world.insert_non_send_resource(device);
+    world.insert_non_send_resource(input);
+
+    // schedule.add_system(update_scene);
 
     const DT_FILTER_WIDTH: usize = 10;
     let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
     let mut last_frame_instant = std::time::Instant::now();
 
-    let mut running = true;
-    while running {
-        app.input.reset();
+    loop {
+        handle_events_schedule.run(&mut world);
 
-        event_loop.run_return(|event, _, flow| {
-            *flow = ControlFlow::Poll;
-
-            match event {
-                Event::MainEventsCleared => {
-                    *flow = ControlFlow::Exit;
-                }
-
-                Event::DeviceEvent {
-                    event: DeviceEvent::MouseMotion { delta },
-                    ..
-                } => {
-                    app.input.on_mouse_move((delta.0 as f32, delta.1 as f32));
-                }
-
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == app.window.id() => match event {
-                    WindowEvent::MouseInput { state, button, .. } => {
-                        app.input.on_mouse_button(button, state);
-                    }
-
-                    WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                state: key_state,
-                                virtual_keycode: Some(keycode),
-                                ..
-                            },
-                        ..
-                    } => {
-                        app.input.on_key(keycode, key_state);
-                    }
-
-                    WindowEvent::Resized(new_size) => {
-                        app.device.resize(*new_size);
-                    }
-
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        app.device.resize(**new_inner_size);
-                    }
-
-                    _ => (),
-                },
-
-                _ => {}
-            }
-
-            debug_ui.handle_window_event(&app.window, &event);
-        });
-
-        if app.input.escape_down {
-            running = false;
-        }
-
-        // Grab/release cursor
-        if app.input.rmb_down_just_switched {
-            if app.input.rmb_down {
-                app.window
-                    .set_cursor_grab(CursorGrabMode::Confined)
-                    .or_else(|_e| app.window.set_cursor_grab(CursorGrabMode::Locked))
-                    .unwrap();
-                app.window.set_cursor_visible(false);
-            } else {
-                app.window.set_cursor_grab(CursorGrabMode::None).unwrap();
-                app.window.set_cursor_visible(true);
-            }
+        if !world.get_resource::<State>().unwrap().running {
+            break;
         }
 
         // Stolen from Kajiya
@@ -166,13 +188,13 @@ async fn run() {
             dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
         };
 
-        let frame_context = FrameContext {
-            dt,
-            app: &app,
-        };
+        // let frame_context = FrameContext {
+        //     dt,
+        //     app: &app,
+        // };
 
-        world.insert_resource(DeltaTime(dt));
-        schedule.run(&mut world);
+        // world.insert_resource(DeltaTime(dt));
+        // schedule.run(&mut world);
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
