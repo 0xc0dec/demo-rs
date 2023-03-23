@@ -18,7 +18,7 @@ pub struct Tracer {
 
 impl Tracer {
     pub async fn new(app: &mut App) -> Self {
-        let model = app.resources.model("cube.obj", &app.device).await;
+        let model = app.assets.model("cube.obj", &app.device).await;
         let shader = ColorShader::new(&app.device).await;
         let transform = Transform::new(Vec3::from_element(0.0), Vec3::from_element(1.0));
 

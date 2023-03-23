@@ -51,8 +51,8 @@ impl TestEntity {
 
         // Not rotating the transform because it'll get synced with the rigid body anyway
         let transform = Transform::new(pos, scale);
-        let model = app.resources.model("cube.obj", &app.device).await;
-        let texture = app.resources.texture_2d("stonewall.jpg", &app.device).await;
+        let model = app.assets.model("cube.obj", &app.device).await;
+        let texture = app.assets.texture_2d("stonewall.jpg", &app.device).await;
         let shader = DiffuseShader::new(
             &app.device,
             DiffuseShaderParams {

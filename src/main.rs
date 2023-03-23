@@ -8,7 +8,7 @@ mod model;
 mod physics_world;
 mod post_processor;
 mod render_target;
-mod resources;
+mod assets;
 mod scene;
 mod shaders;
 mod texture;
@@ -33,7 +33,7 @@ use frame_context::FrameContext;
 use input::Input;
 use post_processor::PostProcessor;
 use scene::Scene;
-use crate::resources::Resources;
+use crate::assets::Assets;
 use crate::app::App;
 use crate::frame_time::FrameTime;
 
@@ -133,25 +133,24 @@ async fn run() {
         .build(&event_loop)
         .unwrap();
     let device = Device::new(&window).await;
-    let resources = Resources::new();
+    let assets = Assets::new();
     let input = Input::new();
-
-    // let mut scene = Scene::new(&mut app).await;
-    // let mut pp = PostProcessor::new(&device, None).await;
-
     let debug_ui = DebugUI::new(&device, &window);
 
     let mut world = World::default();
-
-    let mut update_schedule = Schedule::default();
-    update_schedule.add_system(update);
-
     world.insert_resource(State { running: true, frame_time: FrameTime::new() });
     world.insert_non_send_resource(window);
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(device);
+    world.insert_non_send_resource(assets);
     world.insert_non_send_resource(input);
     world.insert_non_send_resource(debug_ui);
+
+    let mut update_schedule = Schedule::default();
+    update_schedule.add_system(update);
+
+    // let mut scene = Scene::new(&mut app).await;
+    // let mut pp = PostProcessor::new(&device, None).await;
 
     while world.get_resource::<State>().unwrap().running {
         update_schedule.run(&mut world);

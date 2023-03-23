@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::resources::load_binary;
+use crate::assets::load_binary;
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;

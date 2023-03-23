@@ -7,27 +7,24 @@ use crate::model::Model;
 use crate::texture::Texture;
 
 fn full_path(relative_path: &str) -> PathBuf {
-    std::path::Path::new("./res").join(relative_path)
+    std::path::Path::new("./assets").join(relative_path)
 }
 
-pub async fn load_binary(res_file_path: &str) -> Result<Vec<u8>> {
-    let path = full_path(res_file_path);
-    Ok(std::fs::read(path)?)
+pub async fn load_binary(file_path: &str) -> Result<Vec<u8>> {
+    Ok(std::fs::read(full_path(file_path))?)
 }
 
-pub async fn load_string(res_file_path: &str) -> Result<String> {
-    let path = full_path(res_file_path);
-    Ok(std::fs::read_to_string(path)?)
+pub async fn load_string(file_path: &str) -> Result<String> {
+    Ok(std::fs::read_to_string(full_path(file_path))?)
 }
 
-// TODO Rename to assets
-pub struct Resources {
+pub struct Assets {
     models: HashMap<String, Rc<Model>>,
     textures: HashMap<String, Rc<Texture>>,
 }
 
-// TODO Other types of resources
-impl Resources {
+// TODO Other types of assets
+impl Assets {
     pub fn new() -> Self {
         Self {
             models: HashMap::new(),

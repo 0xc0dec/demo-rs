@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::resources::load_string;
+use crate::assets::load_string;
 use crate::texture::Texture;
 use wgpu::util::DeviceExt;
 

@@ -1,5 +1,5 @@
 use crate::device::{Device, Frame};
-use crate::resources::load_string;
+use crate::assets::load_string;
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
 
