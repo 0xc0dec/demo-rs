@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::camera::Camera;
+use crate::components::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;

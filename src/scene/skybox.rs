@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::NonSend;
-use crate::camera::Camera;
+use crate::components::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Mesh};
 use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};

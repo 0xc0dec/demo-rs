@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::{Commands, Component, NonSend, Query, Res};
 use bevy_ecs::system::NonSendMut;
-use crate::camera::Camera;
+use crate::components::camera::Camera;
 use crate::math::{Vec3};
 use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;

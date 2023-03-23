@@ -1,4 +1,4 @@
-use crate::camera::Camera;
+use crate::components::camera::Camera;
 use crate::frame_context::FrameContext;
 use crate::math::{Vec3};
 use crate::physics_world::PhysicsWorld;
