@@ -44,6 +44,8 @@ impl Player {
         mut physics: NonSendMut<PhysicsWorld>,
         input: NonSend<Input>
     ) {
+        // TODO Update camera FOV
+
         let dt = state.frame_time.delta;
 
         let mut player = q.iter_mut().next().unwrap();

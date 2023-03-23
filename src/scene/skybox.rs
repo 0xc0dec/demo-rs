@@ -1,16 +1,25 @@
+use bevy_ecs::prelude::{Commands, Component};
+use bevy_ecs::system::NonSend;
 use crate::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Mesh};
 use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
 
+#[derive(Component)]
 pub struct Skybox {
     mesh: Mesh,
     shader: SkyboxShader,
 }
 
 impl Skybox {
-    pub async fn new(device: &Device) -> Self {
+    pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
+        let skybox = pollster::block_on(Skybox::new(&device));
+        commands.spawn((skybox,));
+        println!("Spawned skybox");
+    }
+
+    async fn new(device: &Device) -> Self {
         let texture = Texture::new_cube_from_file("skybox_bgra.dds", device)
             .await
             .unwrap();

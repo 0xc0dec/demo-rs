@@ -8,3 +8,4 @@ mod player;
 
 pub use scene::*;
 pub use player::Player;
+pub use skybox::Skybox;

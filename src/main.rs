@@ -20,7 +20,7 @@ mod systems;
 
 use bevy_ecs::prelude::{IntoSystemConfig, run_once, Schedule, World};
 use crate::debug_ui::DebugUI;
-use crate::scene::Player;
+use crate::scene::{Player, Skybox};
 
 use crate::state::State;
 use crate::systems::{before_update, init, render_frame};
@@ -31,7 +31,9 @@ fn main() {
     Schedule::default()
         .add_system(init)
         .add_system(Player::spawn.after(init))
+        .add_system(Skybox::spawn.after(init))
         .run(&mut world);
+
 
     let mut preupdate_schedule = Schedule::default();
     preupdate_schedule.add_system(before_update);

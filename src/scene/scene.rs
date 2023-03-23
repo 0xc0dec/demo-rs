@@ -12,7 +12,7 @@ use crate::math::{Vec3};
 pub struct Scene {
     character: Character,
     tracer: Tracer,
-    skybox: Skybox,
+    // skybox: Skybox,
     entities: Vec<TestEntity>,
     physics: PhysicsWorld,
 }
@@ -57,13 +57,13 @@ impl Scene {
         );
 
         let tracer = Tracer::new(app).await;
-        let skybox = Skybox::new(&app.device).await;
+        // let skybox = Skybox::new(&app.device).await;
 
         Self {
             physics,
             character,
             tracer,
-            skybox,
+            // skybox,
             entities: vec![ground, falling_box],
         }
     }
@@ -93,8 +93,8 @@ impl Scene {
             ctx.app.device.surface_size().height as f32,
         );
 
-        self.skybox
-            .render(&ctx.app.device, &self.character.camera, frame);
+        // self.skybox
+        //     .render(&ctx.app.device, &self.character.camera, frame);
 
         for e in &mut self.entities {
             e.render(&ctx.app.device, &self.character.camera, frame);
