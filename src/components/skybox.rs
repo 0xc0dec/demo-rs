@@ -39,7 +39,7 @@ impl Skybox {
         'a: 'b,
         'c: 'a,
     {
-        self.shader.update(&device, camera);
+        // self.shader.update(&device, camera);
         self.shader.apply(frame);
         frame.draw_mesh(&self.mesh);
     }

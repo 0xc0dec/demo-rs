@@ -1,16 +1,14 @@
-use crate::components::camera::Camera;
 use crate::device::{Frame};
 use crate::frame_context::FrameContext;
 use crate::physics_world::PhysicsWorld;
 use crate::scene::character::Character;
-use crate::scene::skybox::Skybox;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
 use crate::scene::tracer::Tracer;
 use crate::app::App;
 use crate::math::{Vec3};
 
 pub struct Scene {
-    character: Character,
+    // character: Character,
     tracer: Tracer,
     // skybox: Skybox,
     entities: Vec<TestEntity>,
@@ -47,21 +45,21 @@ impl Scene {
         )
         .await;
 
-        let character = Character::new(
-            Camera::new(
-                Vec3::new(10.0, 10.0, 10.0),
-                Vec3::new(0.0, 0.0, 0.0),
-                app.device.surface_size().into(),
-            ),
-            &mut physics,
-        );
+        // let character = Character::new(
+        //     Camera::new(
+        //         Vec3::new(10.0, 10.0, 10.0),
+        //         Vec3::new(0.0, 0.0, 0.0),
+        //         app.device.surface_size().into(),
+        //     ),
+        //     &mut physics,
+        // );
 
         let tracer = Tracer::new(app).await;
         // let skybox = Skybox::new(&app.device).await;
 
         Self {
             physics,
-            character,
+            // character,
             tracer,
             // skybox,
             entities: vec![ground, falling_box],
@@ -75,8 +73,8 @@ impl Scene {
     pub fn update(&mut self, ctx: &FrameContext) {
         self.physics.update(ctx.dt);
 
-        self.character.update(ctx, &mut self.physics);
-        self.tracer.update(&self.physics, &self.character);
+        // self.character.update(ctx, &mut self.physics);
+        // self.tracer.update(&self.physics, &self.character);
 
         for e in &mut self.entities {
             e.update(ctx.dt, &self.physics);
@@ -88,20 +86,20 @@ impl Scene {
         'a: 'b,
     {
         // TODO Do this only when the size changes
-        self.character.camera.set_fov(
-            ctx.app.device.surface_size().width as f32,
-            ctx.app.device.surface_size().height as f32,
-        );
+        // self.character.camera.set_fov(
+        //     ctx.app.device.surface_size().width as f32,
+        //     ctx.app.device.surface_size().height as f32,
+        // );
 
         // self.skybox
         //     .render(&ctx.app.device, &self.character.camera, frame);
 
-        for e in &mut self.entities {
-            e.render(&ctx.app.device, &self.character.camera, frame);
-        }
+        // for e in &mut self.entities {
+        //     e.render(&ctx.app.device, &self.character.camera, frame);
+        // }
 
-        self.tracer
-            .render(&ctx.app.device, &self.character.camera, frame);
+        // self.tracer
+        //     .render(&ctx.app.device, &self.character.camera, frame);
     }
 
     pub fn build_debug_ui(&self, ui_frame: &mut imgui::Ui) {

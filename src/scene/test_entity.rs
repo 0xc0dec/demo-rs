@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use crate::components::camera::Camera;
 use crate::device::{Device, Frame};
 use crate::model::{DrawModel, Model};
 use crate::physics_world::PhysicsWorld;
@@ -75,16 +74,16 @@ impl TestEntity {
         self.transform.set(*phys_pos, *phys_rot.quaternion());
     }
 
-    pub fn render<'a, 'b>(
-        &'a mut self,
-        device: &'a Device,
-        camera: &'a Camera,
-        frame: &mut Frame<'b, 'a>,
-    ) where
-        'a: 'b,
-    {
-        self.shader.update(device, camera, &self.transform);
-        self.shader.apply(frame);
-        frame.draw_model(&self.model);
-    }
+    // pub fn render<'a, 'b>(
+    //     &'a mut self,
+    //     device: &'a Device,
+    //     camera: &'a Camera,
+    //     frame: &mut Frame<'b, 'a>,
+    // ) where
+    //     'a: 'b,
+    // {
+    //     self.shader.update(device, camera, &self.transform);
+    //     self.shader.apply(frame);
+    //     frame.draw_model(&self.model);
+    // }
 }
