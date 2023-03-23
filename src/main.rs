@@ -16,6 +16,7 @@ mod transform;
 mod app;
 
 use std::collections::VecDeque;
+use std::time::Instant;
 use bevy_ecs::prelude::{NonSend, Res, Resource, Schedule, World};
 use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
@@ -37,11 +38,47 @@ use crate::resources::Resources;
 use crate::app::App;
 
 #[derive(Resource)]
-struct DeltaTime(f32);
+struct DeltaTime {
+    dt: f32,
+    queue: VecDeque<f32>,
+    last_frame_instant: Instant
+}
+
+impl DeltaTime {
+    const DT_FILTER_WIDTH: usize = 10;
+
+    fn new() -> Self {
+        let queue = VecDeque::with_capacity(Self::DT_FILTER_WIDTH);
+        let last_frame_instant = Instant::now();
+
+        Self {
+            queue,
+            last_frame_instant,
+            dt: 0.0
+        }
+    }
+
+    fn update(&mut self) {
+        // Stolen from Kajiya
+        let now = Instant::now();
+        let dt_duration = now - self.last_frame_instant;
+        self.last_frame_instant = now;
+
+        let raw = dt_duration.as_secs_f32();
+
+        if self.queue.len() >= DeltaTime::DT_FILTER_WIDTH {
+            self.queue.pop_front();
+        }
+        self.queue.push_back(raw);
+
+        self.dt = self.queue.iter().copied().sum::<f32>() / self.queue.len() as f32;
+    }
+}
 
 #[derive(Resource)]
 struct State {
-    running: bool
+    running: bool,
+    dt: DeltaTime,
 }
 
 fn handle_events(
@@ -124,6 +161,10 @@ fn handle_events(
     }
 }
 
+fn update_dt(mut state: ResMut<State>) {
+    state.dt.update();
+}
+
 async fn run() {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
@@ -134,12 +175,6 @@ async fn run() {
     let device = Device::new(&window).await;
     let resources = Resources::new();
     let input = Input::new();
-
-    // let mut app = App {
-    //     window,
-    //     resources,
-    //     input
-    // };
 
     // let mut scene = Scene::new(&mut app).await;
     // let mut pp = PostProcessor::new(&device, None).await;
@@ -152,49 +187,17 @@ async fn run() {
     handle_events_schedule.add_system(handle_events);
 
     let mut update_schedule = Schedule::default();
+    update_schedule.add_system(update_dt);
 
-    world.insert_resource(State { running: true });
+    world.insert_resource(State { running: true, dt: DeltaTime::new() });
     world.insert_non_send_resource(window);
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(device);
     world.insert_non_send_resource(input);
 
-    // schedule.add_system(update_scene);
-
-    const DT_FILTER_WIDTH: usize = 10;
-    let mut dt_queue: VecDeque<f32> = VecDeque::with_capacity(DT_FILTER_WIDTH);
-    let mut last_frame_instant = std::time::Instant::now();
-
-    loop {
+    while world.get_resource::<State>().unwrap().running {
         handle_events_schedule.run(&mut world);
-
-        if !world.get_resource::<State>().unwrap().running {
-            break;
-        }
-
-        // Stolen from Kajiya
-        let dt = {
-            let now = std::time::Instant::now();
-            let dt_duration = now - last_frame_instant;
-            last_frame_instant = now;
-
-            let dt_raw = dt_duration.as_secs_f32();
-
-            if dt_queue.len() >= DT_FILTER_WIDTH {
-                dt_queue.pop_front();
-            }
-
-            dt_queue.push_back(dt_raw);
-            dt_queue.iter().copied().sum::<f32>() / dt_queue.len() as f32
-        };
-
-        // let frame_context = FrameContext {
-        //     dt,
-        //     app: &app,
-        // };
-
-        // world.insert_resource(DeltaTime(dt));
-        // schedule.run(&mut world);
+        update_schedule.run(&mut world);
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
