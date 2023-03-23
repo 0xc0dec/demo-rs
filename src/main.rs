@@ -14,9 +14,8 @@ mod shaders;
 mod texture;
 mod transform;
 mod app;
+mod frame_time;
 
-use std::collections::VecDeque;
-use std::time::Instant;
 use bevy_ecs::prelude::{NonSend, Res, Resource, Schedule, World};
 use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
@@ -36,49 +35,12 @@ use post_processor::PostProcessor;
 use scene::Scene;
 use crate::resources::Resources;
 use crate::app::App;
-
-#[derive(Resource)]
-struct DeltaTime {
-    dt: f32,
-    queue: VecDeque<f32>,
-    last_frame_instant: Instant
-}
-
-impl DeltaTime {
-    const DT_FILTER_WIDTH: usize = 10;
-
-    fn new() -> Self {
-        let queue = VecDeque::with_capacity(Self::DT_FILTER_WIDTH);
-        let last_frame_instant = Instant::now();
-
-        Self {
-            queue,
-            last_frame_instant,
-            dt: 0.0
-        }
-    }
-
-    fn update(&mut self) {
-        // Stolen from Kajiya
-        let now = Instant::now();
-        let dt_duration = now - self.last_frame_instant;
-        self.last_frame_instant = now;
-
-        let raw = dt_duration.as_secs_f32();
-
-        if self.queue.len() >= DeltaTime::DT_FILTER_WIDTH {
-            self.queue.pop_front();
-        }
-        self.queue.push_back(raw);
-
-        self.dt = self.queue.iter().copied().sum::<f32>() / self.queue.len() as f32;
-    }
-}
+use crate::frame_time::FrameTime;
 
 #[derive(Resource)]
 struct State {
     running: bool,
-    dt: DeltaTime,
+    frame_time: FrameTime,
 }
 
 fn update(
@@ -160,7 +122,7 @@ fn update(
         }
     }
 
-    state.dt.update();
+    state.frame_time.update();
 }
 
 async fn run() {
@@ -184,7 +146,7 @@ async fn run() {
     let mut update_schedule = Schedule::default();
     update_schedule.add_system(update);
 
-    world.insert_resource(State { running: true, dt: DeltaTime::new() });
+    world.insert_resource(State { running: true, frame_time: FrameTime::new() });
     world.insert_non_send_resource(window);
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(device);
