@@ -9,11 +9,9 @@ use crate::device::Device;
 use crate::input::Input;
 use crate::state::State;
 
-// TODO Split into multiple components
 #[derive(Component)]
 pub struct Player {
     pub collider_handle: ColliderHandle,
-    pub camera: Camera, // TODO Split into two components
 }
 
 impl Player {
@@ -23,55 +21,54 @@ impl Player {
         mut commands: Commands,
     ) {
         let canvas_size: (f32, f32) = device.surface_size().into();
+        let camera = Camera::new(
+            Vec3::new(10.0, 10.0, 10.0),
+            Vec3::new(0.0, 0.0, 0.0),
+            canvas_size,
+        );
 
         commands.spawn((
-            Self::new(
-                Camera::new(
-                    Vec3::new(10.0, 10.0, 10.0),
-                    Vec3::new(0.0, 0.0, 0.0),
-                    canvas_size,
-                ),
-                &mut physics,
-            ),
+            Self::new(&camera, &mut physics),
+            camera,
         ));
 
         println!("Spawned player");
     }
 
     pub fn update(
-        mut q: Query<&mut Self>,
+        mut q: Query<(&mut Self, &mut Camera)>,
         state: Res<State>,
         mut physics: NonSendMut<PhysicsWorld>,
-        input: NonSend<Input>
+        input: NonSend<Input>,
     ) {
         // TODO Update camera FOV
 
         let dt = state.frame_time.delta;
 
-        let mut player = q.iter_mut().next().unwrap();
+        let (player, mut camera) = q.iter_mut().next().unwrap();
 
-        let spectator_rot = player.camera.transform
+        let spectator_rot = camera.transform
             .spectator_rotation(dt, &input);
         if let Some(spectator_rot) = spectator_rot {
-            player.camera.transform.rotate_around_axis(
+            camera.transform.rotate_around_axis(
                 Vec3::y_axis().xyz(),
                 spectator_rot.horizontal_rotation,
                 TransformSpace::World,
             );
-            player.camera.transform.rotate_around_axis(
+            camera.transform.rotate_around_axis(
                 Vec3::x_axis().xyz(),
                 spectator_rot.vertical_rotation,
                 TransformSpace::Local,
             );
         }
 
-        let spectator_translation = player.camera.transform
+        let spectator_translation = camera.transform
             .spectator_translation(dt, 10.0, &input);
         if let Some(spectator_translation) = spectator_translation {
             let (effective_movement, collider_current_pos) =
                 physics.move_character(dt, spectator_translation, player.collider_handle);
 
-            player.camera.transform.translate(effective_movement);
+            camera.transform.translate(effective_movement);
 
             physics
                 .colliders
@@ -81,7 +78,7 @@ impl Player {
         }
     }
 
-    fn new(camera: Camera, physics: &mut PhysicsWorld) -> Self {
+    fn new(camera: &Camera, physics: &mut PhysicsWorld) -> Self {
         let cam_pos = camera.transform.position();
         let collider = ColliderBuilder::ball(0.5)
             .restitution(0.7)
@@ -91,7 +88,6 @@ impl Player {
 
         Self {
             collider_handle,
-            camera,
         }
     }
 }
