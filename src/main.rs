@@ -23,7 +23,7 @@ use bevy_ecs::prelude::{IntoSystemConfig, Schedule, World, run_once};
 
 use crate::scene2::Scene2;
 use crate::state::State;
-use crate::systems::{before_update, init};
+use crate::systems::{before_update, init, render_frame};
 
 fn main() {
     let mut world = World::default();
@@ -34,8 +34,10 @@ fn main() {
             .after(init)
             .run_if(run_once())
         )
-        .add_system(before_update.after(Scene2::init));
-    // Scene2::configure_update_systems(&mut schedule);
+        .add_system(before_update.after(Scene2::init))
+        // TODO add update systems
+        // Scene2::configure_update_systems(&mut schedule);
+        .add_system(render_frame.after(before_update));
 
     // let mut update = Schedule::default();
     // // TODO Ensure before_update always runs before all other updates
