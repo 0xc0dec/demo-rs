@@ -18,7 +18,7 @@ mod frame_time;
 mod scene2;
 mod state;
 
-use bevy_ecs::prelude::{IntoSystemConfig, NonSend, Schedule, World};
+use bevy_ecs::prelude::{IntoSystemConfig, NonSend, Schedule, World, run_once, Condition};
 use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{CursorGrabMode, Window};
@@ -148,18 +148,25 @@ fn init(world: &mut World) {
 
 fn main() {
     let mut world = World::default();
-    Schedule::default()
-        .add_system(init)
-        .add_system(Scene2::init.after(init))
-        .run(&mut world);
+    let mut schedule = Schedule::default();
+    schedule
+        .add_system(init.run_if(run_once()))
+        .add_system(Scene2::init
+            .after(init)
+            .run_if(run_once())
+        )
+        .add_system(before_update.after(Scene2::init));
+    // Scene2::configure_update_systems(&mut schedule);
 
-    let mut update = Schedule::default();
-    // TODO Ensure before_update always runs before all other updates
-    update.add_system(before_update);
-    Scene2::configure_update_systems(&mut update);
+    // let mut update = Schedule::default();
+    // // TODO Ensure before_update always runs before all other updates
+    // update.add_system(before_update);
+    // Scene2::configure_update_systems(&mut update);
 
-    while world.get_resource::<State>().unwrap().running {
-        update.run(&mut world);
+    loop {
+        schedule.run(&mut world);
+
+        if !world.get_resource::<State>().unwrap().running { return; }
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
