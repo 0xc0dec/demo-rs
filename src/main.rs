@@ -44,7 +44,8 @@ fn update(
     mut state: ResMut<State>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: NonSendMut<Input>,
-    mut device: NonSendMut<Device>
+    mut device: NonSendMut<Device>,
+    mut debug_ui: NonSendMut<DebugUI>
 ) {
     input.reset();
 
@@ -97,7 +98,7 @@ fn update(
             _ => {}
         }
 
-        // debug_ui.handle_window_event(&app.window, &event);
+        debug_ui.handle_window_event(&window, &event);
     });
 
     if input.escape_down {
