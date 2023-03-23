@@ -122,26 +122,32 @@ fn update(
     state.frame_time.update();
 }
 
-async fn run() {
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
-        .with_title("Demo")
-        .with_inner_size(SurfaceSize::new(1800, 1200))
-        .build(&event_loop)
-        .unwrap();
-    let device = Device::new(&window).await;
-    let assets = Assets::new();
-    let input = Input::new();
-    let debug_ui = DebugUI::new(&device, &window);
+fn init(world: &mut World) {
+    pollster::block_on(async {
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new()
+            .with_title("Demo")
+            .with_inner_size(SurfaceSize::new(1800, 1200))
+            .build(&event_loop)
+            .unwrap();
+        let device = Device::new(&window).await;
+        let assets = Assets::new();
+        let input = Input::new();
+        let debug_ui = DebugUI::new(&device, &window);
 
+        world.insert_resource(State { running: true, frame_time: FrameTime::new() });
+        world.insert_non_send_resource(window);
+        world.insert_non_send_resource(event_loop);
+        world.insert_non_send_resource(device);
+        world.insert_non_send_resource(assets);
+        world.insert_non_send_resource(input);
+        world.insert_non_send_resource(debug_ui);
+    });
+}
+
+fn main() {
     let mut world = World::default();
-    world.insert_resource(State { running: true, frame_time: FrameTime::new() });
-    world.insert_non_send_resource(window);
-    world.insert_non_send_resource(event_loop);
-    world.insert_non_send_resource(device);
-    world.insert_non_send_resource(assets);
-    world.insert_non_send_resource(input);
-    world.insert_non_send_resource(debug_ui);
+    Schedule::default().add_system(init).run(&mut world);
 
     let mut schedule = Schedule::default();
     schedule.add_system(update);
@@ -168,8 +174,4 @@ async fn run() {
         //     frame.finish(Some(&mut debug_ui));
         // }
     }
-}
-
-fn main() {
-    pollster::block_on(run());
 }
