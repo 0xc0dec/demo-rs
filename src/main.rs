@@ -15,14 +15,13 @@ mod texture;
 mod transform;
 mod app;
 mod frame_time;
-mod scene2;
 mod state;
 mod systems;
 
 use bevy_ecs::prelude::{IntoSystemConfig, run_once, Schedule, World};
 use crate::debug_ui::DebugUI;
+use crate::scene::Player;
 
-use crate::scene2::{Player};
 use crate::state::State;
 use crate::systems::{before_update, init, render_frame};
 
