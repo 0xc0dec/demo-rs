@@ -15,8 +15,10 @@ mod texture;
 mod transform;
 mod app;
 mod frame_time;
+mod scene2;
+mod state;
 
-use bevy_ecs::prelude::{NonSend, Resource, Schedule, World};
+use bevy_ecs::prelude::{IntoSystemConfig, NonSend, Schedule, World};
 use bevy_ecs::system::{NonSendMut, ResMut};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{CursorGrabMode, Window};
@@ -32,14 +34,11 @@ use device::SurfaceSize;
 use input::Input;
 use crate::assets::Assets;
 use crate::frame_time::FrameTime;
+use crate::physics_world::PhysicsWorld;
+use crate::scene2::Scene2;
+use crate::state::State;
 
-#[derive(Resource)]
-struct State {
-    running: bool,
-    frame_time: FrameTime,
-}
-
-fn update(
+fn before_update(
     window: NonSend<Window>,
     mut state: ResMut<State>,
     mut event_loop: NonSendMut<EventLoop<()>>,
@@ -133,9 +132,11 @@ fn init(world: &mut World) {
         let device = Device::new(&window).await;
         let assets = Assets::new();
         let input = Input::new();
+        let physics = PhysicsWorld::new();
         let debug_ui = DebugUI::new(&device, &window);
 
         world.insert_resource(State { running: true, frame_time: FrameTime::new() });
+        world.insert_non_send_resource(physics);
         world.insert_non_send_resource(window);
         world.insert_non_send_resource(event_loop);
         world.insert_non_send_resource(device);
@@ -147,16 +148,18 @@ fn init(world: &mut World) {
 
 fn main() {
     let mut world = World::default();
-    Schedule::default().add_system(init).run(&mut world);
+    Schedule::default()
+        .add_system(init)
+        .add_system(Scene2::init.after(init))
+        .run(&mut world);
 
-    let mut schedule = Schedule::default();
-    schedule.add_system(update);
-
-    // let mut scene = Scene::new(&mut app).await;
-    // let mut pp = PostProcessor::new(&device, None).await;
+    let mut update = Schedule::default();
+    // TODO Ensure before_update always runs before all other updates
+    update.add_system(before_update);
+    Scene2::configure_update_systems(&mut update);
 
     while world.get_resource::<State>().unwrap().running {
-        schedule.run(&mut world);
+        update.run(&mut world);
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
