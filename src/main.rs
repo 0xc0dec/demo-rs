@@ -17,10 +17,12 @@ mod app;
 mod frame_time;
 mod state;
 mod systems;
+mod components;
 
 use bevy_ecs::prelude::{IntoSystemConfig, run_once, Schedule, World};
+use crate::components::Player;
 use crate::debug_ui::DebugUI;
-use crate::scene::{Player, Skybox};
+use crate::scene::{Skybox};
 
 use crate::state::State;
 use crate::systems::{before_update, init, render_frame};
