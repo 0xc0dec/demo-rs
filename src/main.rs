@@ -29,7 +29,7 @@ fn main() {
     let mut world = World::default();
 
     Schedule::default()
-        .add_system(init.run_if(run_once()))
+        .add_system(init)
         .add_system(Scene2::init.after(init))
         .run(&mut world);
 
