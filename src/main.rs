@@ -20,6 +20,7 @@ mod state;
 mod systems;
 
 use bevy_ecs::prelude::{IntoSystemConfig, run_once, Schedule, World};
+use crate::debug_ui::DebugUI;
 
 use crate::scene2::{Player};
 use crate::state::State;
@@ -38,7 +39,8 @@ fn main() {
 
     let mut update_schedule = Schedule::default();
     update_schedule
-        .add_system(Player::update);
+        .add_system(Player::update)
+        .add_system(DebugUI::update);
 
     let mut render_schedule = Schedule::default();
     render_schedule.add_system(render_frame);
