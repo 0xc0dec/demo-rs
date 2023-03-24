@@ -31,8 +31,6 @@ impl Player {
             Self::new(&camera, &mut physics),
             camera,
         ));
-
-        println!("Spawned player");
     }
 
     pub fn update(

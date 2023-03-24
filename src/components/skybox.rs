@@ -17,7 +17,6 @@ impl Skybox {
     pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
         let skybox = pollster::block_on(Skybox::new(&device));
         commands.spawn((skybox,));
-        println!("Spawned skybox");
     }
 
     async fn new(device: &Device) -> Self {
