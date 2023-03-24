@@ -51,7 +51,7 @@ fn main() {
         update_schedule.run(&mut world);
         render_schedule.run(&mut world);
 
-        if !world.get_resource::<State>().unwrap().running { return; }
+        if !world.resource::<State>().running { return; }
 
         // scene.update(&frame_context);
         // debug_ui.update(&frame_context);
