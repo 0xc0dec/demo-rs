@@ -47,7 +47,7 @@ impl Assets {
     pub async fn texture_2d(&mut self, file_name: &str, device: &Device) -> Rc<Texture> {
         if !self.textures.contains_key(file_name) {
             println!("2d texture {file_name} not found in cache, loading...");
-            let texture = Texture::new_2d_from_file("stonewall.jpg", device)
+            let texture = Texture::new_2d_from_file(file_name, device)
                 .await
                 .expect(format!("Unable to load 2d texture {file_name}").as_str());
             self.textures.insert(file_name.to_owned(), Rc::new(texture));
