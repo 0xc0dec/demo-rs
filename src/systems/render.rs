@@ -5,7 +5,7 @@ use crate::device::Device;
 pub fn render_frame(
     mut q_skybox: Query<&mut Skybox>,
     q_camera: Query<&Camera>,
-    device: NonSend<Device>
+    device: NonSend<Device>,
 ) {
     let surface_tex = device
         .surface

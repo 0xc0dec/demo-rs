@@ -7,6 +7,7 @@ pub struct SpectatorRotationDelta {
     pub horizontal_rotation: f32,
 }
 
+// TODO Move out of components?
 impl crate::transform::Transform {
     pub fn spectator_rotation(&self, dt: f32, input: &Input) -> Option<SpectatorRotationDelta> {
         if !input.rmb_down {

@@ -54,10 +54,14 @@ pub fn before_update(
                 }
 
                 WindowEvent::Resized(new_size) => {
+                    // TODO Save new size into a resource, in some other system react to it
+                    // (e.g. via event)
                     device.resize(*new_size);
                 }
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                    // TODO Save new size into a resource, in some other system react to it
+                    // (e.g. via event)
                     device.resize(**new_inner_size);
                 }
 
@@ -70,10 +74,12 @@ pub fn before_update(
         debug_ui.handle_window_event(&window, &event);
     });
 
+    // TODO Into a separate system
     if input.escape_down {
         state.running = false;
     }
 
+    // TODO Into a separate system
     // Grab/release cursor
     if input.rmb_down_just_switched {
         if input.rmb_down {

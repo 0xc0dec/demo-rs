@@ -1,5 +1,5 @@
-use bevy_ecs::prelude::{Commands, Component};
-use bevy_ecs::system::NonSend;
+use bevy_ecs::prelude::{Commands, Component, World};
+use bevy_ecs::system::{NonSend};
 use wgpu::RenderPass;
 use crate::components::camera::Camera;
 use crate::device::{Device};
