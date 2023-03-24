@@ -1,4 +1,4 @@
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
@@ -38,11 +38,8 @@ impl PostProcessShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for PostProcessShader
-where
-    'a: 'b,
-{
-    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
+impl Shader for PostProcessShader {
+    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);
     }

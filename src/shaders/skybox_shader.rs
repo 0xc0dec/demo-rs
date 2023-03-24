@@ -1,4 +1,3 @@
-use wgpu::RenderPass;
 use crate::components::Camera;
 use crate::device::{Device};
 use crate::model::{ModelVertex, Vertex};
@@ -60,11 +59,8 @@ impl SkyboxShader {
     }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for SkyboxShader
-where
-    'a: 'b,
-{
-    fn apply(&'a mut self, pass: &mut RenderPass<'b>) {
+impl Shader for SkyboxShader {
+    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
         pass.set_bind_group(1, &self.texture_bind_group, &[]);

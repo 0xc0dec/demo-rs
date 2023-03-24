@@ -49,11 +49,8 @@ impl ColorShader {
     // }
 }
 
-impl<'a, 'b> Shader<'a, 'b> for ColorShader
-where
-    'a: 'b,
-{
-    fn apply(&'a mut self, pass: &mut wgpu::RenderPass<'b>) {
+impl Shader for ColorShader {
+    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
