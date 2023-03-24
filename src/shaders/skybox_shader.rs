@@ -1,6 +1,6 @@
 use wgpu::RenderPass;
 use crate::components::Camera;
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;

@@ -2,7 +2,7 @@ use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::NonSend;
 use wgpu::RenderPass;
 use crate::components::camera::Camera;
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::model::{DrawModel, Mesh};
 use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
@@ -23,10 +23,13 @@ impl Skybox {
         let texture = Texture::new_cube_from_file("skybox_bgra.dds", device)
             .await
             .unwrap();
+        let shader = SkyboxShader::new(device, SkyboxShaderParams { texture })
+            .await;
+        let mesh = Mesh::quad(device);
 
         Self {
-            mesh: Mesh::quad(device),
-            shader: SkyboxShader::new(device, SkyboxShaderParams { texture }).await,
+            mesh,
+            shader,
         }
     }
 

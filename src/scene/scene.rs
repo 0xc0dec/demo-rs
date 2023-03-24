@@ -1,15 +1,13 @@
 use crate::device::{Frame};
 use crate::frame_context::FrameContext;
 use crate::physics_world::PhysicsWorld;
-use crate::scene::character::Character;
 use crate::scene::test_entity::{TestEntity, TestEntityParams};
-use crate::scene::tracer::Tracer;
 use crate::app::App;
 use crate::math::{Vec3};
 
 pub struct Scene {
     // character: Character,
-    tracer: Tracer,
+    // tracer: Tracer,
     // skybox: Skybox,
     entities: Vec<TestEntity>,
     physics: PhysicsWorld,
@@ -54,13 +52,13 @@ impl Scene {
         //     &mut physics,
         // );
 
-        let tracer = Tracer::new(app).await;
+        // let tracer = Tracer::new(app).await;
         // let skybox = Skybox::new(&app.device).await;
 
         Self {
             physics,
             // character,
-            tracer,
+            // tracer,
             // skybox,
             entities: vec![ground, falling_box],
         }

@@ -45,6 +45,7 @@ pub fn render_frame(
                 depth_stencil_attachment: depth_attachment,
             });
 
+            // TODO Generalize
             skybox.render(&device, camera, &mut pass);
         }
 
