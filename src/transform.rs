@@ -1,5 +1,5 @@
 use rapier3d::na;
-use crate::math::{Mat4, Quat, Vec3};
+use crate::math::{Mat4, Quat, UnitQuat, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -10,14 +10,14 @@ pub struct Transform {
     m2: Mat4,
     scale: Vec3,
     pos: Vec3,
-    rot: na::UnitQuaternion<f32>
+    rot: UnitQuat
 }
 
 // TODO Parent-child relationships
 impl Transform {
     pub fn new(pos: Vec3, scale: Vec3) -> Self {
-        let m = na::Matrix4::identity();
-        let rot = na::UnitQuaternion::identity();
+        let m = Mat4::identity();
+        let rot = UnitQuat::identity();
         let mut res = Self {
             m2: m,
             rot,
@@ -49,9 +49,9 @@ impl Transform {
     }
 
     pub fn look_at(&mut self, target: Vec3) {
-        self.rot = na::UnitQuaternion::look_at_rh(
+        self.rot = UnitQuat::look_at_rh(
             &(target - self.pos),
-            &na::Vector3::y_axis()
+            &Vec3::y_axis()
         );
         self.rebuild_matrix();
     }
@@ -73,7 +73,7 @@ impl Transform {
 
     // TODO Fix, the visuals don't always match physics
     pub fn set(&mut self, pos: Vec3, rotation: Quat) {
-        self.rot = na::UnitQuaternion::from_quaternion(rotation);
+        self.rot = UnitQuat::from_quaternion(rotation);
         self.pos = pos;
         self.rebuild_matrix();
     }
@@ -90,7 +90,7 @@ impl Transform {
             TransformSpace::World => self.m2.try_inverse().unwrap().transform_vector(&axis)
         };
 
-        self.rot = na::UnitQuaternion::from_scaled_axis(axis * angle) * self.rot;
+        self.rot = UnitQuat::from_scaled_axis(axis * angle) * self.rot;
         self.rebuild_matrix();
     }
 
