@@ -40,6 +40,10 @@ impl Player {
         input: NonSend<Input>,
     ) {
         // TODO Update camera FOV
+        // self.character.camera.set_fov(
+        //     ctx.app.device.surface_size().width as f32,
+        //     ctx.app.device.surface_size().height as f32,
+        // );
 
         let dt = state.frame_time.delta;
 

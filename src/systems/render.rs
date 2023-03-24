@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::{Commands, NonSend, Query};
+use bevy_ecs::prelude::{NonSend, Query};
 use crate::components::{Camera, Skybox};
 use crate::device::Device;
 
