@@ -19,8 +19,9 @@ mod systems;
 mod components;
 
 use bevy_ecs::prelude::{IntoSystemConfig, Schedule, World};
-use crate::components::{Player, Skybox};
+use crate::components::{PhysicsBox, PhysicsBoxParams, Player, Skybox};
 use crate::debug_ui::DebugUI;
+use crate::math::Vec3;
 use crate::state::State;
 use crate::systems::{before_update, init, render_frame};
 
@@ -31,6 +32,15 @@ fn main() {
         .add_system(init)
         .add_system(Player::spawn.after(init))
         .add_system(Skybox::spawn.after(init))
+        .add_system(PhysicsBox::spawn(
+            PhysicsBoxParams {
+                pos: Vec3::from_element(0.0),
+                scale: Vec3::new(10.0, 0.5, 10.0),
+                rotation_axis: Vec3::from_element(0.0),
+                rotation_angle: 0.0,
+                movable: false,
+            }
+        ).after(init))
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();
