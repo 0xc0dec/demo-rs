@@ -79,9 +79,7 @@ impl Scene {
         }
     }
 
-    pub fn render<'a, 'b>(&'a mut self, frame: &mut Frame<'b, 'a>, ctx: &'a FrameContext)
-    where
-        'a: 'b,
+    pub fn render<'a>(&'a mut self, frame: &mut Frame<'a>, ctx: &'a FrameContext)
     {
         // TODO Do this only when the size changes
         // self.character.camera.set_fov(

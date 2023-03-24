@@ -84,11 +84,7 @@ impl Device {
         }
     }
 
-    // TODO Add FrameTarget as enum
-    pub fn new_frame<'a, 'b>(&'b self, target: Option<&'b RenderTarget>) -> Frame<'a, 'b>
-    where
-        'b: 'a,
-    {
+    pub fn new_frame<'a>(&'a self, target: Option<&'a RenderTarget>) -> Frame<'a> {
         let (color_format, depth_format) = match target {
             Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
             None => (
@@ -148,18 +144,14 @@ impl Device {
     }
 }
 
-pub struct Frame<'a, 'b>
-where
-    'b: 'a,
+pub struct Frame<'a>
 {
-    device: &'b Device,
+    device: &'a Device,
     bundle_encoder: wgpu::RenderBundleEncoder<'a>,
-    target: Option<&'b RenderTarget>,
+    target: Option<&'a RenderTarget>,
 }
 
-impl<'a, 'b> Deref for Frame<'a, 'b>
-where
-    'b: 'a,
+impl<'a> Deref for Frame<'a>
 {
     type Target = wgpu::RenderBundleEncoder<'a>;
 
@@ -168,19 +160,14 @@ where
     }
 }
 
-impl<'a, 'b> DerefMut for Frame<'a, 'b>
-where
-    'b: 'a,
+impl<'a> DerefMut for Frame<'a>
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.bundle_encoder
     }
 }
 
-impl<'a, 'b> Frame<'a, 'b>
-where
-    'b: 'a,
-{
+impl<'a> Frame<'a> {
     pub fn finish(self, debug_ui: Option<&mut DebugUI>) {
         let surface_tex = self.target.is_none().then(|| {
             self.device
