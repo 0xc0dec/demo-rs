@@ -1,7 +1,8 @@
+use bevy_ecs::prelude::Resource;
 use winit::event::*;
 
 // TODO Move into State?
-// TODO Mark as resource
+#[derive(Resource)]
 pub struct InputState {
     pub rmb_down: bool,
     pub forward_down: bool,

@@ -10,7 +10,7 @@ use crate::input_state::InputState;
 pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
-    mut input: NonSendMut<InputState>,
+    mut input: ResMut<InputState>,
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResized>,
     mut keyboard_events: EventWriter<KeyboardEvent>,

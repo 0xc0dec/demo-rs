@@ -37,7 +37,7 @@ impl Player {
         mut q: Query<(&mut Self, &mut Camera)>,
         state: Res<State>,
         mut physics: NonSendMut<PhysicsWorld>,
-        input: NonSend<InputState>,
+        input: Res<InputState>,
     ) {
         // TODO Update camera FOV
         // self.character.camera.set_fov(

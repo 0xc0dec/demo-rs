@@ -25,7 +25,6 @@ pub fn resize_device(
 }
 
 pub fn grab_cursor(
-    mut input: NonSendMut<InputState>,
     window: NonSend<Window>,
     mut mouse_events: EventReader<MouseEvent>
 ) {
@@ -68,7 +67,7 @@ pub fn update_frame_time(mut state: ResMut<State>) {
 }
 
 pub fn update_input_state(
-    mut input: NonSendMut<InputState>,
+    mut input: ResMut<InputState>,
     mut keyboard_events: EventReader<KeyboardEvent>,
     mut mouse_events: EventReader<MouseEvent>
 ) {

@@ -25,16 +25,17 @@ pub fn init(world: &mut World) {
         let debug_ui = DebugUI::new(&device, &window);
 
         world.insert_resource(State { running: true, frame_time: FrameTime::new() });
+        world.insert_resource(input);
+
+        world.init_resource::<Events<WindowResized>>();
+        world.init_resource::<Events<KeyboardEvent>>();
+        world.init_resource::<Events<MouseEvent>>();
+
         world.insert_non_send_resource(physics);
         world.insert_non_send_resource(window);
         world.insert_non_send_resource(event_loop);
         world.insert_non_send_resource(device);
         world.insert_non_send_resource(assets);
-        world.insert_non_send_resource(input);
         world.insert_non_send_resource(debug_ui);
-
-        world.init_resource::<Events<WindowResized>>();
-        world.init_resource::<Events<KeyboardEvent>>();
-        world.init_resource::<Events<MouseEvent>>();
     });
 }
