@@ -1,5 +1,7 @@
-use bevy_ecs::prelude::{NonSend, Query};
+use bevy_ecs::prelude::{NonSend, NonSendMut, Query};
+use winit::window::Window;
 use crate::components::{Camera, RenderLayer, ModelRenderer};
+use crate::debug_ui::DebugUI;
 use crate::device::Device;
 
 fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
@@ -18,8 +20,10 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 
 pub fn render_frame(
     mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer)>,
+    mut debug_ui: NonSendMut<DebugUI>,
     cameras: Query<&Camera>,
     device: NonSend<Device>,
+    window: NonSend<Window>
 ) {
     let surface_tex = device
         .surface
@@ -70,11 +74,13 @@ pub fn render_frame(
             });
 
             pass.execute_bundles(render_bundles.iter().map(|(bundle, _)| bundle));
+
+            debug_ui.build_frame(&window, |_| {});
+            debug_ui.render(&device, &mut pass);
         }
         encoder.finish()
     };
 
     device.queue.submit(Some(cmd_buffer));
-
     surface_tex.present();
 }
