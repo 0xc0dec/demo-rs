@@ -47,6 +47,7 @@ fn main() {
     update_schedule
         // TOO Run physics last?
         .add_system(update_physics)
+        .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
         .add_system(DebugUI::update.after(update_physics))
         .add_system(DebugUIBuilder::build_debug_ui.after(DebugUI::update));
@@ -60,12 +61,5 @@ fn main() {
         render_schedule.run(&mut world);
 
         if !world.resource::<State>().running { return; }
-
-        // {
-        //     let mut frame = app.device.new_frame(None);
-        //     pp.render(&mut frame);
-        //     debug_ui.build_frame(&app.window, |frame| scene.build_debug_ui(frame));
-        //     frame.finish(Some(&mut debug_ui));
-        // }
     }
 }

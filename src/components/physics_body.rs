@@ -46,9 +46,12 @@ impl PhysicsBody {
         }
     }
 
-    pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>) {
+    pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>, physics: NonSend<PhysicsWorld>) {
         for (mut transform, body) in q.iter_mut() {
-            
+            let body = physics.bodies.get(body.rigid_body_handle).unwrap();
+            let phys_pos = body.translation();
+            let phys_rot = body.rotation();
+            transform.set(*phys_pos, *phys_rot.quaternion());
         }
     }
 }
