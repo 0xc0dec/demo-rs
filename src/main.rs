@@ -23,10 +23,12 @@ use crate::components::{PhysicsBox, PhysicsBoxParams, Player, Skybox};
 use crate::debug_ui::DebugUI;
 use crate::math::Vec3;
 use crate::state::State;
-use crate::systems::{before_update, init, render_frame};
+use crate::systems::{before_update, init, render_frame, update_physics};
 
 fn main() {
     let mut world = World::default();
+
+    // TODO Try to use less schedules by adding more complex rules
 
     Schedule::default()
         .add_system(init)
@@ -48,13 +50,13 @@ fn main() {
 
     let mut update_schedule = Schedule::default();
     update_schedule
-        .add_system(Player::update)
-        .add_system(DebugUI::update);
+        // TOO Run physics last?
+        .add_system(update_physics)
+        .add_system(Player::update.after(update_physics))
+        .add_system(DebugUI::update.after(update_physics));
 
     let mut render_schedule = Schedule::default();
     render_schedule.add_system(render_frame);
-
-    // Could have used a single schedule but it seems easier for now to use separate
 
     loop {
         preupdate_schedule.run(&mut world);

@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::{NonSend, Query};
-use crate::components::{Camera, RenderLayer, RenderModel};
+use crate::components::{Camera, RenderLayer, ModelRenderer};
 use crate::device::Device;
 
 fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
@@ -17,8 +17,8 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 }
 
 pub fn render_frame(
-    mut q_render_models: Query<(&mut RenderModel, &RenderLayer)>,
-    q_camera: Query<&Camera>,
+    mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer)>,
+    cameras: Query<&Camera>,
     device: NonSend<Device>,
 ) {
     let surface_tex = device
@@ -45,9 +45,9 @@ pub fn render_frame(
         stencil_ops: None,
     });
 
-    let camera = q_camera.single();
+    let camera = cameras.single();
     // Couldn't make it work with a single bundler encoder due to lifetimes
-    let mut render_bundles = q_render_models
+    let mut render_bundles = model_renderers
         .iter_mut()
         .map(|(mut r, layer)| {
             let mut encoder = new_bundle_encoder(&device);

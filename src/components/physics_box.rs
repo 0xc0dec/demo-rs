@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 use wgpu::{RenderBundleEncoder, RenderPass};
-use crate::components::{Camera, RenderLayer, RenderModel};
-use crate::components::render_model::ModelShader;
+use crate::components::{Camera, RenderLayer, ModelRenderer};
+use crate::components::model_renderer::ModelShader;
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::model::{DrawModel, Model};
@@ -57,7 +57,7 @@ impl PhysicsBox {
                     }
                 ).await;
                 let model = Model::from_file("cube.obj", &device).await.unwrap();
-                let render_model = RenderModel {
+                let render_model = ModelRenderer {
                     shader: ModelShader::Diffuse(shader),
                     model,
                     transform

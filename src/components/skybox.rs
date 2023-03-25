@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::{NonSend};
-use crate::components::{ModelShader, RenderLayer, RenderModel};
+use crate::components::{ModelShader, RenderLayer, ModelRenderer};
 use crate::device::{Device};
 use crate::model::{Model};
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
@@ -20,7 +20,7 @@ impl Skybox {
                 .await;
             let model = Model::quad(&device);
 
-            let render_model = RenderModel {
+            let render_model = ModelRenderer {
                 transform: Transform::default(),
                 shader: ModelShader::Skybox(shader),
                 model,

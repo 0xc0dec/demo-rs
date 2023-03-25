@@ -12,13 +12,13 @@ pub enum ModelShader {
 }
 
 #[derive(Component)]
-pub struct RenderModel {
+pub struct ModelRenderer {
     pub model: Model,
     pub transform: Transform,
     pub shader: ModelShader,
 }
 
-impl RenderModel {
+impl ModelRenderer {
     pub fn render<'a>(
         &'a mut self,
         device: &Device,
