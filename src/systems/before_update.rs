@@ -75,24 +75,8 @@ pub fn before_update(
     });
 
     // TODO Into a separate system
-    if input.escape_down {
-        state.running = false;
-    }
-
-    // TODO Into a separate system
     // Grab/release cursor
-    if input.rmb_down_just_switched {
-        if input.rmb_down {
-            window
-                .set_cursor_grab(CursorGrabMode::Confined)
-                .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
-                .unwrap();
-            window.set_cursor_visible(false);
-        } else {
-            window.set_cursor_grab(CursorGrabMode::None).unwrap();
-            window.set_cursor_visible(true);
-        }
-    }
+
 
     state.frame_time.update();
 }

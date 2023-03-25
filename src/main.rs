@@ -18,12 +18,12 @@ mod state;
 mod systems;
 mod components;
 
-use bevy_ecs::prelude::{IntoSystemConfig, Schedule, World};
-use crate::components::{PhysicsBox, PhysicsBoxParams, Player, Skybox};
+use bevy_ecs::prelude::*;
+use crate::components::*;
 use crate::debug_ui::DebugUI;
 use crate::math::Vec3;
 use crate::state::State;
-use crate::systems::{before_update, init, render_frame, update_physics};
+use crate::systems::*;
 
 fn main() {
     let mut world = World::default();
@@ -46,7 +46,10 @@ fn main() {
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();
-    preupdate_schedule.add_system(before_update);
+    preupdate_schedule
+        .add_system(before_update)
+        .add_system(escape_on_exit.after(before_update))
+        .add_system(grab_cursor.after(before_update));
 
     let mut update_schedule = Schedule::default();
     update_schedule
@@ -65,12 +68,6 @@ fn main() {
 
         if !world.resource::<State>().running { return; }
 
-        // {
-        //     let mut frame = app.device.new_frame(Some(pp.source_rt()));
-        //     scene.render(&mut frame, &frame_context);
-        //     frame.finish(None);
-        // }
-        //
         // {
         //     let mut frame = app.device.new_frame(None);
         //     pp.render(&mut frame);
