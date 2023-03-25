@@ -1,5 +1,5 @@
 use super::Shader;
-use crate::device::{Device, Frame};
+use crate::device::Device;
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::transform::Transform;
@@ -50,7 +50,7 @@ impl ColorShader {
 }
 
 impl Shader for ColorShader {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }

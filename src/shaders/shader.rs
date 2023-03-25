@@ -1,3 +1,3 @@
 pub trait Shader {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b;
+    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>);
 }

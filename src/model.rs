@@ -1,4 +1,4 @@
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::assets::load_string;
 use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
@@ -181,9 +181,7 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a, 'b> DrawModel<'a> for wgpu::RenderPass<'b>
-where
-    'a: 'b,
+impl<'a> DrawModel<'a> for wgpu::RenderPass<'a>
 {
     fn draw_mesh(&mut self, mesh: &'a Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));

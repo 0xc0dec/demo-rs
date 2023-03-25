@@ -1,4 +1,4 @@
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::model::{DrawModel, Mesh};
 use crate::render_target::RenderTarget;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams, Shader};

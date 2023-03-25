@@ -1,9 +1,8 @@
 use super::Shader;
-use crate::device::{Device, Frame};
+use crate::device::{Device};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
-use crate::transform::Transform;
 use wgpu::{BindGroup, RenderPipeline};
 use crate::math::{Mat4};
 
@@ -63,7 +62,7 @@ impl DiffuseShader {
 }
 
 impl Shader for DiffuseShader {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.texture_bind_group, &[]);
         pass.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);

@@ -60,7 +60,7 @@ impl SkyboxShader {
 }
 
 impl Shader for SkyboxShader {
-    fn apply<'a, 'b>(&'a mut self, pass: &mut wgpu::RenderPass<'b>) where 'a: 'b {
+    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.data_uniform_bind_group, &[]);
         pass.set_bind_group(1, &self.texture_bind_group, &[]);

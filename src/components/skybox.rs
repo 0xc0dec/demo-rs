@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::{Commands, Component, World};
+use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::{NonSend};
 use wgpu::RenderPass;
 use crate::components::camera::Camera;
@@ -33,12 +33,12 @@ impl Skybox {
         }
     }
 
-    pub fn render<'a, 'b>(
+    pub fn render<'a>(
         &'a mut self,
         device: &Device,
         camera: &Camera,
-        frame: &mut RenderPass<'b>,
-    ) where 'a: 'b {
+        frame: &mut RenderPass<'a>,
+    ) {
         self.shader.update(&device, camera);
         self.shader.apply(frame);
         frame.draw_mesh(&self.mesh);

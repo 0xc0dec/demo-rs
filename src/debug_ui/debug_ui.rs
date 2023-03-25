@@ -1,6 +1,5 @@
 use crate::debug_ui::imgui_winit;
 use crate::device::Device;
-use crate::frame_context::FrameContext;
 use imgui::MouseCursor;
 use std::time::Duration;
 use bevy_ecs::prelude::{NonSend, NonSendMut, Res};
