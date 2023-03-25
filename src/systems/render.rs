@@ -1,4 +1,5 @@
 use bevy_ecs::prelude::{NonSend, NonSendMut, Query};
+use wgpu::RenderBundle;
 use crate::components::{Camera, RenderLayer, ModelRenderer, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
@@ -17,11 +18,32 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
     })
 }
 
-pub fn render_frame(
+fn build_render_bundles(
     mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
-    mut debug_ui: NonSendMut<DebugUI>,
+    cameras: Query<&Camera>,
+    device: &Device
+) -> Vec<(RenderBundle, u32)> {
+    let camera = cameras.single();
+    // Couldn't make it work with a single bundler encoder due to lifetimes
+    let mut render_bundles = model_renderers
+        .iter_mut()
+        .map(|(mut r, layer, tr)| {
+            let mut encoder = new_bundle_encoder(&device);
+            // TODO Create render bundle inside the function?
+            r.render(&device, &camera, &tr, &mut encoder);
+            let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
+            (bundle, layer.0)
+        })
+        .collect::<Vec<_>>();
+    render_bundles.sort_by_key(|(_, layer)| *layer);
+    render_bundles
+}
+
+pub fn render_frame(
+    model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
     cameras: Query<&Camera>,
     device: NonSend<Device>,
+    mut debug_ui: NonSendMut<DebugUI>,
 ) {
     let surface_tex = device
         .surface
@@ -47,19 +69,7 @@ pub fn render_frame(
         stencil_ops: None,
     });
 
-    let camera = cameras.single();
-    // Couldn't make it work with a single bundler encoder due to lifetimes
-    let mut render_bundles = model_renderers
-        .iter_mut()
-        .map(|(mut r, layer, tr)| {
-            let mut encoder = new_bundle_encoder(&device);
-            // TODO Create render bundle inside the function?
-            r.render(&device, &camera, &tr, &mut encoder);
-            let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
-            (bundle, layer.0)
-        })
-        .collect::<Vec<_>>();
-    render_bundles.sort_by_key(|(_, layer)| *layer);
+    let render_bundles = build_render_bundles(model_renderers, cameras, &device);
 
     let cmd_buffer = {
         let mut encoder = device.device
@@ -72,7 +82,6 @@ pub fn render_frame(
             });
 
             pass.execute_bundles(render_bundles.iter().map(|(bundle, _)| bundle));
-
             debug_ui.render(&device, &mut pass);
         }
         encoder.finish()
