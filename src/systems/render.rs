@@ -1,9 +1,11 @@
-use bevy_ecs::prelude::{NonSend, Query};
-use crate::components::{Camera, Skybox};
+use std::iter;
+use bevy_ecs::prelude::{Mut, NonSend, Query};
+use crate::components::{Camera, RenderModel, Skybox};
 use crate::device::Device;
 
 pub fn render_frame(
     mut q_skybox: Query<&mut Skybox>,
+    mut q_render_models: Query<&mut RenderModel>,
     q_camera: Query<&Camera>,
     device: NonSend<Device>,
 ) {
@@ -31,24 +33,42 @@ pub fn render_frame(
         stencil_ops: None,
     });
 
+    let camera = q_camera.iter().next().unwrap();
+    // Couldn't make it work with using a single bundler encoder due to lifetimes
+    let render_bundles = q_render_models.iter_mut()
+        .map(|mut r| {
+            let mut bundle_encoder =
+                device.device
+                    .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+                        label: None,
+                        multiview: None,
+                        sample_count: 1,
+                        color_formats: &[Some(device.surface_texture_format())],
+                        depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+                            format: device.depth_texture_format(),
+                            depth_read_only: false,
+                            stencil_read_only: false,
+                        }),
+                    });
+            r.render(&device, &camera, &mut bundle_encoder);
+            bundle_encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
+        })
+        .collect::<Vec<_>>();
+
+    // let mut skybox = q_skybox.iter_mut().next().unwrap();
+    // skybox.render(&device, &camera, &mut bundle_encoder);
+
     let cmd_buffer = {
         let mut encoder = device.device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
         {
-            let mut skybox = q_skybox.iter_mut().next().unwrap();
-            let camera = q_camera.iter().next().unwrap();
-
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: None,
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
             });
-
-            // TODO Generalize
-            skybox.render(&device, camera, &mut pass);
+            pass.execute_bundles(render_bundles.iter().map(|b| b));
         }
-
         encoder.finish()
     };
 

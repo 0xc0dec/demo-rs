@@ -181,8 +181,7 @@ pub trait DrawModel<'a> {
     fn draw_model(&mut self, model: &'a Model);
 }
 
-impl<'a> DrawModel<'a> for wgpu::RenderPass<'a>
-{
+impl<'a> DrawModel<'a> for wgpu::RenderBundleEncoder<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);

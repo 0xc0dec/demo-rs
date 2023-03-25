@@ -39,8 +39,8 @@ impl PostProcessShader {
 }
 
 impl Shader for PostProcessShader {
-    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>) {
-        pass.set_pipeline(&self.pipeline);
-        pass.set_bind_group(0, &self.texture_bind_group, &[]);
+    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+        encoder.set_pipeline(&self.pipeline);
+        encoder.set_bind_group(0, &self.texture_bind_group, &[]);
     }
 }

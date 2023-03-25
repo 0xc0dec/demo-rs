@@ -4,7 +4,9 @@ use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
+use crate::components::Camera;
 use crate::math::{Mat4};
+use crate::transform::Transform;
 
 pub struct DiffuseShader {
     texture_bind_group: BindGroup,
@@ -51,21 +53,21 @@ impl DiffuseShader {
         }
     }
 
-    // pub fn update(&mut self, device: &Device, camera: &Camera, transform: &Transform) {
-    //     self.matrices_uniform.update(camera, transform);
-    //     device.queue().write_buffer(
-    //         &self.matrices_uniform_buf,
-    //         0,
-    //         bytemuck::cast_slice(&[self.matrices_uniform]),
-    //     );
-    // }
+    pub fn update(&mut self, device: &Device, camera: &Camera, transform: &Transform) {
+        self.matrices_uniform.update(camera, transform);
+        device.queue().write_buffer(
+            &self.matrices_uniform_buf,
+            0,
+            bytemuck::cast_slice(&[self.matrices_uniform]),
+        );
+    }
 }
 
 impl Shader for DiffuseShader {
-    fn apply<'a>(&'a mut self, pass: &mut wgpu::RenderPass<'a>) {
-        pass.set_pipeline(&self.pipeline);
-        pass.set_bind_group(0, &self.texture_bind_group, &[]);
-        pass.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
+    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+        encoder.set_pipeline(&self.pipeline);
+        encoder.set_bind_group(0, &self.texture_bind_group, &[]);
+        encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
     }
 }
 
@@ -92,8 +94,8 @@ impl MatricesUniform {
         }
     }
 
-    // fn update(&mut self, camera: &Camera, model_transform: &Transform) {
-    //     self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
-    //     self.world = model_transform.matrix2().into();
-    // }
+    fn update(&mut self, camera: &Camera, model_transform: &Transform) {
+        self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
+        self.world = model_transform.matrix2().into();
+    }
 }

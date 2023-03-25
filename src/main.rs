@@ -63,9 +63,6 @@ fn main() {
 
         if !world.resource::<State>().running { return; }
 
-        // scene.update(&frame_context);
-        // debug_ui.update(&frame_context);
-        //
         // {
         //     let mut frame = app.device.new_frame(Some(pp.source_rt()));
         //     scene.render(&mut frame, &frame_context);

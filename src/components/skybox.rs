@@ -18,6 +18,7 @@ impl Skybox {
         commands.spawn((skybox,));
     }
 
+    // TODO Use RenderModel
     async fn new(device: &Device) -> Self {
         let texture = Texture::new_cube_from_file("skybox_bgra.dds", device)
             .await
@@ -36,10 +37,10 @@ impl Skybox {
         &'a mut self,
         device: &Device,
         camera: &Camera,
-        frame: &mut wgpu::RenderPass<'a>,
+        encoder: &mut wgpu::RenderBundleEncoder<'a>,
     ) {
         self.shader.update(&device, camera);
-        self.shader.apply(frame);
-        frame.draw_mesh(&self.mesh);
+        self.shader.apply(encoder);
+        encoder.draw_mesh(&self.mesh);
     }
 }

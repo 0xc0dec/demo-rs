@@ -73,46 +73,6 @@ impl PhysicsBox {
         }
     }
 
-    // async fn new(params: PhysicsBoxParams, device: &Device, physics: &mut PhysicsWorld) -> Self {
-    //     let PhysicsBoxParams {
-    //         pos,
-    //         scale,
-    //         rotation_axis,
-    //         rotation_angle,
-    //         movable,
-    //     } = params;
-    //
-    //     let body = if movable { RigidBodyBuilder::dynamic() } else { RigidBodyBuilder::fixed() }
-    //         .translation(vector![pos.x, pos.y, pos.z])
-    //         // TODO Verify this conversion
-    //         .rotation(rotation_axis * rotation_angle)
-    //         .build();
-    //     let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
-    //         .restitution(0.2)
-    //         .friction(0.7)
-    //         .build();
-    //     let (rigid_body_handle, _) = physics.add_body(body, collider);
-    //
-    //     let transform = Transform::new(pos, scale);
-    //     let texture = Texture::new_2d_from_file("stonewall.jpg", device).await.unwrap();
-    //     let shader = DiffuseShader::new(
-    //         device,
-    //         DiffuseShaderParams {
-    //             texture: &texture
-    //         }
-    //     ).await;
-    //     let model = Model::from_file("cube.obj", device).await.unwrap();
-    //     let render_model = RenderModel {
-    //         shader: ModelShader::Diffuse(shader),
-    //         model,
-    //         transform
-    //     };
-    //
-    //     Self {
-    //         rigid_body_handle,
-    //     }
-    // }
-
     // pub fn render<'a>(
     //     &'a mut self,
     //     device: &Device,
