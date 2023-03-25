@@ -6,7 +6,7 @@ use crate::physics_world::PhysicsWorld;
 use crate::transform::TransformSpace;
 use rapier3d::prelude::*;
 use crate::device::Device;
-use crate::input::Input;
+use crate::input_state::InputState;
 use crate::state::State;
 
 #[derive(Component)]
@@ -37,7 +37,7 @@ impl Player {
         mut q: Query<(&mut Self, &mut Camera)>,
         state: Res<State>,
         mut physics: NonSendMut<PhysicsWorld>,
-        input: NonSend<Input>,
+        input: NonSend<InputState>,
     ) {
         // TODO Update camera FOV
         // self.character.camera.set_fov(

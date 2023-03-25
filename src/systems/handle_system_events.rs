@@ -5,12 +5,12 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window};
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
-use crate::input::Input;
+use crate::input_state::InputState;
 
 pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
-    mut input: NonSendMut<Input>,
+    mut input: NonSendMut<InputState>,
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResized>,
     mut keyboard_events: EventWriter<KeyboardEvent>,

@@ -7,7 +7,7 @@ use winit::event::{MouseButton, VirtualKeyCode};
 use winit::window::{CursorGrabMode, Window};
 use crate::device::Device;
 use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
-use crate::input::Input;
+use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
 
@@ -25,7 +25,7 @@ pub fn resize_device(
 }
 
 pub fn grab_cursor(
-    mut input: NonSendMut<Input>,
+    mut input: NonSendMut<InputState>,
     window: NonSend<Window>,
     mut mouse_events: EventReader<MouseEvent>
 ) {
@@ -68,7 +68,7 @@ pub fn update_frame_time(mut state: ResMut<State>) {
 }
 
 pub fn update_input_state(
-    mut input: NonSendMut<Input>,
+    mut input: NonSendMut<InputState>,
     mut keyboard_events: EventReader<KeyboardEvent>,
     mut mouse_events: EventReader<MouseEvent>
 ) {

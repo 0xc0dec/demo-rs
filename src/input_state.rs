@@ -1,10 +1,9 @@
 use winit::event::*;
 
-// TODO Move into State, rename to InputState
+// TODO Move into State?
 // TODO Mark as resource
-pub struct Input {
+pub struct InputState {
     pub rmb_down: bool,
-    pub rmb_down_just_switched: bool,
     pub forward_down: bool,
     pub back_down: bool,
     pub left_down: bool,
@@ -14,11 +13,10 @@ pub struct Input {
     pub mouse_delta: (f32, f32),
 }
 
-impl Input {
+impl InputState {
     pub fn new() -> Self {
-        Input {
+        InputState {
             rmb_down: false,
-            rmb_down_just_switched: false,
             forward_down: false,
             back_down: false,
             left_down: false,
@@ -31,7 +29,6 @@ impl Input {
 
     pub fn reset(&mut self) {
         self.mouse_delta = (0.0, 0.0);
-        self.rmb_down_just_switched = false;
     }
 
     pub fn on_mouse_move(&mut self, delta: (f32, f32)) {
@@ -39,10 +36,7 @@ impl Input {
     }
 
     pub fn on_mouse_button(&mut self, btn: MouseButton, pressed: bool) {
-        if btn == MouseButton::Right {
-            self.rmb_down = pressed;
-            self.rmb_down_just_switched = true;
-        }
+        self.rmb_down = btn == MouseButton::Right && pressed;
     }
 
     pub fn on_key(&mut self, code: VirtualKeyCode, pressed: bool) {

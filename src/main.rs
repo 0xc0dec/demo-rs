@@ -1,6 +1,6 @@
 mod debug_ui;
 mod device;
-mod input;
+mod input_state;
 mod math;
 mod model;
 mod physics_world;

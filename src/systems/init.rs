@@ -6,7 +6,7 @@ use crate::debug_ui::DebugUI;
 use crate::device::{Device, SurfaceSize};
 use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
 use crate::frame_time::FrameTime;
-use crate::input::Input;
+use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
 
@@ -20,7 +20,7 @@ pub fn init(world: &mut World) {
             .unwrap();
         let device = Device::new(&window).await;
         let assets = Assets::new();
-        let input = Input::new();
+        let input = InputState::new();
         let physics = PhysicsWorld::new();
         let debug_ui = DebugUI::new(&device, &window);
 
