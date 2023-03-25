@@ -1,5 +1,7 @@
 use winit::event::*;
 
+// TODO Move into State, rename to InputState
+// TODO Mark as resource
 pub struct Input {
     pub rmb_down: bool,
     pub rmb_down_just_switched: bool,
@@ -36,22 +38,21 @@ impl Input {
         self.mouse_delta = delta;
     }
 
-    pub fn on_mouse_button(&mut self, btn: &MouseButton, state: &ElementState) {
-        if *btn == MouseButton::Right {
-            self.rmb_down = *state == ElementState::Pressed;
+    pub fn on_mouse_button(&mut self, btn: MouseButton, pressed: bool) {
+        if btn == MouseButton::Right {
+            self.rmb_down = pressed;
             self.rmb_down_just_switched = true;
         }
     }
 
-    pub fn on_key(&mut self, code: &VirtualKeyCode, state: &ElementState) {
-        let down = *state == ElementState::Pressed;
+    pub fn on_key(&mut self, code: VirtualKeyCode, pressed: bool) {
         match code {
-            VirtualKeyCode::W => self.forward_down = down,
-            VirtualKeyCode::A => self.left_down = down,
-            VirtualKeyCode::S => self.back_down = down,
-            VirtualKeyCode::D => self.right_down = down,
-            VirtualKeyCode::E => self.up_down = down,
-            VirtualKeyCode::Q => self.down_down = down,
+            VirtualKeyCode::W => self.forward_down = pressed,
+            VirtualKeyCode::A => self.left_down = pressed,
+            VirtualKeyCode::S => self.back_down = pressed,
+            VirtualKeyCode::D => self.right_down = pressed,
+            VirtualKeyCode::E => self.up_down = pressed,
+            VirtualKeyCode::Q => self.down_down = pressed,
             _ => (),
         }
     }

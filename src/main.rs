@@ -41,6 +41,7 @@ fn main() {
         .add_system(escape_on_exit.after(handle_system_events))
         .add_system(grab_cursor.after(handle_system_events))
         .add_system(resize_device.after(handle_system_events))
+        .add_system(update_input_state.after(handle_system_events))
         .add_system(update_frame_time.after(handle_system_events));
 
     let mut update_schedule = Schedule::default();

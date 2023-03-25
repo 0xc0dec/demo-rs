@@ -4,7 +4,7 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window};
 use crate::debug_ui::DebugUI;
-use crate::events::{KeyboardEvent, WindowResized};
+use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
 use crate::input::Input;
 
 pub fn handle_system_events(
@@ -14,6 +14,7 @@ pub fn handle_system_events(
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResized>,
     mut keyboard_events: EventWriter<KeyboardEvent>,
+    mut mouse_events: EventWriter<MouseEvent>,
 ) {
     input.reset();
 
@@ -29,17 +30,18 @@ pub fn handle_system_events(
                 event: DeviceEvent::MouseMotion { delta },
                 ..
             } => {
-                // TODO Use events
-                input.on_mouse_move((delta.0 as f32, delta.1 as f32));
-            }
+                mouse_events.send(MouseEvent::Move(delta.0 as f32, delta.1 as f32))
+            },
 
             Event::WindowEvent {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
                 WindowEvent::MouseInput { state, button, .. } => {
-                    // TODO Use events
-                    input.on_mouse_button(button, state);
+                    mouse_events.send(MouseEvent::Button {
+                        button: *button,
+                        pressed: *state == ElementState::Pressed
+                    });
                 }
 
                 WindowEvent::KeyboardInput {
@@ -55,8 +57,6 @@ pub fn handle_system_events(
                         code: *keycode,
                         pressed: *key_state == ElementState::Pressed
                     });
-                    // TODO Use events
-                    input.on_key(keycode, key_state);
                 }
 
                 WindowEvent::Resized(new_size) => {
