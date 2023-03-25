@@ -47,9 +47,12 @@ fn main() {
 
     let mut preupdate_schedule = Schedule::default();
     preupdate_schedule
-        .add_system(before_update)
-        .add_system(escape_on_exit.after(before_update))
-        .add_system(grab_cursor.after(before_update));
+        .add_system(handle_events)
+        .add_system(escape_on_exit.after(handle_events))
+        .add_system(grab_cursor.after(handle_events))
+        .add_system(|mut state: ResMut<State>| {
+            state.frame_time.update();
+        });
 
     let mut update_schedule = Schedule::default();
     update_schedule

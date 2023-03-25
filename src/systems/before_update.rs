@@ -1,16 +1,14 @@
-use bevy_ecs::prelude::{NonSend, NonSendMut, ResMut};
+use bevy_ecs::prelude::*;
 use winit::event::{DeviceEvent, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
-use winit::window::{CursorGrabMode, Window};
+use winit::window::{Window};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
 use crate::input::Input;
-use crate::state::State;
 
-pub fn before_update(
+pub fn handle_events(
     window: NonSend<Window>,
-    mut state: ResMut<State>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: NonSendMut<Input>,
     mut device: NonSendMut<Device>,
@@ -73,10 +71,4 @@ pub fn before_update(
 
         debug_ui.handle_window_event(&window, &event);
     });
-
-    // TODO Into a separate system
-    // Grab/release cursor
-
-
-    state.frame_time.update();
 }

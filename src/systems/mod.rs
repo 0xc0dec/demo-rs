@@ -6,7 +6,7 @@ mod escape_on_exit;
 mod grab_cursor;
 
 pub use init::init;
-pub use before_update::before_update;
+pub use before_update::handle_events;
 pub use render::render_frame;
 pub use update_physics::update_physics;
 pub use escape_on_exit::escape_on_exit;
