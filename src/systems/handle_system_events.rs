@@ -7,7 +7,7 @@ use crate::debug_ui::DebugUI;
 use crate::device::Device;
 use crate::input::Input;
 
-pub fn handle_events(
+pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: NonSendMut<Input>,
