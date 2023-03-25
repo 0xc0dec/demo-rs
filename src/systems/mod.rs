@@ -46,3 +46,7 @@ pub fn escape_on_exit(input: NonSend<Input>, mut state: ResMut<State>) {
 pub fn update_physics(mut physics: NonSendMut<PhysicsWorld>, state: Res<State>) {
     physics.update(state.frame_time.delta);
 }
+
+pub fn update_frame_time(mut state: ResMut<State>) {
+    state.frame_time.update();
+}
