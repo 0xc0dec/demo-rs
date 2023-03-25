@@ -4,15 +4,15 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window};
 use crate::debug_ui::DebugUI;
-use crate::device::Device;
+use crate::events::WindowResized;
 use crate::input::Input;
 
 pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: NonSendMut<Input>,
-    mut device: NonSendMut<Device>,
-    mut debug_ui: NonSendMut<DebugUI>
+    mut debug_ui: NonSendMut<DebugUI>,
+    mut resize_events: EventWriter<WindowResized>
 ) {
     input.reset();
 
@@ -28,6 +28,7 @@ pub fn handle_system_events(
                 event: DeviceEvent::MouseMotion { delta },
                 ..
             } => {
+                // TODO Use events
                 input.on_mouse_move((delta.0 as f32, delta.1 as f32));
             }
 
@@ -36,6 +37,7 @@ pub fn handle_system_events(
                 window_id,
             } if window_id == window.id() => match event {
                 WindowEvent::MouseInput { state, button, .. } => {
+                    // TODO Use events
                     input.on_mouse_button(button, state);
                 }
 
@@ -48,19 +50,16 @@ pub fn handle_system_events(
                     },
                     ..
                 } => {
+                    // TODO Use events
                     input.on_key(keycode, key_state);
                 }
 
                 WindowEvent::Resized(new_size) => {
-                    // TODO Save new size into a resource, in some other system react to it
-                    // (e.g. via event)
-                    device.resize(*new_size);
+                    resize_events.send(WindowResized { new_size: *new_size });
                 }
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    // TODO Save new size into a resource, in some other system react to it
-                    // (e.g. via event)
-                    device.resize(**new_inner_size);
+                    resize_events.send(WindowResized { new_size: **new_inner_size });
                 }
 
                 _ => (),

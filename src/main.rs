@@ -15,6 +15,7 @@ mod frame_time;
 mod state;
 mod systems;
 mod components;
+mod events;
 
 use bevy_ecs::prelude::*;
 use crate::components::*;
@@ -39,6 +40,7 @@ fn main() {
         .add_system(handle_system_events)
         .add_system(escape_on_exit.after(handle_system_events))
         .add_system(grab_cursor.after(handle_system_events))
+        .add_system(resize_device.after(handle_system_events))
         .add_system(|mut state: ResMut<State>| {
             state.frame_time.update();
         });

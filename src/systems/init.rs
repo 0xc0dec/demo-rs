@@ -1,9 +1,10 @@
-use bevy_ecs::prelude::World;
+use bevy_ecs::prelude::{Events, World};
 use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 use crate::assets::Assets;
 use crate::debug_ui::DebugUI;
 use crate::device::{Device, SurfaceSize};
+use crate::events::WindowResized;
 use crate::frame_time::FrameTime;
 use crate::input::Input;
 use crate::physics_world::PhysicsWorld;
@@ -31,5 +32,7 @@ pub fn init(world: &mut World) {
         world.insert_non_send_resource(assets);
         world.insert_non_send_resource(input);
         world.insert_non_send_resource(debug_ui);
+
+        world.init_resource::<Events<WindowResized>>();
     });
 }
