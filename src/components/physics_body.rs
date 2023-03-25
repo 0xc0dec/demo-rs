@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 use rapier3d::prelude::{RigidBodyBuilder, RigidBodyHandle};
+use crate::components::Transform;
 use crate::math::Vec3;
 use crate::physics_world::PhysicsWorld;
 
@@ -42,6 +43,12 @@ impl PhysicsBody {
 
         Self {
             rigid_body_handle
+        }
+    }
+
+    pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>) {
+        for (mut transform, body) in q.iter_mut() {
+            
         }
     }
 }

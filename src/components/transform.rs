@@ -1,3 +1,4 @@
+use bevy_ecs::prelude::Component;
 use rapier3d::na;
 use crate::math::{Mat4, Quat, UnitQuat, Vec3};
 
@@ -6,6 +7,7 @@ pub enum TransformSpace {
     World,
 }
 
+#[derive(Component)]
 pub struct Transform {
     m: Mat4,
     scale: Vec3,

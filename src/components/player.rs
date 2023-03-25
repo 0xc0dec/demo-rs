@@ -3,7 +3,7 @@ use bevy_ecs::system::NonSendMut;
 use crate::components::camera::Camera;
 use crate::math::{Vec3};
 use crate::physics_world::PhysicsWorld;
-use crate::transform::TransformSpace;
+use crate::components::transform::TransformSpace;
 use rapier3d::prelude::*;
 use crate::device::Device;
 use crate::input_state::InputState;

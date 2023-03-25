@@ -9,7 +9,6 @@ mod render_target;
 mod assets;
 mod shaders;
 mod texture;
-mod transform;
 mod frame_time;
 mod state;
 mod systems;
@@ -32,6 +31,7 @@ fn main() {
         .add_system(Player::spawn.after(init))
         .add_system(Skybox::spawn.after(init))
         .add_system(FloorBox::spawn.after(init))
+        .add_system(FreeBox::spawn.after(init))
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();

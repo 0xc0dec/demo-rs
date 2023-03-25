@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::Component;
-use crate::transform::Transform;
+use crate::components::transform::Transform;
 use rapier3d::na;
 use crate::math::{Mat4, Vec3};
 
@@ -10,6 +10,7 @@ pub struct Camera {
     zfar: f32,
     fov: f32,
     proj_matrix: Mat4,
+    // TODO Get rid of this and use as proper component
     pub transform: Transform,
 }
 

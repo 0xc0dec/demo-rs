@@ -3,7 +3,7 @@ use crate::components::Camera;
 use crate::device::Device;
 use crate::model::{DrawModel, Model};
 use crate::shaders::{ColorShader, DiffuseShader, Shader, SkyboxShader};
-use crate::transform::Transform;
+use crate::components::transform::Transform;
 
 pub enum ModelShader {
     Color(ColorShader),
@@ -14,7 +14,6 @@ pub enum ModelShader {
 #[derive(Component)]
 pub struct ModelRenderer {
     pub model: Model,
-    pub transform: Transform,
     pub shader: ModelShader,
 }
 
@@ -23,16 +22,17 @@ impl ModelRenderer {
         &'a mut self,
         device: &Device,
         camera: &Camera,
+        transform: &Transform,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
     ) {
         // TODO Generalize
         match self.shader {
             ModelShader::Color(ref mut color) => {
-                color.update(device, camera, &self.transform);
+                color.update(device, camera, &transform);
                 color.apply(encoder);
             }
             ModelShader::Diffuse(ref mut diffuse) => {
-                diffuse.update(device, camera, &self.transform);
+                diffuse.update(device, camera, &transform);
                 diffuse.apply(encoder);
             }
             ModelShader::Skybox(ref mut skybox) => {

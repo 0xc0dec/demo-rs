@@ -6,7 +6,7 @@ use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
 use crate::components::Camera;
 use crate::math::{Mat4};
-use crate::transform::Transform;
+use crate::components::Transform;
 
 pub struct DiffuseShader {
     texture_bind_group: BindGroup,

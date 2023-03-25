@@ -2,7 +2,7 @@ use super::Shader;
 use crate::device::Device;
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
-use crate::transform::Transform;
+use crate::components::Transform;
 use wgpu::{BindGroup, RenderPipeline};
 use crate::components::Camera;
 use crate::math::{Mat4};

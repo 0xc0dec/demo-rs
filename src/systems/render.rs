@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::{NonSend, NonSendMut, Query};
-use crate::components::{Camera, RenderLayer, ModelRenderer};
+use crate::components::{Camera, RenderLayer, ModelRenderer, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
 
@@ -18,7 +18,7 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 }
 
 pub fn render_frame(
-    mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer)>,
+    mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
     mut debug_ui: NonSendMut<DebugUI>,
     cameras: Query<&Camera>,
     device: NonSend<Device>,
@@ -51,10 +51,10 @@ pub fn render_frame(
     // Couldn't make it work with a single bundler encoder due to lifetimes
     let mut render_bundles = model_renderers
         .iter_mut()
-        .map(|(mut r, layer)| {
+        .map(|(mut r, layer, tr)| {
             let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
-            r.render(&device, &camera, &mut encoder);
+            r.render(&device, &camera, &tr, &mut encoder);
             let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
             (bundle, layer.0)
         })
