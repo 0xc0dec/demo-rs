@@ -1,10 +1,10 @@
 use bevy_ecs::prelude::*;
-use winit::event::{DeviceEvent, Event, KeyboardInput, WindowEvent};
+use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window};
 use crate::debug_ui::DebugUI;
-use crate::events::WindowResized;
+use crate::events::{KeyboardEvent, WindowResized};
 use crate::input::Input;
 
 pub fn handle_system_events(
@@ -12,7 +12,8 @@ pub fn handle_system_events(
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: NonSendMut<Input>,
     mut debug_ui: NonSendMut<DebugUI>,
-    mut resize_events: EventWriter<WindowResized>
+    mut resize_events: EventWriter<WindowResized>,
+    mut keyboard_events: EventWriter<KeyboardEvent>,
 ) {
     input.reset();
 
@@ -50,6 +51,10 @@ pub fn handle_system_events(
                     },
                     ..
                 } => {
+                    keyboard_events.send(KeyboardEvent {
+                        code: *keycode,
+                        pressed: *key_state == ElementState::Pressed
+                    });
                     // TODO Use events
                     input.on_key(keycode, key_state);
                 }

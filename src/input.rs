@@ -9,7 +9,6 @@ pub struct Input {
     pub right_down: bool,
     pub up_down: bool,
     pub down_down: bool,
-    pub escape_down: bool,
     pub mouse_delta: (f32, f32),
 }
 
@@ -24,7 +23,6 @@ impl Input {
             right_down: false,
             up_down: false,
             down_down: false,
-            escape_down: false,
             mouse_delta: (0.0, 0.0),
         }
     }
@@ -54,7 +52,6 @@ impl Input {
             VirtualKeyCode::D => self.right_down = down,
             VirtualKeyCode::E => self.up_down = down,
             VirtualKeyCode::Q => self.down_down = down,
-            VirtualKeyCode::Escape => self.escape_down = down,
             _ => (),
         }
     }

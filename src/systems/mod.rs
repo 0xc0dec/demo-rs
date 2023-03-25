@@ -1,21 +1,23 @@
 mod init;
 mod handle_system_events;
 mod render;
+mod update_input_state;
 
 use bevy_ecs::prelude::{EventReader, NonSend, NonSendMut, Res, ResMut};
+use winit::event::VirtualKeyCode;
 use winit::window::{CursorGrabMode, Window};
 pub use init::init;
 pub use handle_system_events::handle_system_events;
 pub use render::render_frame;
 use crate::device::Device;
-use crate::events::WindowResized;
+use crate::events::{KeyboardEvent, WindowResized};
 use crate::input::Input;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
 
 pub fn resize_device(
     mut device: NonSendMut<Device>,
-    mut events: EventReader<WindowResized>
+    mut events: EventReader<WindowResized>,
 ) {
     for evt in events.iter() {
         device.resize(evt.new_size);
@@ -37,8 +39,14 @@ pub fn grab_cursor(input: NonSend<Input>, window: NonSend<Window>) {
     }
 }
 
-pub fn escape_on_exit(input: NonSend<Input>, mut state: ResMut<State>) {
-    if input.escape_down {
+pub fn escape_on_exit(
+    mut state: ResMut<State>,
+    mut keyboard_events: EventReader<KeyboardEvent>,
+) {
+    if keyboard_events
+        .iter()
+        .any(|e| e.code == VirtualKeyCode::Escape && e.pressed)
+    {
         state.running = false;
     }
 }
