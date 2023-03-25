@@ -4,7 +4,7 @@ use winit::window::WindowBuilder;
 use crate::assets::Assets;
 use crate::debug_ui::DebugUI;
 use crate::device::{Device, SurfaceSize};
-use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
+use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::frame_time::FrameTime;
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
@@ -27,7 +27,7 @@ pub fn init(world: &mut World) {
         world.insert_resource(State { running: true, frame_time: FrameTime::new() });
         world.insert_resource(input);
 
-        world.init_resource::<Events<WindowResized>>();
+        world.init_resource::<Events<WindowResizeEvent>>();
         world.init_resource::<Events<KeyboardEvent>>();
         world.init_resource::<Events<MouseEvent>>();
 

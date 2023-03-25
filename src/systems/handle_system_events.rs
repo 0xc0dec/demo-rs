@@ -4,7 +4,7 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window};
 use crate::debug_ui::DebugUI;
-use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
+use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::input_state::InputState;
 
 pub fn handle_system_events(
@@ -12,7 +12,7 @@ pub fn handle_system_events(
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut input: ResMut<InputState>,
     mut debug_ui: NonSendMut<DebugUI>,
-    mut resize_events: EventWriter<WindowResized>,
+    mut resize_events: EventWriter<WindowResizeEvent>,
     mut keyboard_events: EventWriter<KeyboardEvent>,
     mut mouse_events: EventWriter<MouseEvent>,
 ) {
@@ -60,11 +60,11 @@ pub fn handle_system_events(
                 }
 
                 WindowEvent::Resized(new_size) => {
-                    resize_events.send(WindowResized { new_size: *new_size });
+                    resize_events.send(WindowResizeEvent { new_size: *new_size });
                 }
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    resize_events.send(WindowResized { new_size: **new_inner_size });
+                    resize_events.send(WindowResizeEvent { new_size: **new_inner_size });
                 }
 
                 _ => (),

@@ -6,7 +6,7 @@ use bevy_ecs::prelude::{EventReader, NonSend, NonSendMut, Res, ResMut};
 use winit::event::{MouseButton, VirtualKeyCode};
 use winit::window::{CursorGrabMode, Window};
 use crate::device::Device;
-use crate::events::{KeyboardEvent, MouseEvent, WindowResized};
+use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
@@ -17,7 +17,7 @@ pub use render::render_frame;
 
 pub fn resize_device(
     mut device: NonSendMut<Device>,
-    mut events: EventReader<WindowResized>,
+    mut events: EventReader<WindowResizeEvent>,
 ) {
     for evt in events.iter() {
         device.resize(evt.new_size);
