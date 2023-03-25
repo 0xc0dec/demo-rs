@@ -1,15 +1,48 @@
 mod init;
 mod handle_system_events;
 mod render;
-mod update_physics;
-mod escape_on_exit;
-mod grab_cursor;
-mod resize_device;
 
+use bevy_ecs::prelude::{EventReader, NonSend, NonSendMut, Res, ResMut};
+use winit::window::{CursorGrabMode, Window};
 pub use init::init;
 pub use handle_system_events::handle_system_events;
 pub use render::render_frame;
-pub use update_physics::update_physics;
-pub use escape_on_exit::escape_on_exit;
-pub use grab_cursor::grab_cursor;
-pub use resize_device::resize_device;
+use crate::device::Device;
+use crate::events::WindowResized;
+use crate::input::Input;
+use crate::physics_world::PhysicsWorld;
+use crate::state::State;
+
+pub fn resize_device(
+    mut device: NonSendMut<Device>,
+    mut events: EventReader<WindowResized>
+) {
+    for evt in events.iter() {
+        device.resize(evt.new_size);
+    }
+}
+
+pub fn grab_cursor(input: NonSend<Input>, window: NonSend<Window>) {
+    if input.rmb_down_just_switched {
+        if input.rmb_down {
+            window
+                .set_cursor_grab(CursorGrabMode::Confined)
+                .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
+                .unwrap();
+            window.set_cursor_visible(false);
+        } else {
+            window.set_cursor_grab(CursorGrabMode::None).unwrap();
+            window.set_cursor_visible(true);
+        }
+    }
+}
+
+pub fn escape_on_exit(input: NonSend<Input>, mut state: ResMut<State>) {
+    if input.escape_down {
+        state.running = false;
+    }
+}
+
+pub fn update_physics(mut physics: NonSendMut<PhysicsWorld>, state: Res<State>) {
+    physics.update(state.frame_time.delta);
+}
