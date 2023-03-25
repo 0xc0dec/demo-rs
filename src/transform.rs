@@ -32,7 +32,7 @@ impl Transform {
         Transform::new(pos, Vec3::from_element(1.0))
     }
 
-    pub fn matrix2(&self) -> Mat4 {
+    pub fn matrix(&self) -> Mat4 {
         self.m
     }
 

@@ -39,7 +39,7 @@ impl Camera {
     }
 
     pub fn view_matrix(&self) -> Mat4 {
-        self.transform.matrix2().try_inverse().unwrap()
+        self.transform.matrix().try_inverse().unwrap()
     }
 
     pub fn view_proj_matrix(&self) -> Mat4 {
