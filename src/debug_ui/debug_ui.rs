@@ -3,7 +3,6 @@ use crate::device::Device;
 use imgui::MouseCursor;
 use std::time::Duration;
 use bevy_ecs::prelude::{NonSend, NonSendMut, Res};
-use wgpu::RenderPass;
 use winit::event::Event;
 use winit::window::Window;
 use crate::state::State;
@@ -86,7 +85,7 @@ impl DebugUI {
         }
     }
 
-    pub fn render<'a>(&'a mut self, device: &Device, pass: &mut RenderPass<'a>) {
+    pub fn render<'a>(&'a mut self, device: &Device, pass: &mut wgpu::RenderPass<'a>) {
         let draw_data = self.context.render();
         self.renderer
             .render(draw_data, device.queue(), device.device(), pass)

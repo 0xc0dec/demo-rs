@@ -1,6 +1,5 @@
 use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::{NonSend};
-use wgpu::RenderPass;
 use crate::components::camera::Camera;
 use crate::device::{Device};
 use crate::model::{DrawModel, Mesh};
@@ -37,7 +36,7 @@ impl Skybox {
         &'a mut self,
         device: &Device,
         camera: &Camera,
-        frame: &mut RenderPass<'a>,
+        frame: &mut wgpu::RenderPass<'a>,
     ) {
         self.shader.update(&device, camera);
         self.shader.apply(frame);
