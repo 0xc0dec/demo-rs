@@ -1,5 +1,4 @@
-use std::iter;
-use bevy_ecs::prelude::{Mut, NonSend, Query};
+use bevy_ecs::prelude::{NonSend, Query};
 use crate::components::{Camera, RenderModel, Skybox};
 use crate::device::Device;
 
@@ -34,7 +33,7 @@ pub fn render_frame(
     });
 
     let camera = q_camera.iter().next().unwrap();
-    // Couldn't make it work with using a single bundler encoder due to lifetimes
+    // Couldn't make it work with a single bundler encoder due to lifetimes
     let render_bundles = q_render_models.iter_mut()
         .map(|mut r| {
             let mut bundle_encoder =
@@ -50,6 +49,7 @@ pub fn render_frame(
                             stencil_read_only: false,
                         }),
                     });
+            // TODO Create render bundle inside the function?
             r.render(&device, &camera, &mut bundle_encoder);
             bundle_encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
@@ -67,7 +67,7 @@ pub fn render_frame(
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
             });
-            pass.execute_bundles(render_bundles.iter().map(|b| b));
+            pass.execute_bundles(render_bundles.iter());
         }
         encoder.finish()
     };
