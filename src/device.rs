@@ -83,37 +83,7 @@ impl Device {
             depth_tex: None,
         }
     }
-
-    pub fn new_frame<'a>(&'a self, target: Option<&'a RenderTarget>) -> Frame<'a> {
-        let (color_format, depth_format) = match target {
-            Some(ref target) => (target.color_tex().format(), target.depth_tex().format()),
-            None => (
-                self.surface_config.format,
-                self.depth_tex.as_ref().unwrap().format(),
-            ),
-        };
-
-        let bundle_encoder =
-            self.device
-                .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
-                    label: None,
-                    multiview: None,
-                    sample_count: 1,
-                    color_formats: &[Some(color_format)],
-                    depth_stencil: Some(wgpu::RenderBundleDepthStencil {
-                        format: depth_format,
-                        depth_read_only: false,
-                        stencil_read_only: false,
-                    }),
-                });
-
-        Frame {
-            device: &self,
-            bundle_encoder,
-            target,
-        }
-    }
-
+    
     pub fn resize(&mut self, new_size: SurfaceSize) {
         if new_size.width > 0 && new_size.height > 0 {
             self.surface_config.width = new_size.width;
