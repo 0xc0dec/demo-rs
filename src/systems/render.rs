@@ -1,5 +1,4 @@
 use bevy_ecs::prelude::{NonSend, NonSendMut, Query};
-use winit::window::Window;
 use crate::components::{Camera, RenderLayer, ModelRenderer};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
@@ -23,7 +22,6 @@ pub fn render_frame(
     mut debug_ui: NonSendMut<DebugUI>,
     cameras: Query<&Camera>,
     device: NonSend<Device>,
-    window: NonSend<Window>
 ) {
     let surface_tex = device
         .surface
@@ -75,7 +73,6 @@ pub fn render_frame(
 
             pass.execute_bundles(render_bundles.iter().map(|(bundle, _)| bundle));
 
-            debug_ui.build_frame(&window, |_| {});
             debug_ui.render(&device, &mut pass);
         }
         encoder.finish()
