@@ -2,6 +2,20 @@ use bevy_ecs::prelude::{NonSend, Query};
 use crate::components::{Camera, RenderLayer, RenderModel};
 use crate::device::Device;
 
+fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
+    device.device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+        label: None,
+        multiview: None,
+        sample_count: 1,
+        color_formats: &[Some(device.surface_texture_format())],
+        depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+            format: device.depth_texture_format(),
+            depth_read_only: false,
+            stencil_read_only: false,
+        }),
+    })
+}
+
 pub fn render_frame(
     mut q_render_models: Query<(&mut RenderModel, &RenderLayer)>,
     q_camera: Query<&Camera>,
@@ -31,27 +45,15 @@ pub fn render_frame(
         stencil_ops: None,
     });
 
-    let camera = q_camera.iter().next().unwrap();
+    let camera = q_camera.single();
     // Couldn't make it work with a single bundler encoder due to lifetimes
     let mut render_bundles = q_render_models
         .iter_mut()
         .map(|(mut r, layer)| {
-            let mut bundle_encoder =
-                device.device
-                    .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
-                        label: None,
-                        multiview: None,
-                        sample_count: 1,
-                        color_formats: &[Some(device.surface_texture_format())],
-                        depth_stencil: Some(wgpu::RenderBundleDepthStencil {
-                            format: device.depth_texture_format(),
-                            depth_read_only: false,
-                            stencil_read_only: false,
-                        }),
-                    });
+            let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
-            r.render(&device, &camera, &mut bundle_encoder);
-            let bundle = bundle_encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
+            r.render(&device, &camera, &mut encoder);
+            let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
             (bundle, layer.0)
         })
         .collect::<Vec<_>>();
