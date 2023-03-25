@@ -1,10 +1,9 @@
 use bevy_ecs::prelude::{NonSend, Query};
-use crate::components::{Camera, RenderModel, Skybox};
+use crate::components::{Camera, RenderLayer, RenderModel};
 use crate::device::Device;
 
 pub fn render_frame(
-    mut q_skybox: Query<&mut Skybox>,
-    mut q_render_models: Query<&mut RenderModel>,
+    mut q_render_models: Query<(&mut RenderModel, &RenderLayer)>,
     q_camera: Query<&Camera>,
     device: NonSend<Device>,
 ) {
@@ -34,8 +33,9 @@ pub fn render_frame(
 
     let camera = q_camera.iter().next().unwrap();
     // Couldn't make it work with a single bundler encoder due to lifetimes
-    let render_bundles = q_render_models.iter_mut()
-        .map(|mut r| {
+    let mut render_bundles = q_render_models
+        .iter_mut()
+        .map(|(mut r, layer)| {
             let mut bundle_encoder =
                 device.device
                     .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
@@ -51,12 +51,11 @@ pub fn render_frame(
                     });
             // TODO Create render bundle inside the function?
             r.render(&device, &camera, &mut bundle_encoder);
-            bundle_encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
+            let bundle = bundle_encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
+            (bundle, layer.0)
         })
         .collect::<Vec<_>>();
-
-    // let mut skybox = q_skybox.iter_mut().next().unwrap();
-    // skybox.render(&device, &camera, &mut bundle_encoder);
+    render_bundles.sort_by_key(|(_, layer)| *layer);
 
     let cmd_buffer = {
         let mut encoder = device.device
@@ -67,7 +66,8 @@ pub fn render_frame(
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
             });
-            pass.execute_bundles(render_bundles.iter());
+
+            pass.execute_bundles(render_bundles.iter().map(|(bundle, _)| bundle));
         }
         encoder.finish()
     };

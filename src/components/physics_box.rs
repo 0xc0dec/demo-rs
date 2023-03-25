@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 use wgpu::{RenderBundleEncoder, RenderPass};
-use crate::components::{Camera, RenderModel};
+use crate::components::{Camera, RenderLayer, RenderModel};
 use crate::components::render_model::ModelShader;
 use crate::device::Device;
 use crate::math::Vec3;
@@ -67,7 +67,8 @@ impl PhysicsBox {
                     Self {
                         rigid_body_handle
                     },
-                    render_model
+                    render_model,
+                    RenderLayer(100)
                 ));
             });
         }

@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::{NonSend};
-use crate::components::{ModelShader, RenderModel};
+use crate::components::{ModelShader, RenderLayer, RenderModel};
 use crate::device::{Device};
 use crate::model::{Model};
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
@@ -26,7 +26,7 @@ impl Skybox {
                 model,
             };
 
-            commands.spawn((Skybox, render_model));
+            commands.spawn((Skybox, render_model, RenderLayer(0)));
         });
     }
 }
