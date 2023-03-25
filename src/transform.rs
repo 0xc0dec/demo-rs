@@ -7,7 +7,7 @@ pub enum TransformSpace {
 }
 
 pub struct Transform {
-    m2: Mat4,
+    m: Mat4,
     scale: Vec3,
     pos: Vec3,
     rot: UnitQuat
@@ -19,7 +19,7 @@ impl Transform {
         let m = Mat4::identity();
         let rot = UnitQuat::identity();
         let mut res = Self {
-            m2: m,
+            m,
             rot,
             scale,
             pos
@@ -28,20 +28,24 @@ impl Transform {
         res
     }
 
+    pub fn from_pos(pos: Vec3) -> Self {
+        Transform::new(pos, Vec3::from_element(1.0))
+    }
+
     pub fn matrix2(&self) -> Mat4 {
-        self.m2
+        self.m
     }
 
     pub fn forward(&self) -> Vec3 {
-        -self.m2.column(2).xyz()
+        -self.m.column(2).xyz()
     }
 
     pub fn right(&self) -> Vec3 {
-        self.m2.column(0).xyz()
+        self.m.column(0).xyz()
     }
 
     pub fn up(&self) -> Vec3 {
-        self.m2.column(1).xyz()
+        self.m.column(1).xyz()
     }
 
     pub fn position(&self) -> Vec3 {
@@ -57,7 +61,7 @@ impl Transform {
     }
 
     pub fn translate(&mut self, v: Vec3) {
-        self.m2.append_translation_mut(&v);
+        self.m.append_translation_mut(&v);
         self.pos += v;
     }
 
@@ -87,7 +91,7 @@ impl Transform {
         let axis = axis.normalize();
         let axis = match space {
             TransformSpace::Local => axis,
-            TransformSpace::World => self.m2.try_inverse().unwrap().transform_vector(&axis)
+            TransformSpace::World => self.m.try_inverse().unwrap().transform_vector(&axis)
         };
 
         self.rot = UnitQuat::from_scaled_axis(axis * angle) * self.rot;
@@ -98,8 +102,14 @@ impl Transform {
         let rot_m = na::Rotation3::from(self.rot).transpose();
         let tr_m = na::Translation3::new(self.pos.x, self.pos.y, self.pos.z);
         let rot_and_tr_m = tr_m * rot_m;
-        self.m2 = rot_and_tr_m
+        self.m = rot_and_tr_m
             .to_matrix()
             .prepend_nonuniform_scaling(&self.scale);
+    }
+}
+
+impl Default for Transform {
+    fn default() -> Self {
+        Transform::new(Vec3::new(0.0, 0.0, 0.0), Vec3::identity())
     }
 }

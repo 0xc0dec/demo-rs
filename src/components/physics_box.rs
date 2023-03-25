@@ -72,15 +72,4 @@ impl PhysicsBox {
             });
         }
     }
-
-    // pub fn render<'a>(
-    //     &'a mut self,
-    //     device: &Device,
-    //     camera: &Camera,
-    //     encoder: &mut RenderBundleEncoder<'a>,
-    // ) {
-    //     self.shader.update(&device, camera, &self.transform);
-    //     self.shader.apply(encoder);
-    //     encoder.draw_model(&self.model);
-    // }
 }

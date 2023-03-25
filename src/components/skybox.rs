@@ -1,46 +1,32 @@
 use bevy_ecs::prelude::{Commands, Component};
 use bevy_ecs::system::{NonSend};
-use crate::components::camera::Camera;
+use crate::components::{ModelShader, RenderModel};
 use crate::device::{Device};
-use crate::model::{DrawModel, Mesh};
-use crate::shaders::{Shader, SkyboxShader, SkyboxShaderParams};
+use crate::model::{Model};
+use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
+use crate::transform::Transform;
 
 #[derive(Component)]
-pub struct Skybox {
-    mesh: Mesh,
-    shader: SkyboxShader,
-}
+pub struct Skybox;
 
 impl Skybox {
     pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
-        let skybox = pollster::block_on(Skybox::new(&device));
-        commands.spawn((skybox,));
-    }
+        pollster::block_on(async {
+            let texture = Texture::new_cube_from_file("skybox_bgra.dds", &device)
+                .await
+                .unwrap();
+            let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture })
+                .await;
+            let model = Model::quad(&device);
 
-    // TODO Use RenderModel
-    async fn new(device: &Device) -> Self {
-        let texture = Texture::new_cube_from_file("skybox_bgra.dds", device)
-            .await
-            .unwrap();
-        let shader = SkyboxShader::new(device, SkyboxShaderParams { texture })
-            .await;
-        let mesh = Mesh::quad(device);
+            let render_model = RenderModel {
+                transform: Transform::default(),
+                shader: ModelShader::Skybox(shader),
+                model,
+            };
 
-        Self {
-            mesh,
-            shader,
-        }
-    }
-
-    pub fn render<'a>(
-        &'a mut self,
-        device: &Device,
-        camera: &Camera,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
-    ) {
-        self.shader.update(&device, camera);
-        self.shader.apply(encoder);
-        encoder.draw_mesh(&self.mesh);
+            commands.spawn((Skybox, render_model));
+        });
     }
 }

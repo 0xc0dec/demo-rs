@@ -9,4 +9,4 @@ pub use camera::Camera;
 pub use player::Player;
 pub use skybox::Skybox;
 pub use physics_box::{PhysicsBox, PhysicsBoxParams};
-pub use render_model::RenderModel;
+pub use render_model::{RenderModel, ModelShader};

@@ -109,6 +109,12 @@ impl Mesh {
 }
 
 impl Model {
+    pub fn quad(device: &Device) -> Self {
+        Self {
+            meshes: vec![Mesh::quad(device)]
+        }
+    }
+
     pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<Model> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);

@@ -2,12 +2,13 @@ use bevy_ecs::prelude::Component;
 use crate::components::Camera;
 use crate::device::Device;
 use crate::model::{DrawModel, Model};
-use crate::shaders::{ColorShader, DiffuseShader, Shader};
+use crate::shaders::{ColorShader, DiffuseShader, Shader, SkyboxShader};
 use crate::transform::Transform;
 
 pub enum ModelShader {
     Color(ColorShader),
-    Diffuse(DiffuseShader)
+    Diffuse(DiffuseShader),
+    Skybox(SkyboxShader)
 }
 
 #[derive(Component)]
@@ -33,6 +34,10 @@ impl RenderModel {
             ModelShader::Diffuse(ref mut diffuse) => {
                 diffuse.update(device, camera, &self.transform);
                 diffuse.apply(encoder);
+            }
+            ModelShader::Skybox(ref mut skybox) => {
+                skybox.update(device, camera);
+                skybox.apply(encoder);
             }
         }
         encoder.draw_model(&self.model);
