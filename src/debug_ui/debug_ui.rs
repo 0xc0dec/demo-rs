@@ -74,7 +74,7 @@ impl DebugUI {
             .expect("Failed to prepare debug UI frame");
     }
 
-    pub fn build_frame(&mut self, window: &Window, build: impl Fn(&mut imgui::Ui)) {
+    pub fn build(&mut self, window: &Window, build: impl Fn(&mut imgui::Ui)) {
         let frame = self.context.frame();
 
         build(frame);

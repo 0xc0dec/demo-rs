@@ -7,7 +7,7 @@ pub struct DebugUIBuilder;
 
 impl DebugUIBuilder {
     pub fn build_debug_ui(mut debug_ui: NonSendMut<DebugUI>, window: NonSend<Window>) {
-        debug_ui.build_frame(&window, |frame| {
+        debug_ui.build(&window, |frame| {
             frame
                 .window("Debug info")
                 .position([10.0, 10.0], imgui::Condition::FirstUseEver)
