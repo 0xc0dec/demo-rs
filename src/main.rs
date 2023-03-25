@@ -1,6 +1,5 @@
 mod debug_ui;
 mod device;
-mod frame_context;
 mod input;
 mod math;
 mod model;
@@ -12,7 +11,6 @@ mod scene;
 mod shaders;
 mod texture;
 mod transform;
-mod app;
 mod frame_time;
 mod state;
 mod systems;
