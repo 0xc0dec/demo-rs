@@ -17,7 +17,18 @@ impl DebugUIBuilder {
                 .collapsible(false)
                 .no_decoration()
                 .build(|| {
-                    let mouse_pos = frame.io().mouse_pos;
+                    frame.text("\
+                    Controls:\n\
+                      \tHold right click to control camera\n\
+                      \tQ-W-E-A-S-D to move\
+                    ");
+
+                    let mut mouse_pos = frame.io().mouse_pos;
+                    // Prevent UI jumping at start when the mouse position is not yet known
+                    // and imgui returns extra huge numbers.
+                    if !(-10000.0f32..10000.0f32).contains(&mouse_pos[0]) {
+                        mouse_pos = [0.0f32, 0.0f32];
+                    }
                     frame.text(format!(
                         "Mouse position: ({:.1},{:.1})",
                         mouse_pos[0], mouse_pos[1]
