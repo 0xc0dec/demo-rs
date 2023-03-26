@@ -33,6 +33,7 @@ fn main() {
         .add_system(Skybox::spawn.after(init))
         .add_system(FloorBox::spawn.after(init))
         .add_system(FreeBox::spawn.after(init))
+        .add_system(PostProcessor::spawn.after(init))
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();

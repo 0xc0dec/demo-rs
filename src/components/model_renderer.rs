@@ -2,20 +2,21 @@ use bevy_ecs::prelude::Component;
 use crate::components::Camera;
 use crate::device::Device;
 use crate::model::{DrawModel, Model};
-use crate::shaders::{ColorShader, DiffuseShader, Shader, SkyboxShader};
+use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, Shader, SkyboxShader};
 use crate::components::transform::Transform;
 
 pub enum ModelShader {
     Color(ColorShader),
     Diffuse(DiffuseShader),
-    Skybox(SkyboxShader)
+    Skybox(SkyboxShader),
+    PostProcess(PostProcessShader)
 }
 
 #[derive(Component)]
 pub struct ModelRenderer {
     pub model: Model,
     pub shader: ModelShader,
-    pub tags: u32,
+    pub tags: u32, // TODO As a component?
 }
 
 impl ModelRenderer {
@@ -39,6 +40,9 @@ impl ModelRenderer {
             ModelShader::Skybox(ref mut skybox) => {
                 skybox.update(device, camera);
                 skybox.apply(encoder);
+            },
+            ModelShader::PostProcess(ref mut pp) => {
+                pp.apply(encoder);
             }
         }
         encoder.draw_model(&self.model);
