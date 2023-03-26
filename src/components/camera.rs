@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::Component;
 use rapier3d::na;
 use crate::math::Mat4;
+use crate::render_target::RenderTarget;
 
 #[derive(Component)]
 pub struct Camera {
@@ -11,10 +12,11 @@ pub struct Camera {
     proj_matrix: Mat4,
     // Tags to render via this camera
     render_tags: u32,
+    target: Option<RenderTarget>
 }
 
 impl Camera {
-    pub fn new(aspect: f32, render_tags: u32) -> Self {
+    pub fn new(aspect: f32, render_tags: u32, target: Option<RenderTarget>) -> Self {
         let znear = 0.1;
         let zfar = 100.0;
         let fov = 45.0;
@@ -26,8 +28,13 @@ impl Camera {
             zfar,
             fov,
             proj_matrix,
-            render_tags
+            render_tags,
+            target
         }
+    }
+
+    pub fn target(&self) -> &Option<RenderTarget> {
+        &self.target
     }
 
     pub fn should_render(&self, tags: u32) -> bool {
