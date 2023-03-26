@@ -9,6 +9,7 @@ mod physics_body;
 mod free_box;
 mod transform;
 mod post_processor;
+mod tracer;
 
 pub use camera::Camera;
 pub use player::Player;

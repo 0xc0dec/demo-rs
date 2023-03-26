@@ -4,7 +4,6 @@ mod input_state;
 mod math;
 mod model;
 mod physics_world;
-mod post_processor;
 mod render_target;
 mod assets;
 mod shaders;
