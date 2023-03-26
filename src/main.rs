@@ -32,6 +32,7 @@ fn main() {
         .add_system(FloorBox::spawn.after(init))
         .add_system(FreeBox::spawn.after(init))
         .add_system(Player::spawn.after(init))
+        .add_system(Tracer::spawn.after(init))
         .run(&mut world);
 
     // PP requires that Player be already spawned and we cannot guarantee that so we're using
@@ -55,6 +56,7 @@ fn main() {
         .add_system(update_physics)
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
+        .add_system(Tracer::update.after(update_physics))
         .add_system(DebugUI::update.after(update_physics))
         .add_system(build_debug_ui.after(DebugUI::update));
 

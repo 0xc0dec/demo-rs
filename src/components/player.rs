@@ -49,6 +49,10 @@ impl Player {
         ));
     }
 
+    pub fn collider_handle(&self) -> ColliderHandle {
+        self.collider_handle
+    }
+
     pub fn update(
         state: Res<State>,
         input: Res<InputState>,

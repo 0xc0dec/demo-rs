@@ -21,3 +21,4 @@ pub use physics_body::{PhysicsBody, PhysicsBodyParams};
 pub use free_box::FreeBox;
 pub use transform::{Transform, TransformSpace};
 pub use post_processor::PostProcessor;
+pub use tracer::Tracer;
