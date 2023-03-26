@@ -20,7 +20,8 @@ impl DebugUIBuilder {
                     frame.text("\
                     Controls:\n\
                       \tHold right click to control camera\n\
-                      \tQ-W-E-A-S-D to move\
+                      \tQ-W-E-A-S-D to move\n\
+                      \tEsc to quit the app
                     ");
 
                     let mut mouse_pos = frame.io().mouse_pos;
