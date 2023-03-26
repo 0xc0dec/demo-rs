@@ -1,9 +1,14 @@
-use bevy_ecs::prelude::{NonSend, NonSendMut};
+use bevy_ecs::prelude::{NonSend, NonSendMut, Res};
 use winit::window::Window;
 use crate::debug_ui::DebugUI;
+use crate::state::State;
 
-pub fn build_debug_ui(mut debug_ui: NonSendMut<DebugUI>, window: NonSend<Window>) {
-    debug_ui.build(&window, |frame| {
+pub fn update_and_build_debug_ui(
+    mut ui: NonSendMut<DebugUI>,
+    state: Res<State>,
+    window: NonSend<Window>
+) {
+    ui.update_and_build(&window, state.frame_time.delta, |frame| {
         frame
             .window("Debug info")
             .position([10.0, 10.0], imgui::Condition::FirstUseEver)

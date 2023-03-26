@@ -1,7 +1,7 @@
 mod init;
 mod handle_system_events;
 mod render;
-mod build_debug_ui;
+mod debug_ui;
 
 use bevy_ecs::prelude::{EventReader, NonSend, NonSendMut, Res, ResMut};
 use winit::event::{MouseButton, VirtualKeyCode};
@@ -15,7 +15,7 @@ use crate::state::State;
 pub use init::init;
 pub use handle_system_events::handle_system_events;
 pub use render::render;
-pub use build_debug_ui::build_debug_ui;
+pub use debug_ui::update_and_build_debug_ui;
 
 pub fn resize_device(
     mut device: NonSendMut<Device>,

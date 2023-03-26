@@ -17,7 +17,6 @@ mod render_tags;
 
 use bevy_ecs::prelude::*;
 use crate::components::*;
-use crate::debug_ui::DebugUI;
 use crate::state::State;
 use crate::systems::*;
 
@@ -57,8 +56,7 @@ fn main() {
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
         .add_system(Tracer::update.after(update_physics))
-        .add_system(DebugUI::update.after(update_physics))
-        .add_system(build_debug_ui.after(DebugUI::update));
+        .add_system(update_and_build_debug_ui.after(update_physics));
 
     let mut render_schedule = Schedule::default();
     render_schedule.add_system(render);

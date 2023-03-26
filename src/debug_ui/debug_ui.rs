@@ -2,10 +2,8 @@ use crate::debug_ui::imgui_winit;
 use crate::device::Device;
 use imgui::MouseCursor;
 use std::time::Duration;
-use bevy_ecs::prelude::{NonSend, NonSendMut, Res};
 use winit::event::Event;
 use winit::window::Window;
-use crate::state::State;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
@@ -61,20 +59,14 @@ impl DebugUI {
             .handle_event(self.context.io_mut(), &window, &event);
     }
 
-    pub fn update(mut ui: NonSendMut<DebugUI>, state: Res<State>, window: NonSend<Window>) {
-        ui.update_impl(state.frame_time.delta, &window);
-    }
-
-    fn update_impl(&mut self, dt: f32, window: &Window) {
+    pub fn update_and_build(&mut self, window: &Window, dt: f32, build: impl Fn(&mut imgui::Ui)) {
         self.context
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(dt));
         self.platform
             .prepare_frame(self.context.io_mut(), &window)
             .expect("Failed to prepare debug UI frame");
-    }
 
-    pub fn build(&mut self, window: &Window, build: impl Fn(&mut imgui::Ui)) {
         let frame = self.context.frame();
 
         build(frame);
