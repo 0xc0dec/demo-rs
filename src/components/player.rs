@@ -10,6 +10,7 @@ use crate::device::Device;
 use crate::events::WindowResizeEvent;
 use crate::input_state::InputState;
 use crate::render_tags::RenderTags;
+use crate::render_target::RenderTarget;
 use crate::state::State;
 
 #[derive(Component)]
@@ -25,10 +26,11 @@ impl Player {
     ) {
         let pos = Vec3::new(10.0, 10.0, 10.0);
 
+        let rt = RenderTarget::new(&device, None);
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
             RenderTags::SCENE,
-            None
+            Some(rt)
         );
         let mut transform = Transform::from_pos(pos);
         transform.look_at(Vec3::from_element(0.0));
@@ -39,6 +41,7 @@ impl Player {
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
+        // TODO Use component bundles?
         commands.spawn((
             Player { collider_handle },
             camera,
