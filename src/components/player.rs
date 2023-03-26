@@ -9,6 +9,7 @@ use crate::components::Transform;
 use crate::device::Device;
 use crate::events::WindowResizeEvent;
 use crate::input_state::InputState;
+use crate::render_tags::RenderTags;
 use crate::state::State;
 
 #[derive(Component)]
@@ -24,7 +25,10 @@ impl Player {
     ) {
         let pos = Vec3::new(10.0, 10.0, 10.0);
 
-        let camera = Camera::new(device.surface_size().into());
+        let camera = Camera::new(
+            device.surface_size().width as f32 / device.surface_size().height as f32,
+            RenderTags::ALL
+        );
         let mut transform = Transform::from_pos(pos);
         transform.look_at(Vec3::from_element(0.0));
 
@@ -53,7 +57,7 @@ impl Player {
         let (player, mut camera, mut transform) = q.single_mut();
 
         for e in resize_events.iter() {
-            camera.set_fov(e.new_size.width as f32, e.new_size.height as f32);
+            camera.set_aspect(e.new_size.width as f32 / e.new_size.height as f32);
         }
 
         let spectator_rot = transform

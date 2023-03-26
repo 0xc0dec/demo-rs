@@ -10,12 +10,11 @@ pub struct Camera {
     fov: f32,
     proj_matrix: Mat4,
     // Tags to render via this camera
-    pub render_tags: u32,
+    render_tags: u32,
 }
 
 impl Camera {
-    pub fn new(canvas_size: (f32, f32)) -> Self {
-        let aspect = canvas_size.0 / canvas_size.1;
+    pub fn new(aspect: f32, render_tags: u32) -> Self {
         let znear = 0.1;
         let zfar = 100.0;
         let fov = 45.0;
@@ -27,16 +26,20 @@ impl Camera {
             zfar,
             fov,
             proj_matrix,
-            render_tags: !0 // render all
+            render_tags
         }
+    }
+
+    pub fn should_render(&self, tags: u32) -> bool {
+        self.render_tags & tags == tags
     }
 
     pub fn proj_matrix(&self) -> Mat4 {
         self.proj_matrix
     }
 
-    pub fn set_fov(&mut self, width: f32, height: f32) {
-        self.aspect = width / height;
+    pub fn set_aspect(&mut self, aspect: f32) {
+        self.aspect = aspect;
         self.proj_matrix = na::Perspective3::new(self.aspect, self.fov, self.znear, self.zfar)
             .to_homogeneous();
     }
