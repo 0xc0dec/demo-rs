@@ -70,6 +70,7 @@ fn render(
     surface_tex.map(|t| t.present());
 }
 
+// TODO Account for render target
 fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
     device.device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
         label: None,
@@ -85,7 +86,7 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 }
 
 fn build_render_bundles(
-    mut renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
+    renderers: &mut Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
     camera: (&Camera, &Transform),
     device: &Device
 ) -> Vec<(RenderBundle, i32)> {
@@ -105,17 +106,15 @@ fn build_render_bundles(
 }
 
 pub fn render_frame(
-    renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
+    mut renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
     cameras: Query<(&Camera, &Transform)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
-    // TODO Take all cameras and render for each of them.
-    // TODO First render cameras with render targets, then without.
     // TODO Each camera can have a layer filter, render only objects that satisfy it
     // TODO (e.g. layer "scene" and layer "post-process")
-    // TODO The current render layers should be renamed to render order.
-    let camera = cameras.single();
-    let bundles = build_render_bundles(renderers, camera, &device);
-    render(&device, &bundles, None, &mut debug_ui);
+    for camera in cameras.iter() {
+        let bundles = build_render_bundles(&mut renderers, camera, &device);
+        render(&device, &bundles, None, &mut debug_ui);
+    }
 }
