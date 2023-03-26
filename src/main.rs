@@ -52,7 +52,7 @@ fn main() {
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
         .add_system(DebugUI::update.after(update_physics))
-        .add_system(DebugUIBuilder::build_debug_ui.after(DebugUI::update));
+        .add_system(build_debug_ui.after(DebugUI::update));
 
     let mut render_schedule = Schedule::default();
     render_schedule.add_system(render_frame);
