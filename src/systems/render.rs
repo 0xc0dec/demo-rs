@@ -1,13 +1,13 @@
 use bevy_ecs::prelude::{NonSend, NonSendMut, Query};
 use wgpu::RenderBundle;
-use crate::components::{Camera, RenderLayer, ModelRenderer, Transform};
+use crate::components::{Camera, RenderOrder, ModelRenderer, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
 use crate::render_target::RenderTarget;
 
 fn render(
     device: &Device,
-    bundles: &[(RenderBundle, u32)],
+    bundles: &[(RenderBundle, i32)],
     target: Option<&RenderTarget>,
     debug_ui: &mut DebugUI
 ) {
@@ -85,31 +85,36 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 }
 
 fn build_render_bundles(
-    mut renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
+    mut renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
     camera: (&Camera, &Transform),
     device: &Device
-) -> Vec<(RenderBundle, u32)> {
+) -> Vec<(RenderBundle, i32)> {
     // Couldn't make it work with a single bundler encoder due to lifetimes
     let mut bundles = renderers
         .iter_mut()
-        .map(|(mut r, layer, tr)| {
+        .map(|(mut r, order, tr)| {
             let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
             r.render(&device, camera, &tr, &mut encoder);
             let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
-            (bundle, layer.0)
+            (bundle, order.map_or(0, |o| o.0))
         })
         .collect::<Vec<_>>();
-    bundles.sort_by_key(|(_, layer)| *layer);
+    bundles.sort_by_key(|(_, order)| *order);
     bundles
 }
 
 pub fn render_frame(
-    renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
+    renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
     cameras: Query<(&Camera, &Transform)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
+    // TODO Take all cameras and render for each of them.
+    // TODO First render cameras with render targets, then without.
+    // TODO Each camera can have a layer filter, render only objects that satisfy it
+    // TODO (e.g. layer "scene" and layer "post-process")
+    // TODO The current render layers should be renamed to render order.
     let camera = cameras.single();
     let bundles = build_render_bundles(renderers, camera, &device);
     render(&device, &bundles, None, &mut debug_ui);

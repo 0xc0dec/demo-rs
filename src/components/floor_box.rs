@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::*;
-use crate::components::{RenderLayer, ModelRenderer, PhysicsBody, PhysicsBodyParams};
+use crate::components::{RenderOrder, ModelRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::components::model_renderer::ModelShader;
 use crate::device::Device;
 use crate::math::Vec3;
@@ -46,7 +46,6 @@ impl FloorBox {
 
             commands.spawn((
                 FloorBox,
-                RenderLayer(100),
                 physics_body,
                 render_model,
                 transform,

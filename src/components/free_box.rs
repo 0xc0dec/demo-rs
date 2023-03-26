@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::*;
-use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams, RenderLayer};
+use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams, RenderOrder};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::model::Model;
@@ -45,7 +45,6 @@ impl FreeBox {
 
             commands.spawn((
                 FreeBox,
-                RenderLayer(100),
                 physics_body,
                 render_model,
                 transform
