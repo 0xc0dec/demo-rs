@@ -38,6 +38,10 @@ impl Transform {
         self.m
     }
 
+    pub fn view_matrix(&self) -> Mat4 {
+        self.m.try_inverse().unwrap()
+    }
+
     pub fn forward(&self) -> Vec3 {
         -self.m.column(2).xyz()
     }

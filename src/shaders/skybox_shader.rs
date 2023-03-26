@@ -92,7 +92,7 @@ impl DataUniform {
     }
 
     fn update(&mut self, camera: &Camera) {
-        self.view_mat = camera.view_matrix().into();
+        self.view_mat = camera.transform.view_matrix().into();
         self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
             .try_inverse()
             .unwrap()
