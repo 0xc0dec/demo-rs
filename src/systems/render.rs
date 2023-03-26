@@ -20,7 +20,7 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 
 fn build_render_bundles(
     mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
-    cameras: Query<&Camera>,
+    cameras: Query<(&Camera, &Transform)>,
     device: &Device
 ) -> Vec<(RenderBundle, u32)> {
     let camera = cameras.single();
@@ -30,7 +30,7 @@ fn build_render_bundles(
         .map(|(mut r, layer, tr)| {
             let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
-            r.render(&device, &camera, &tr, &mut encoder);
+            r.render(&device, camera, &tr, &mut encoder);
             let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
             (bundle, layer.0)
         })
@@ -41,7 +41,7 @@ fn build_render_bundles(
 
 pub fn render_frame(
     model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
-    cameras: Query<&Camera>,
+    cameras: Query<(&Camera, &Transform)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {

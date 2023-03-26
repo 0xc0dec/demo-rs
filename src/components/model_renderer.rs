@@ -21,7 +21,7 @@ impl ModelRenderer {
     pub fn render<'a>(
         &'a mut self,
         device: &Device,
-        camera: &Camera,
+        camera: (&Camera, &Transform),
         transform: &Transform,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
     ) {

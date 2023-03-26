@@ -1,4 +1,4 @@
-use crate::components::Camera;
+use crate::components::{Camera, Transform};
 use crate::device::{Device};
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
@@ -49,7 +49,7 @@ impl SkyboxShader {
         }
     }
 
-    pub fn update(&mut self, device: &Device, camera: &Camera) {
+    pub fn update(&mut self, device: &Device, camera: (&Camera, &Transform)) {
         self.data_uniform.update(camera);
         device.queue().write_buffer(
             &self.data_uniform_buf,
@@ -91,9 +91,9 @@ impl DataUniform {
         }
     }
 
-    fn update(&mut self, camera: &Camera) {
-        self.view_mat = camera.transform.view_matrix().into();
-        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.proj_matrix())
+    fn update(&mut self, camera: (&Camera, &Transform)) {
+        self.view_mat = camera.1.view_matrix().into();
+        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix())
             .try_inverse()
             .unwrap()
             .into();

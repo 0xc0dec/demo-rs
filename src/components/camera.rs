@@ -1,7 +1,6 @@
 use bevy_ecs::prelude::Component;
-use crate::components::transform::Transform;
 use rapier3d::na;
-use crate::math::{Mat4, Vec3};
+use crate::math::Mat4;
 
 #[derive(Component)]
 pub struct Camera {
@@ -10,15 +9,10 @@ pub struct Camera {
     zfar: f32,
     fov: f32,
     proj_matrix: Mat4,
-    // TODO Get rid of this and use as proper component
-    pub transform: Transform,
 }
 
 impl Camera {
-    pub fn new(pos: Vec3, target: Vec3, canvas_size: (f32, f32)) -> Self {
-        let mut transform = Transform::from_pos(pos);
-        transform.look_at(target);
-
+    pub fn new(canvas_size: (f32, f32)) -> Self {
         let aspect = canvas_size.0 / canvas_size.1;
         let znear = 0.1;
         let zfar = 100.0;
@@ -31,16 +25,11 @@ impl Camera {
             zfar,
             fov,
             proj_matrix,
-            transform,
         }
     }
 
     pub fn proj_matrix(&self) -> Mat4 {
         self.proj_matrix
-    }
-
-    pub fn view_proj_matrix(&self) -> Mat4 {
-        self.proj_matrix * self.transform.view_matrix()
     }
 
     pub fn set_fov(&mut self, width: f32, height: f32) {

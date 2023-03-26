@@ -42,7 +42,7 @@ impl DiffuseShader {
                 vertex_buffer_layouts: &[ModelVertex::desc()],
             },
         )
-        .await;
+            .await;
 
         Self {
             texture_bind_group,
@@ -53,7 +53,7 @@ impl DiffuseShader {
         }
     }
 
-    pub fn update(&mut self, device: &Device, camera: &Camera, transform: &Transform) {
+    pub fn update(&mut self, device: &Device, camera: (&Camera, &Transform), transform: &Transform) {
         self.matrices_uniform.update(camera, transform);
         device.queue().write_buffer(
             &self.matrices_uniform_buf,
@@ -94,8 +94,12 @@ impl MatricesUniform {
         }
     }
 
-    fn update(&mut self, camera: &Camera, model_transform: &Transform) {
-        self.view_proj = (Self::OPENGL_TO_WGPU_MATRIX * camera.view_proj_matrix()).into();
-        self.world = model_transform.matrix().into();
+    fn update(&mut self, camera: (&Camera, &Transform), transform: &Transform) {
+        self.view_proj = (
+            Self::OPENGL_TO_WGPU_MATRIX
+                * camera.0.proj_matrix()
+                * camera.1.view_matrix()
+        ).into();
+        self.world = transform.matrix().into();
     }
 }
