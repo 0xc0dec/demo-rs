@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::{Commands, Component, NonSend, Query, Res};
+use bevy_ecs::prelude::{Commands, Component, EventReader, NonSend, Query, Res};
 use bevy_ecs::system::NonSendMut;
 use crate::components::camera::Camera;
 use crate::math::{Vec3};
@@ -6,6 +6,7 @@ use crate::physics_world::PhysicsWorld;
 use crate::components::transform::TransformSpace;
 use rapier3d::prelude::*;
 use crate::device::Device;
+use crate::events::WindowResizeEvent;
 use crate::input_state::InputState;
 use crate::state::State;
 
@@ -34,20 +35,19 @@ impl Player {
     }
 
     pub fn update(
-        mut q: Query<(&mut Self, &mut Camera)>,
         state: Res<State>,
-        mut physics: NonSendMut<PhysicsWorld>,
         input: Res<InputState>,
+        mut q: Query<(&mut Self, &mut Camera)>,
+        mut physics: NonSendMut<PhysicsWorld>,
+        mut resize_events: EventReader<WindowResizeEvent>
     ) {
-        // TODO Update camera FOV
-        // self.character.camera.set_fov(
-        //     ctx.app.device.surface_size().width as f32,
-        //     ctx.app.device.surface_size().height as f32,
-        // );
-
         let dt = state.frame_time.delta;
 
-        let (player, mut camera) = q.iter_mut().next().unwrap();
+        let (player, mut camera) = q.single_mut();
+
+        for e in resize_events.iter() {
+            camera.set_fov(e.new_size.width as f32, e.new_size.height as f32);
+        }
 
         let spectator_rot = camera.transform
             .spectator_rotation(dt, &input);
