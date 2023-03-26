@@ -7,7 +7,7 @@ use crate::render_target::RenderTarget;
 
 fn render(
     device: &Device,
-    bundles: &[(RenderBundle, i32)],
+    bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
     debug_ui: &mut DebugUI
 ) {
@@ -58,7 +58,7 @@ fn render(
                 depth_stencil_attachment: depth_attachment,
             });
 
-            pass.execute_bundles(bundles.iter().map(|(bundle, _)| bundle));
+            pass.execute_bundles(bundles.iter());
             // TODO Make it optional because we only want to render it for the final on-screen frame
             debug_ui.render(&device, &mut pass);
         }
@@ -85,35 +85,48 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
     })
 }
 
-fn build_render_bundles(
-    renderers: &mut Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
+fn build_render_bundles<'a>(
+    renderers: &mut [(&'a mut ModelRenderer, &'a Transform)],
     camera: (&Camera, &Transform),
     device: &Device
-) -> Vec<(RenderBundle, i32)> {
+) -> Vec<RenderBundle> {
     // Couldn't make it work with a single bundler encoder due to lifetimes
-    let mut bundles = renderers
+    renderers
         .iter_mut()
-        .map(|(mut r, order, tr)| {
+        .map(|r| {
             let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
-            r.render(&device, camera, &tr, &mut encoder);
-            let bundle = encoder.finish(&wgpu::RenderBundleDescriptor { label: None });
-            (bundle, order.map_or(0, |o| o.0))
+            (*r).0.render(&device, camera, (*r).1, &mut encoder);
+            encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
-        .collect::<Vec<_>>();
-    bundles.sort_by_key(|(_, order)| *order);
-    bundles
+        .collect::<Vec<_>>()
 }
 
 pub fn render_frame(
-    mut renderers: Query<(&mut ModelRenderer, Option<&RenderOrder>, &Transform)>,
-    cameras: Query<(&Camera, &Transform)>,
+    cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
+    mut renderers: Query<(&mut ModelRenderer, &Transform, Option<&RenderOrder>)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
-    // TODO Each camera can have a layer filter, render only objects that satisfy it
-    // TODO (e.g. layer "scene" and layer "post-process")
-    for camera in cameras.iter() {
+    let mut cameras = cameras
+        .into_iter()
+        .collect::<Vec<_>>();
+    cameras.sort_by_key(|(.., order)| order.map_or(0, |o| o.0));
+    let cameras = cameras
+        .iter()
+        .map(|(c, t, ..)| (*c, *t));
+
+    let mut renderers = renderers
+        .iter_mut()
+        .map(|(r, t, o)| (r.into_inner(), t, o))
+        .collect::<Vec<_>>();
+    renderers.sort_by_key(|(.., order)| order.map_or(0, |o| o.0));
+    let mut renderers = renderers
+        .into_iter()
+        .map(|(r, t, ..)| (r, t))
+        .collect::<Vec<_>>();
+
+    for camera in cameras {
         let bundles = build_render_bundles(&mut renderers, camera, &device);
         render(&device, &bundles, None, &mut debug_ui);
     }
