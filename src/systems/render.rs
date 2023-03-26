@@ -5,7 +5,7 @@ use crate::debug_ui::DebugUI;
 use crate::device::Device;
 use crate::render_target::RenderTarget;
 
-fn render(
+fn render_pass(
     device: &Device,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
@@ -103,7 +103,7 @@ fn build_render_bundles<'a>(
         .collect::<Vec<_>>()
 }
 
-pub fn render_frame(
+pub fn render(
     cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
     mut renderers: Query<(&mut ModelRenderer, &Transform, Option<&RenderOrder>)>,
     device: NonSend<Device>,
@@ -129,6 +129,6 @@ pub fn render_frame(
 
     for camera in cameras {
         let bundles = build_render_bundles(&mut renderers, camera, &device);
-        render(&device, &bundles, camera.0.target().as_ref(), &mut debug_ui);
+        render_pass(&device, &bundles, camera.0.target().as_ref(), &mut debug_ui);
     }
 }

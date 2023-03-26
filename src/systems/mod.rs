@@ -14,7 +14,7 @@ use crate::state::State;
 
 pub use init::init;
 pub use handle_system_events::handle_system_events;
-pub use render::render_frame;
+pub use render::render;
 pub use build_debug_ui::build_debug_ui;
 
 pub fn resize_device(

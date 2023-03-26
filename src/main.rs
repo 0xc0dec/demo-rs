@@ -60,7 +60,7 @@ fn main() {
         .add_system(build_debug_ui.after(DebugUI::update));
 
     let mut render_schedule = Schedule::default();
-    render_schedule.add_system(render_frame);
+    render_schedule.add_system(render);
 
     loop {
         preupdate_schedule.run(&mut world);
