@@ -93,10 +93,10 @@ fn build_render_bundles<'a>(
     // Couldn't make it work with a single bundler encoder due to lifetimes
     renderers
         .iter_mut()
-        .map(|r| {
+        .map(|(ref mut r, ref tr)| {
             let mut encoder = new_bundle_encoder(&device);
             // TODO Create render bundle inside the function?
-            (*r).0.render(&device, camera, (*r).1, &mut encoder);
+            r.render(&device, camera, tr, &mut encoder);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
         .collect::<Vec<_>>()
