@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::{Commands, NonSend, Query};
-use crate::components::{Camera, ModelRenderer, ModelShader, RenderOrder, Transform};
+use crate::components::{Camera, ModelRenderer, ModelShader, Player, RenderOrder, Transform};
 use crate::device::Device;
 use crate::model::Model;
 use crate::render_tags::RenderTags;
@@ -10,13 +10,11 @@ pub struct PostProcessor;
 impl PostProcessor {
     pub fn spawn(
         mut commands: Commands,
-        q_cameras: Query<&Camera>,
+        player: Query<(&Player, &Camera)>,
         device: NonSend<Device>,
     ) {
-        let source_camera_rt = q_cameras.iter()
-            .find(|c| c.target().is_some())
-            .and_then(|c| c.target().as_ref())
-            .unwrap();
+        // We know we need the player camera
+        let source_camera_rt = player.single().1.target().as_ref().unwrap();
 
         let model = Model::quad(&device);
 
