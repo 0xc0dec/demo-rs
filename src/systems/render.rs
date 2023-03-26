@@ -3,6 +3,72 @@ use wgpu::RenderBundle;
 use crate::components::{Camera, RenderLayer, ModelRenderer, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
+use crate::render_target::RenderTarget;
+
+fn render(
+    device: &Device,
+    bundles: &[(RenderBundle, u32)],
+    target: Option<&RenderTarget>,
+    debug_ui: &mut DebugUI
+) {
+    let surface_tex = target.is_none().then(|| {
+        device
+            .surface
+            .get_current_texture()
+            .expect("Missing surface texture")
+    });
+    let surface_tex_view = surface_tex.as_ref().map(|t| {
+        t.texture.create_view(&wgpu::TextureViewDescriptor::default())
+    });
+
+    let color_tex_view = target
+        .map(|t| t.color_tex().view())
+        .or(surface_tex_view.as_ref())
+        .unwrap();
+    let color_attachment = Some(wgpu::RenderPassColorAttachment {
+        view: color_tex_view,
+        resolve_target: None,
+        ops: wgpu::Operations {
+            load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+            store: true,
+        },
+    });
+
+    let depth_tex_view = target
+        .map(|t| t.depth_tex().view())
+        .or(device.depth_tex.as_ref().map(|t| t.view()))
+        .unwrap();
+    let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
+        view: depth_tex_view,
+        depth_ops: Some(wgpu::Operations {
+            load: wgpu::LoadOp::Clear(1.0),
+            store: true,
+        }),
+        stencil_ops: None,
+    });
+
+    let cmd_buffer = {
+        let mut encoder = device.device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+        {
+            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: None,
+                color_attachments: &[color_attachment],
+                depth_stencil_attachment: depth_attachment,
+            });
+
+            pass.execute_bundles(bundles.iter().map(|(bundle, _)| bundle));
+            // TODO Make it optional because we only want to render it for the final on-screen frame
+            debug_ui.render(&device, &mut pass);
+        }
+
+        encoder.finish()
+    };
+
+    device.queue.submit(Some(cmd_buffer));
+    surface_tex.map(|t| t.present());
+}
 
 fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
     device.device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
@@ -19,13 +85,12 @@ fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
 }
 
 fn build_render_bundles(
-    mut model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
-    cameras: Query<(&Camera, &Transform)>,
+    mut renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
+    camera: (&Camera, &Transform),
     device: &Device
 ) -> Vec<(RenderBundle, u32)> {
-    let camera = cameras.single();
     // Couldn't make it work with a single bundler encoder due to lifetimes
-    let mut render_bundles = model_renderers
+    let mut bundles = renderers
         .iter_mut()
         .map(|(mut r, layer, tr)| {
             let mut encoder = new_bundle_encoder(&device);
@@ -35,58 +100,17 @@ fn build_render_bundles(
             (bundle, layer.0)
         })
         .collect::<Vec<_>>();
-    render_bundles.sort_by_key(|(_, layer)| *layer);
-    render_bundles
+    bundles.sort_by_key(|(_, layer)| *layer);
+    bundles
 }
 
 pub fn render_frame(
-    model_renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
+    renderers: Query<(&mut ModelRenderer, &RenderLayer, &Transform)>,
     cameras: Query<(&Camera, &Transform)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
-    let surface_tex = device
-        .surface
-        .get_current_texture()
-        .expect("Missing surface texture");
-    let surface_tex_view = surface_tex.texture.create_view(&wgpu::TextureViewDescriptor::default());
-    let color_attachment = Some(wgpu::RenderPassColorAttachment {
-        view: &surface_tex_view,
-        resolve_target: None,
-        ops: wgpu::Operations {
-            load: wgpu::LoadOp::Clear(wgpu::Color::RED),
-            store: true,
-        },
-    });
-
-    let depth_tex_view = device.depth_tex.as_ref().unwrap().view();
-    let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
-        view: depth_tex_view,
-        depth_ops: Some(wgpu::Operations {
-            load: wgpu::LoadOp::Clear(1.0),
-            store: true,
-        }),
-        stencil_ops: None,
-    });
-
-    let render_bundles = build_render_bundles(model_renderers, cameras, &device);
-
-    let cmd_buffer = {
-        let mut encoder = device.device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        {
-            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[color_attachment],
-                depth_stencil_attachment: depth_attachment,
-            });
-
-            pass.execute_bundles(render_bundles.iter().map(|(bundle, _)| bundle));
-            debug_ui.render(&device, &mut pass);
-        }
-        encoder.finish()
-    };
-
-    device.queue.submit(Some(cmd_buffer));
-    surface_tex.present();
+    let camera = cameras.single();
+    let bundles = build_render_bundles(renderers, camera, &device);
+    render(&device, &bundles, None, &mut debug_ui);
 }
