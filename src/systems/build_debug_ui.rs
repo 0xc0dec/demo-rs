@@ -15,10 +15,9 @@ pub fn build_debug_ui(mut debug_ui: NonSendMut<DebugUI>, window: NonSend<Window>
             .build(|| {
                 frame.text("\
                     Controls:\n\
-                      \tHold right click to control camera\n\
-                      \tQ-W-E-A-S-D to move\n\
-                      \tEsc to quit the app
-                    ");
+                    * Hold right click to control camera\n\
+                    * Q-W-E-A-S-D to move\n\
+                    * Esc to quit the app");
 
                 let mut mouse_pos = frame.io().mouse_pos;
                 // Prevent UI jumping at start when the mouse position is not yet known

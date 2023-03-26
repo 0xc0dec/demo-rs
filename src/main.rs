@@ -29,11 +29,16 @@ fn main() {
 
     Schedule::default()
         .add_system(init)
-        .add_system(Player::spawn.after(init))
         .add_system(Skybox::spawn.after(init))
         .add_system(FloorBox::spawn.after(init))
         .add_system(FreeBox::spawn.after(init))
-        .add_system(PostProcessor::spawn.after(init))
+        .add_system(Player::spawn.after(init))
+        .run(&mut world);
+
+    // PP requires that Player be already spawned and we cannot guarantee that so we're using
+    // this hack. Should be done better with some systems magic.
+    Schedule::default()
+        .add_system(PostProcessor::spawn)
         .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();

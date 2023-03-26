@@ -1,36 +1,45 @@
-use bevy_ecs::prelude::{Commands, NonSend};
+use bevy_ecs::prelude::{Commands, NonSend, Query};
 use crate::components::{Camera, ModelRenderer, ModelShader, RenderOrder, Transform};
 use crate::device::Device;
 use crate::model::Model;
 use crate::render_tags::RenderTags;
-use crate::render_target::RenderTarget;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 
 pub struct PostProcessor;
 
 impl PostProcessor {
-    pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
-        pollster::block_on(async {
-            let rt = RenderTarget::new(&device, None);
-            let shader = PostProcessShader::new(
+    pub fn spawn(
+        mut commands: Commands,
+        q_cameras: Query<&Camera>,
+        device: NonSend<Device>,
+    ) {
+        let source_camera_rt = q_cameras.iter()
+            .find(|c| c.target().is_some())
+            .and_then(|c| c.target().as_ref())
+            .unwrap();
+
+        let model = Model::quad(&device);
+
+        // TODO Refactor similar places - use blocking only on the async pieces of code
+        let shader = pollster::block_on(async {
+            PostProcessShader::new(
                 &device,
                 PostProcessShaderParams {
-                    texture: rt.color_tex(),
+                    texture: source_camera_rt.color_tex(),
                 },
-            )
-                .await;
-            let model = Model::quad(&device);
-            let model_renderer = ModelRenderer {
-                shader: ModelShader::PostProcess(shader),
-                model,
-                tags: RenderTags::POST_PROCESS,
-            };
-            let transform = Transform::default();
-            commands.spawn((model_renderer, transform));
-
-            let camera = Camera::new(1.0, RenderTags::POST_PROCESS, None);
-            let transform = Transform::default();
-            commands.spawn((RenderOrder(100), camera, transform));
+            ).await
         });
+
+        let model_renderer = ModelRenderer {
+            shader: ModelShader::PostProcess(shader),
+            model,
+            tags: RenderTags::POST_PROCESS,
+        };
+        let transform = Transform::default();
+        commands.spawn((model_renderer, transform));
+
+        let camera = Camera::new(1.0, RenderTags::POST_PROCESS, None);
+        let transform = Transform::default();
+        commands.spawn((RenderOrder(100), camera, transform));
     }
 }

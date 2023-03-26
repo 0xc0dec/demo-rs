@@ -129,6 +129,6 @@ pub fn render_frame(
 
     for camera in cameras {
         let bundles = build_render_bundles(&mut renderers, camera, &device);
-        render(&device, &bundles, None, &mut debug_ui);
+        render(&device, &bundles, camera.0.target().as_ref(), &mut debug_ui);
     }
 }
