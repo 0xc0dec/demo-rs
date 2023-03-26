@@ -9,6 +9,8 @@ pub struct Camera {
     zfar: f32,
     fov: f32,
     proj_matrix: Mat4,
+    // Tags to render via this camera
+    pub render_tags: u32,
 }
 
 impl Camera {
@@ -25,6 +27,7 @@ impl Camera {
             zfar,
             fov,
             proj_matrix,
+            render_tags: !0 // render all
         }
     }
 

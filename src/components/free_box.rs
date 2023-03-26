@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::*;
-use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams, RenderOrder};
+use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::model::Model;
@@ -7,6 +7,7 @@ use crate::physics_world::PhysicsWorld;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
 use crate::texture::Texture;
 use crate::components::transform::Transform;
+use crate::render_tags::RenderTags;
 
 #[derive(Component)]
 pub struct FreeBox;
@@ -39,6 +40,7 @@ impl FreeBox {
             let render_model = ModelRenderer {
                 shader: ModelShader::Diffuse(shader),
                 model,
+                tags: RenderTags::SCENE
             };
 
             let transform = Transform::new(pos, scale);

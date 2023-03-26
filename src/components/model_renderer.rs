@@ -15,6 +15,7 @@ pub enum ModelShader {
 pub struct ModelRenderer {
     pub model: Model,
     pub shader: ModelShader,
+    pub tags: u32,
 }
 
 impl ModelRenderer {

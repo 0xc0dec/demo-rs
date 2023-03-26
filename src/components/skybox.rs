@@ -6,6 +6,7 @@ use crate::model::{Model};
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
 use crate::components::transform::Transform;
+use crate::render_tags::RenderTags;
 
 #[derive(Component)]
 pub struct Skybox;
@@ -22,6 +23,7 @@ impl Skybox {
             let render_model = ModelRenderer {
                 shader: ModelShader::Skybox(shader),
                 model,
+                tags: RenderTags::SCENE
             };
 
             let transform = Transform::default();

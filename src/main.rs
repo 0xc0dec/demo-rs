@@ -14,6 +14,7 @@ mod state;
 mod systems;
 mod components;
 mod events;
+mod render_tags;
 
 use bevy_ecs::prelude::*;
 use crate::components::*;
