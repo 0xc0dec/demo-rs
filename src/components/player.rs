@@ -9,7 +9,7 @@ use crate::math::Vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
-use crate::state::State;
+use crate::app_state::State;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::NonSendMut;
 use rapier3d::prelude::*;
@@ -51,7 +51,7 @@ impl Player {
     }
 
     pub fn update(
-        state: Res<State>,
+        state: Res<AppState>,
         input: Res<InputState>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: NonSendMut<PhysicsWorld>,

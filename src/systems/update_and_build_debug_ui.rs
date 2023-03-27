@@ -1,11 +1,11 @@
 use crate::debug_ui::DebugUI;
-use crate::state::State;
+use crate::app_state::State;
 use bevy_ecs::prelude::*;
 use winit::window::Window;
 
 pub fn update_and_build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
-    state: Res<State>,
+    state: Res<AppState>,
     window: NonSend<Window>,
 ) {
     ui.update_and_build(&window, state.frame_time.delta, |frame| {

@@ -9,7 +9,7 @@ mod schedules;
 use crate::device::Device;
 use crate::events::{KeyboardEvent, WindowResizeEvent};
 use crate::physics_world::PhysicsWorld;
-use crate::state::State;
+use crate::app_state::State;
 use bevy_ecs::prelude::*;
 use winit::event::{VirtualKeyCode};
 
@@ -27,7 +27,7 @@ pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<Win
     }
 }
 
-pub fn escape_on_exit(mut state: ResMut<State>, mut keyboard_events: EventReader<KeyboardEvent>) {
+pub fn escape_on_exit(mut state: ResMut<AppState>, mut keyboard_events: EventReader<KeyboardEvent>) {
     if keyboard_events
         .iter()
         .any(|e| e.code == VirtualKeyCode::Escape && e.pressed)
@@ -36,10 +36,10 @@ pub fn escape_on_exit(mut state: ResMut<State>, mut keyboard_events: EventReader
     }
 }
 
-pub fn update_physics(mut physics: NonSendMut<PhysicsWorld>, state: Res<State>) {
+pub fn update_physics(mut physics: NonSendMut<PhysicsWorld>, state: Res<AppState>) {
     physics.update(state.frame_time.delta);
 }
 
-pub fn update_frame_time(mut state: ResMut<State>) {
+pub fn update_frame_time(mut state: ResMut<AppState>) {
     state.frame_time.update();
 }

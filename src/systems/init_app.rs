@@ -5,7 +5,7 @@ use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::frame_time::FrameTime;
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
-use crate::state::State;
+use crate::app_state::State;
 use bevy_ecs::prelude::*;
 use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
@@ -27,7 +27,7 @@ pub fn init_app(world: &mut World) {
     let physics = PhysicsWorld::new();
     let debug_ui = DebugUI::new(&device, &window);
 
-    world.insert_resource(State {
+    world.insert_resource(AppState {
         running: true,
         frame_time: FrameTime::new(),
     });
