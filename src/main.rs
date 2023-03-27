@@ -14,40 +14,29 @@ mod shaders;
 mod state;
 mod systems;
 mod texture;
+mod app_states;
 
 use crate::components::*;
-use crate::state::State;
 use crate::systems::*;
 use bevy_ecs::prelude::*;
-use bevy_ecs::schedule::ScheduleLabel;
-
-#[derive(ScheduleLabel, Copy, Clone, Hash, Eq, PartialEq, Debug)]
-struct InitSchedule;
 
 fn main() {
     let mut world = World::default();
     world.init_resource::<Schedules>();
+    // world.init_resource::<State<AppStates>>(); // TODO use states?
 
-    // TODO Try to use less schedules by adding more complex rules
+    Schedule::default().add_system(init_app).run(&mut world);
 
-    let mut init_schedule = Schedule::default();
-    init_schedule.add_system(init_app)
-        .add_systems((
-            Skybox::spawn,
-            FloorBox::spawn,
-            FreeBox::spawn,
-            Player::spawn,
-            Tracer::spawn
-        ).after(init_app));
-    world.add_schedule(init_schedule, InitSchedule);
+    // TODO Register all schedules first and then run them via `world.run_schedule` and various rules.
 
-    world.run_schedule(InitSchedule);
+    let spawn_scene_schedule = new_spawn_scene_schedule();
+    world.add_schedule(spawn_scene_schedule.0, spawn_scene_schedule.1);
 
     // PP requires that Player be already spawned and we cannot guarantee that so we're using
     // this hack. Should be done better with some systems magic.
-    Schedule::default()
-        .add_system(PostProcessor::spawn)
-        .run(&mut world);
+    // Schedule::default()
+    //     .add_system(PostProcessor::spawn)
+    //     .run(&mut world);
 
     let mut preupdate_schedule = Schedule::default();
     preupdate_schedule
@@ -72,11 +61,12 @@ fn main() {
     render_schedule.add_system(render);
 
     loop {
+        world.run_schedule(spawn_scene_schedule.1);
         preupdate_schedule.run(&mut world);
         update_schedule.run(&mut world);
         render_schedule.run(&mut world);
 
-        if !world.resource::<State>().running {
+        if !world.resource::<state::State>().running {
             return;
         }
     }

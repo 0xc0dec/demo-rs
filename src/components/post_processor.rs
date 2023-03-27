@@ -29,13 +29,13 @@ impl PostProcessor {
             .await
         });
 
-        let model_renderer = ModelRenderer {
+        let renderer = ModelRenderer {
             shader: ModelShader::PostProcess(shader),
             model,
             tags: RenderTags::POST_PROCESS,
         };
         let transform = Transform::default();
-        commands.spawn((model_renderer, transform));
+        commands.spawn((renderer, transform));
 
         let camera = Camera::new(1.0, RenderTags::POST_PROCESS, None);
         let transform = Transform::default();
