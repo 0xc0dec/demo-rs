@@ -30,7 +30,7 @@ impl Player {
         let rt = RenderTarget::new(&device, None);
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
-            RenderTags::SCENE,
+            RenderTags::SCENE | RenderTags::DEBUG_UI,
             Some(rt),
         );
         let mut transform = Transform::from_pos(pos);

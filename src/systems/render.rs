@@ -4,12 +4,13 @@ use crate::device::Device;
 use crate::render_target::RenderTarget;
 use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
+use crate::render_tags::RenderTags;
 
 fn render_pass(
     device: &Device,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
-    debug_ui: &mut DebugUI,
+    debug_ui: Option<&mut DebugUI>,
 ) {
     let surface_tex = target.is_none().then(|| {
         device
@@ -17,10 +18,9 @@ fn render_pass(
             .get_current_texture()
             .expect("Missing surface texture")
     });
-    let surface_tex_view = surface_tex.as_ref().map(|t| {
-        t.texture
-            .create_view(&wgpu::TextureViewDescriptor::default())
-    });
+    let surface_tex_view = surface_tex
+        .as_ref()
+        .map(|t| t.texture.create_view(&wgpu::TextureViewDescriptor::default()));
 
     let color_tex_view = target
         .map(|t| t.color_tex().view())
@@ -61,8 +61,7 @@ fn render_pass(
             });
 
             pass.execute_bundles(bundles.iter());
-            // TODO Make it optional because we only want to render it for the final on-screen frame
-            debug_ui.render(&device, &mut pass);
+            debug_ui.map(|ui| ui.render(&device, &mut pass));
         }
 
         encoder.finish()
@@ -72,17 +71,21 @@ fn render_pass(
     surface_tex.map(|t| t.present());
 }
 
-// TODO Account for render target
-fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
+fn new_bundle_encoder<'a>(device: &'a Device, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder<'a> {
+    let color_format = target
+        .map_or(device.surface_texture_format(), |t| t.color_tex().format());
+    let depth_format = target
+        .map_or(device.depth_texture_format(), |t| t.depth_tex().format());
+
     device
         .device()
         .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
             label: None,
             multiview: None,
             sample_count: 1,
-            color_formats: &[Some(device.surface_texture_format())],
+            color_formats: &[Some(color_format)],
             depth_stencil: Some(wgpu::RenderBundleDepthStencil {
-                format: device.depth_texture_format(),
+                format: depth_format,
                 depth_read_only: false,
                 stencil_read_only: false,
             }),
@@ -99,7 +102,7 @@ fn build_render_bundles<'a>(
         .iter_mut()
         .filter(|(r, _)| camera.0.should_render(r.tags))
         .map(|(ref mut r, ref tr)| {
-            let mut encoder = new_bundle_encoder(&device);
+            let mut encoder = new_bundle_encoder(&device, camera.0.target().as_ref());
             // TODO Create render bundle inside the function?
             r.render(&device, camera, tr, &mut encoder);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
@@ -129,6 +132,11 @@ pub fn render(
 
     for camera in cameras {
         let bundles = build_render_bundles(&mut renderers, camera, &device);
-        render_pass(&device, &bundles, camera.0.target().as_ref(), &mut debug_ui);
+        render_pass(
+            &device,
+            &bundles,
+            camera.0.target().as_ref(),
+            camera.0.should_render(RenderTags::DEBUG_UI).then(|| debug_ui.as_mut())
+        );
     }
 }
