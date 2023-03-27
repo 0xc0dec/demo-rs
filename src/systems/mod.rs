@@ -9,7 +9,7 @@ mod schedules;
 use crate::device::Device;
 use crate::events::{KeyboardEvent, WindowResizeEvent};
 use crate::physics_world::PhysicsWorld;
-use crate::app_state::State;
+use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use winit::event::{VirtualKeyCode};
 

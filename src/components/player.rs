@@ -9,7 +9,7 @@ use crate::math::Vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
-use crate::app_state::State;
+use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::NonSendMut;
 use rapier3d::prelude::*;

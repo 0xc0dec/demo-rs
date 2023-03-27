@@ -5,7 +5,7 @@ use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::frame_time::FrameTime;
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
-use crate::app_state::State;
+use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;

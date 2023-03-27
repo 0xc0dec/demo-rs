@@ -1,5 +1,5 @@
 use crate::debug_ui::DebugUI;
-use crate::app_state::State;
+use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use winit::window::Window;
 
@@ -30,7 +30,7 @@ pub fn update_and_build_debug_ui(
                 // Prevent UI jumping at start when the mouse position is not yet known
                 // and imgui returns extra huge numbers.
                 if !(-10000.0f32..10000.0f32).contains(&mouse_pos[0]) {
-                    mouse_pos = [0.0f32, 0.0f32];
+                    mouse_pos = [-1.0f32, -1.0f32];
                 }
                 frame.text(format!(
                     "Mouse position: ({:.1},{:.1})",
