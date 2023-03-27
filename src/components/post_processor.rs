@@ -37,7 +37,7 @@ impl PostProcessor {
         let transform = Transform::default();
         commands.spawn((renderer, transform));
 
-        let camera = Camera::new(1.0, RenderTags::POST_PROCESS, None);
+        let camera = Camera::new(1.0, RenderTags::POST_PROCESS | RenderTags::DEBUG_UI, None);
         let transform = Transform::default();
         commands.spawn((RenderOrder(100), camera, transform));
     }
