@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use crate::components::camera::Camera;
 use crate::components::transform::TransformSpace;
 use crate::components::Transform;
@@ -56,40 +57,82 @@ impl Player {
         mut physics: NonSendMut<PhysicsWorld>,
         mut resize_events: EventReader<WindowResizeEvent>,
     ) {
-        let dt = state.frame_time.delta;
-
         let (player, mut camera, mut transform) = q.single_mut();
 
         for e in resize_events.iter() {
             camera.set_aspect(e.new_size.width as f32 / e.new_size.height as f32);
         }
 
-        let spectator_rot = transform.spectator_rotation(dt, &input);
-        if let Some(spectator_rot) = spectator_rot {
-            transform.rotate_around_axis(
-                Vec3::y_axis().xyz(),
-                spectator_rot.horizontal_rotation,
-                TransformSpace::World,
-            );
-            transform.rotate_around_axis(
-                Vec3::x_axis().xyz(),
-                spectator_rot.vertical_rotation,
-                TransformSpace::Local,
-            );
+        let dt = state.frame_time.delta;
+
+        if input.rmb_down {
+            Self::rotate(&mut transform, dt, &input);
+            Self::translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
+        }
+    }
+
+    fn rotate(
+        transform: &mut Transform,
+        dt: f32,
+        input: &InputState,
+    ) {
+        const MIN_TOP_ANGLE: f32 = 0.1;
+        const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
+        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
+        let mut v_rot = input.mouse_delta.1 as f32 * dt;
+        // Protect from overturning - prevent camera from reaching the vertical line with small
+        // margin angles.
+        if angle_to_top + v_rot <= MIN_TOP_ANGLE {
+            v_rot = -(angle_to_top - MIN_TOP_ANGLE);
+        } else if angle_to_top + v_rot >= MIN_BOTTOM_ANGLE {
+            v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
         }
 
-        let spectator_translation = transform.spectator_translation(dt, 10.0, &input);
-        if let Some(spectator_translation) = spectator_translation {
-            let (effective_movement, collider_current_pos) =
-                physics.move_character(dt, spectator_translation, player.collider_handle);
+        let h_rot = input.mouse_delta.0 as f32 * dt;
 
-            transform.translate(effective_movement);
+        transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
+        transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
+    }
 
-            physics
-                .colliders
-                .get_mut(player.collider_handle)
-                .unwrap()
-                .set_translation(collider_current_pos + effective_movement);
+    fn translate(
+        transform: &mut Transform,
+        collider_handle: ColliderHandle,
+        dt: f32,
+        speed: f32,
+        input: &InputState,
+        physics: &mut PhysicsWorld
+    ) {
+        let mut translation: Vec3 = Vec3::from_element(0.0);
+        if input.forward_down {
+            translation += transform.forward();
         }
+        if input.back_down {
+            translation -= transform.forward();
+        }
+        if input.right_down {
+            translation += transform.right();
+        }
+        if input.left_down {
+            translation -= transform.right();
+        }
+        if input.up_down {
+            translation += transform.up();
+        }
+        if input.down_down {
+            translation -= transform.up();
+        }
+        let translation = translation.normalize() * dt * speed;
+
+        let (effective_movement, collider_current_pos) =
+            physics.move_character(dt, translation, collider_handle);
+
+        transform.translate(effective_movement);
+
+        physics
+            .colliders
+            .get_mut(collider_handle)
+            .unwrap()
+            .set_translation(collider_current_pos + effective_movement);
+
     }
 }

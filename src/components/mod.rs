@@ -7,7 +7,6 @@ mod player;
 mod post_processor;
 mod render_order;
 mod skybox;
-mod spectator;
 mod tracer;
 mod transform;
 
