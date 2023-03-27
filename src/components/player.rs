@@ -59,8 +59,11 @@ impl Player {
     ) {
         let (player, mut camera, mut transform) = q.single_mut();
 
-        for e in resize_events.iter() {
-            camera.set_aspect(e.new_size.width as f32 / e.new_size.height as f32);
+        let last_resize = resize_events.iter().last();
+        if let Some(last_resize) = last_resize {
+            camera.set_aspect(
+                last_resize.new_size.width as f32 / last_resize.new_size.height as f32
+            );
         }
 
         let dt = state.frame_time.delta;
