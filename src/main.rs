@@ -27,11 +27,13 @@ fn main() {
 
     Schedule::default()
         .add_system(init)
-        .add_system(Skybox::spawn.after(init))
-        .add_system(FloorBox::spawn.after(init))
-        .add_system(FreeBox::spawn.after(init))
-        .add_system(Player::spawn.after(init))
-        .add_system(Tracer::spawn.after(init))
+        .add_systems((
+            Skybox::spawn,
+            FloorBox::spawn,
+            FreeBox::spawn,
+            Player::spawn,
+            Tracer::spawn
+        ).after(init))
         .run(&mut world);
 
     // PP requires that Player be already spawned and we cannot guarantee that so we're using
@@ -43,15 +45,16 @@ fn main() {
     let mut preupdate_schedule = Schedule::default();
     preupdate_schedule
         .add_system(handle_system_events)
-        .add_system(escape_on_exit.after(handle_system_events))
-        .add_system(grab_cursor.after(handle_system_events))
-        .add_system(resize_device.after(handle_system_events))
-        .add_system(update_input_state.after(handle_system_events))
-        .add_system(update_frame_time.after(handle_system_events));
+        .add_systems((
+            escape_on_exit,
+            grab_cursor,
+            resize_device,
+            update_input_state,
+            update_frame_time,
+        ).after(handle_system_events));
 
     let mut update_schedule = Schedule::default();
     update_schedule
-        // TOO Run physics last?
         .add_system(update_physics)
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
