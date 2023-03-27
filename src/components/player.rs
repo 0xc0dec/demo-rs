@@ -31,8 +31,7 @@ impl Player {
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
             RenderTags::SCENE,
-            // Some(rt),
-            None
+            Some(rt),
         );
         let mut transform = Transform::from_pos(pos);
         transform.look_at(Vec3::from_element(0.0));
