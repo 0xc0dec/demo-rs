@@ -1,17 +1,13 @@
-use crate::debug_ui::DebugUI;
-use crate::render_target::RenderTarget;
 use crate::texture::Texture;
-use std::iter;
-use std::ops::{Deref, DerefMut};
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
 // TODO Replace pub's with getters
 pub struct Device {
-    pub surface: wgpu::Surface,
+    surface: wgpu::Surface,
     surface_config: wgpu::SurfaceConfiguration,
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
     // TODO Make it non-optional. Currently it is just because Texture's ctor requires
     // a reference to Device, which we cannot provide before we have constructed the device.
     pub depth_tex: Option<Texture>,
@@ -111,5 +107,9 @@ impl Device {
 
     pub fn queue(&self) -> &wgpu::Queue {
         &self.queue
+    }
+
+    pub fn surface(&self) -> &wgpu::Surface {
+        &self.surface
     }
 }

@@ -13,7 +13,7 @@ fn render_pass(
 ) {
     let surface_tex = target.is_none().then(|| {
         device
-            .surface
+            .surface()
             .get_current_texture()
             .expect("Missing surface texture")
     });
@@ -48,7 +48,7 @@ fn render_pass(
     });
 
     let cmd_buffer = {
-        let mut encoder = device.device
+        let mut encoder = device.device()
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
@@ -66,13 +66,13 @@ fn render_pass(
         encoder.finish()
     };
 
-    device.queue.submit(Some(cmd_buffer));
+    device.queue().submit(Some(cmd_buffer));
     surface_tex.map(|t| t.present());
 }
 
 // TODO Account for render target
 fn new_bundle_encoder(device: &Device) -> wgpu::RenderBundleEncoder {
-    device.device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+    device.device().create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
         label: None,
         multiview: None,
         sample_count: 1,
