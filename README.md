@@ -1,7 +1,7 @@
 # About
-A simple graphics demo I made for learning Rust and testing how it suits game development. WGPU seemed like a good choice
+A simple graphics demo I made for learning Rust and to see how it suits game development. WGPU seemed like a good choice
 for a low-level graphics API. There is no attempt to create an "engine", everything is pretty low level
-(so as WGPU) and abstractions are being build along the way when needed.
+(so as WGPU) and abstractions are being built along the way when needed.
 
 ![Screenshot](/screenshot.png?raw=true)
 
