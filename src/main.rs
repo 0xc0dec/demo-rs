@@ -19,22 +19,29 @@ use crate::components::*;
 use crate::state::State;
 use crate::systems::*;
 use bevy_ecs::prelude::*;
+use bevy_ecs::schedule::ScheduleLabel;
+
+#[derive(ScheduleLabel, Copy, Clone, Hash, Eq, PartialEq, Debug)]
+struct InitSchedule;
 
 fn main() {
     let mut world = World::default();
+    world.init_resource::<Schedules>();
 
     // TODO Try to use less schedules by adding more complex rules
 
-    Schedule::default()
-        .add_system(init)
+    let mut init_schedule = Schedule::default();
+    init_schedule.add_system(init_app)
         .add_systems((
             Skybox::spawn,
             FloorBox::spawn,
             FreeBox::spawn,
             Player::spawn,
             Tracer::spawn
-        ).after(init))
-        .run(&mut world);
+        ).after(init_app));
+    world.add_schedule(init_schedule, InitSchedule);
+
+    world.run_schedule(InitSchedule);
 
     // PP requires that Player be already spawned and we cannot guarantee that so we're using
     // this hack. Should be done better with some systems magic.
