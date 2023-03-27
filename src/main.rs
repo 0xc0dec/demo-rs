@@ -55,7 +55,7 @@ fn main() {
         .add_system(update_physics)
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
-        .add_system(Tracer::update.after(update_physics))
+        .add_system(Tracer::update.after(Player::update))
         .add_system(update_and_build_debug_ui.after(update_physics));
 
     let mut render_schedule = Schedule::default();
