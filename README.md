@@ -9,10 +9,11 @@ for a low-level graphics API. There is no attempt to create an "engine", everyth
 ```
 cargo run
 ```
-Right mouse click to control camera, use `W-A-S-D-Q-E` keys to fly around.
+See on-screen instructions for controls.
 
 ## Features
-- Math based on [nalgebra](https://github.com/dimforge/nalgebra).
+- App structure via [Bevy ECS](https://crates.io/crates/bevy_ecs).
+- Math via [nalgebra](https://github.com/dimforge/nalgebra).
 - First person flying camera ("spectator") with protection from overturning.
 - Physics via [Rapier](https://rapier.rs)
   - Simple rigid bodies with colliders.
@@ -22,8 +23,3 @@ Right mouse click to control camera, use `W-A-S-D-Q-E` keys to fly around.
 - Post-processing: the scene is first rendered into a texture, which is then rendered on a full-screen quad
 with a separate shader (currently applying vignette).
 - Debug UI via [ImGui](https://github.com/yatekii/imgui-wgpu-rs).
-- Rendering scene objects via WGPU's `RenderBundle` instead of directly via `RenderPass`. This proved to be _very_ useful
-if you wish to decouple scene rendering logic from render passes and make it modular. With render passes I couldn't
-make it work due to Rust borrow checker and different object lifetimes involved - as in many examples I found,
-the whole rendering code had to be within one function/block in order for lifetimes of render passes, textures and other
-things to work together.
