@@ -29,11 +29,11 @@ impl FloorBox {
             (shader, model)
         });
 
-        let render_model = ModelRenderer {
-            shader: ModelShader::Diffuse(shader),
+        let render_model = ModelRenderer::new(
             model,
-            tags: RenderTags::SCENE,
-        };
+            ModelShader::Diffuse(shader),
+            RenderTags::SCENE,
+        );
 
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);

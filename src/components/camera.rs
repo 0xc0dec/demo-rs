@@ -37,6 +37,10 @@ impl Camera {
         &self.target
     }
 
+    pub fn target_mut(&mut self) -> Option<&mut RenderTarget> {
+        self.target.as_mut()
+    }
+
     pub fn should_render(&self, tags: u32) -> bool {
         self.render_tags & tags == tags
     }

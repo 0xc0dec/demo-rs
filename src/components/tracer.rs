@@ -21,11 +21,11 @@ impl Tracer {
         });
 
         // TODO Fix other variables' names of this type
-        let renderer = ModelRenderer {
-            shader: ModelShader::Color(shader),
+        let renderer = ModelRenderer::new(
             model,
-            tags: RenderTags::HIDDEN,
-        };
+            ModelShader::Color(shader),
+            RenderTags::HIDDEN,
+        );
 
         commands.spawn((Tracer, transform, renderer));
     }
@@ -47,11 +47,11 @@ impl Tracer {
             let dist_to_camera = (player_transform.position() - hit_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
-            tracer_renderer.tags = RenderTags::SCENE;
+            tracer_renderer.set_tags(RenderTags::SCENE);
             tracer_transform.set_position(hit_pt);
             tracer_transform.set_scale(Vec3::from_element(scale));
         } else {
-            tracer_renderer.tags = RenderTags::HIDDEN;
+            tracer_renderer.set_tags(RenderTags::HIDDEN);
         }
     }
 }

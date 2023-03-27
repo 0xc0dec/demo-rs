@@ -7,7 +7,7 @@ use wgpu::util::DeviceExt;
 pub type TextureSize = (u32, u32);
 
 pub struct Texture {
-    _texture: wgpu::Texture,
+    texture: wgpu::Texture,
     view: wgpu::TextureView,
     sampler: wgpu::Sampler,
     format: wgpu::TextureFormat,
@@ -36,18 +36,6 @@ fn new_sampler(
 
 // TODO Reduce copypasta
 impl Texture {
-    pub fn view(&self) -> &wgpu::TextureView {
-        &self.view
-    }
-
-    pub fn sampler(&self) -> &wgpu::Sampler {
-        &self.sampler
-    }
-
-    pub fn format(&self) -> wgpu::TextureFormat {
-        self.format
-    }
-
     pub fn new_depth(
         device: &wgpu::Device,
         format: wgpu::TextureFormat,
@@ -79,7 +67,7 @@ impl Texture {
         );
 
         Self {
-            _texture: texture,
+            texture: texture,
             view,
             sampler,
             format,
@@ -117,7 +105,7 @@ impl Texture {
         );
 
         Self {
-            _texture: texture,
+            texture: texture,
             view,
             sampler,
             format,
@@ -132,6 +120,22 @@ impl Texture {
     pub async fn new_cube_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
         Self::new_cube_from_mem(device.device(), device.queue(), &data)
+    }
+
+    pub fn view(&self) -> &wgpu::TextureView {
+        &self.view
+    }
+
+    pub fn sampler(&self) -> &wgpu::Sampler {
+        &self.sampler
+    }
+
+    pub fn format(&self) -> wgpu::TextureFormat {
+        self.format
+    }
+
+    pub fn size(&self) -> TextureSize {
+        (self.texture.size().width, self.texture.size().height)
     }
 
     fn new_2d_from_mem(device: &wgpu::Device, queue: &wgpu::Queue, bytes: &[u8]) -> Result<Self> {
@@ -169,7 +173,7 @@ impl Texture {
         );
 
         Ok(Self {
-            _texture: texture,
+            texture: texture,
             view,
             sampler,
             format,
@@ -222,7 +226,7 @@ impl Texture {
         );
 
         Ok(Self {
-            _texture: texture,
+            texture: texture,
             view,
             sampler,
             format,

@@ -39,11 +39,11 @@ impl FreeBox {
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
             let model = Model::from_file("cube.obj", &device).await.unwrap();
-            let render_model = ModelRenderer {
-                shader: ModelShader::Diffuse(shader),
+            let render_model = ModelRenderer::new(
                 model,
-                tags: RenderTags::SCENE,
-            };
+                ModelShader::Diffuse(shader),
+                RenderTags::SCENE,
+            );
 
             let transform = Transform::new(pos, scale);
 

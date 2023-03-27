@@ -14,12 +14,20 @@ pub enum ModelShader {
 
 #[derive(Component)]
 pub struct ModelRenderer {
-    pub model: Model,
-    pub shader: ModelShader,
-    pub tags: u32, // TODO As a component?
+    model: Model,
+    shader: ModelShader,
+    tags: u32, // TODO As a component?
 }
 
 impl ModelRenderer {
+    pub fn new(model: Model, shader: ModelShader, tags: u32) -> ModelRenderer {
+        Self {
+            model,
+            shader,
+            tags
+        }
+    }
+
     pub fn render<'a>(
         &'a mut self,
         device: &Device,
@@ -46,5 +54,17 @@ impl ModelRenderer {
             }
         }
         encoder.draw_model(&self.model);
+    }
+
+    pub fn tags(&self) -> u32 {
+        self.tags
+    }
+
+    pub fn set_tags(&mut self, tags: u32) {
+        self.tags = tags;
+    }
+
+    pub fn set_shader(&mut self, shader: ModelShader) {
+        self.shader = shader;
     }
 }

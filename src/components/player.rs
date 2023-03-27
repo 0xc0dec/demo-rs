@@ -52,6 +52,7 @@ impl Player {
 
     pub fn update(
         state: Res<AppState>,
+        device: NonSend<Device>,
         input: Res<InputState>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: NonSendMut<PhysicsWorld>,
@@ -64,6 +65,11 @@ impl Player {
             camera.set_aspect(
                 last_resize.new_size.width as f32 / last_resize.new_size.height as f32
             );
+            camera.target_mut()
+                .map(|t| t.resize(
+                    (last_resize.new_size.width, last_resize.new_size.height),
+                    &device
+                ));
         }
 
         let dt = state.frame_time.delta;

@@ -14,7 +14,7 @@ pub fn init_app(world: &mut World) {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")
-        .with_inner_size(SurfaceSize::new(1800, 1200))
+        .with_inner_size(SurfaceSize::new(300, 200))
         .build(&event_loop)
         .unwrap();
 

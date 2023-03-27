@@ -19,11 +19,11 @@ impl Skybox {
                 .unwrap();
             let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture }).await;
             let model = Model::quad(&device);
-            let render_model = ModelRenderer {
-                shader: ModelShader::Skybox(shader),
+            let render_model = ModelRenderer::new(
                 model,
-                tags: RenderTags::SCENE,
-            };
+                ModelShader::Skybox(shader),
+                RenderTags::SCENE,
+            );
 
             let transform = Transform::default();
 
