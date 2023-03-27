@@ -19,7 +19,7 @@ pub use init_app::init_app;
 pub use render::render;
 pub use update_input_state::update_input_state;
 pub use grab_cursor::grab_cursor;
-pub use schedules::new_spawn_scene_schedule;
+pub use schedules::*;
 
 pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<WindowResizeEvent>) {
     for evt in events.iter() {

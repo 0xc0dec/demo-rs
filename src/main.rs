@@ -14,9 +14,7 @@ mod shaders;
 mod state;
 mod systems;
 mod texture;
-mod app_states;
 
-use crate::components::*;
 use crate::systems::*;
 use bevy_ecs::prelude::*;
 
@@ -27,44 +25,23 @@ fn main() {
 
     Schedule::default().add_system(init_app).run(&mut world);
 
-    // TODO Register all schedules first and then run them via `world.run_schedule` and various rules.
-
     let spawn_scene_schedule = new_spawn_scene_schedule();
     world.add_schedule(spawn_scene_schedule.0, spawn_scene_schedule.1);
 
-    // PP requires that Player be already spawned and we cannot guarantee that so we're using
-    // this hack. Should be done better with some systems magic.
-    // Schedule::default()
-    //     .add_system(PostProcessor::spawn)
-    //     .run(&mut world);
+    let preupdate_schedule = new_preupdate_schedule();
+    world.add_schedule(preupdate_schedule.0, preupdate_schedule.1);
 
-    let mut preupdate_schedule = Schedule::default();
-    preupdate_schedule
-        .add_system(handle_system_events)
-        .add_systems((
-            escape_on_exit,
-            grab_cursor,
-            resize_device,
-            update_input_state,
-            update_frame_time,
-        ).after(handle_system_events));
+    let update_schedule = new_update_schedule();
+    world.add_schedule(update_schedule.0, update_schedule.1);
 
-    let mut update_schedule = Schedule::default();
-    update_schedule
-        .add_system(update_physics)
-        .add_system(PhysicsBody::sync.after(update_physics))
-        .add_system(Player::update.after(update_physics))
-        .add_system(Tracer::update.after(Player::update))
-        .add_system(update_and_build_debug_ui.after(update_physics));
-
-    let mut render_schedule = Schedule::default();
-    render_schedule.add_system(render);
+    let render_schedule = new_render_schedule();
+    world.add_schedule(render_schedule.0, render_schedule.1);
 
     loop {
         world.run_schedule(spawn_scene_schedule.1);
-        preupdate_schedule.run(&mut world);
-        update_schedule.run(&mut world);
-        render_schedule.run(&mut world);
+        world.run_schedule(preupdate_schedule.1);
+        world.run_schedule(update_schedule.1);
+        world.run_schedule(render_schedule.1);
 
         if !world.resource::<state::State>().running {
             return;
