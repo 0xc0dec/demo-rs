@@ -2,7 +2,7 @@ use bevy_ecs::prelude::*;
 use winit::event::*;
 
 #[derive(Resource)]
-pub struct InputState {
+pub struct Input {
     pub rmb_down: bool,
     pub forward_down: bool,
     pub back_down: bool,
@@ -13,9 +13,9 @@ pub struct InputState {
     pub mouse_delta: (f32, f32),
 }
 
-impl InputState {
+impl Input {
     pub fn new() -> Self {
-        InputState {
+        Input {
             rmb_down: false,
             forward_down: false,
             back_down: false,

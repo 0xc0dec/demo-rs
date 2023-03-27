@@ -1,9 +1,9 @@
 use bevy_ecs::prelude::*;
 use crate::events::{KeyboardEvent, MouseEvent};
-use crate::input_state::InputState;
+use crate::input::Input;
 
 pub fn update_input_state(
-    mut input: ResMut<InputState>,
+    mut input: ResMut<Input>,
     mut keyboard_events: EventReader<KeyboardEvent>,
     mut mouse_events: EventReader<MouseEvent>,
 ) {

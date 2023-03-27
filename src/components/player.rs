@@ -4,15 +4,15 @@ use crate::components::transform::TransformSpace;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::events::WindowResizeEvent;
-use crate::input_state::InputState;
+use crate::input::Input;
 use crate::math::Vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
-use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::NonSendMut;
 use rapier3d::prelude::*;
+use crate::frame_time::FrameTime;
 
 #[derive(Component)]
 pub struct Player {
@@ -51,9 +51,9 @@ impl Player {
     }
 
     pub fn update(
-        state: Res<AppState>,
+        frame_time: Res<FrameTime>,
         device: NonSend<Device>,
-        input: Res<InputState>,
+        input: Res<Input>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: NonSendMut<PhysicsWorld>,
         mut resize_events: EventReader<WindowResizeEvent>,
@@ -72,7 +72,7 @@ impl Player {
                 ));
         }
 
-        let dt = state.frame_time.delta;
+        let dt = frame_time.delta;
 
         if input.rmb_down {
             Self::rotate(&mut transform, dt, &input);
@@ -83,7 +83,7 @@ impl Player {
     fn rotate(
         transform: &mut Transform,
         dt: f32,
-        input: &InputState,
+        input: &Input,
     ) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
@@ -108,7 +108,7 @@ impl Player {
         collider_handle: ColliderHandle,
         dt: f32,
         speed: f32,
-        input: &InputState,
+        input: &Input,
         physics: &mut PhysicsWorld
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);

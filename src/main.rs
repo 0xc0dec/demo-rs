@@ -4,20 +4,20 @@ mod debug_ui;
 mod device;
 mod events;
 mod frame_time;
-mod input_state;
+mod input;
 mod math;
 mod model;
 mod physics_world;
 mod render_tags;
 mod render_target;
 mod shaders;
-mod app_state;
+mod app;
 mod systems;
 mod texture;
 
 use crate::systems::*;
 use bevy_ecs::prelude::*;
-use crate::app_state::AppState;
+use crate::app::App;
 
 fn main() {
     let mut world = World::default();
@@ -44,7 +44,7 @@ fn main() {
         world.run_schedule(update_schedule.1);
         world.run_schedule(render_schedule.1);
 
-        if !world.resource::<AppState>().running {
+        if !world.resource::<App>().running {
             return;
         }
     }

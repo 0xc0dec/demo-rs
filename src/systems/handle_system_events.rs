@@ -1,6 +1,6 @@
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
-use crate::input_state::InputState;
+use crate::input::Input;
 use bevy_ecs::prelude::*;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -10,7 +10,7 @@ use winit::window::Window;
 pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
-    mut input: ResMut<InputState>,
+    mut input: ResMut<Input>,
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResizeEvent>,
     mut keyboard_events: EventWriter<KeyboardEvent>,

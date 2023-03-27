@@ -1,14 +1,14 @@
 use crate::debug_ui::DebugUI;
-use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use winit::window::Window;
 use crate::components::Camera;
+use crate::frame_time::FrameTime;
 use crate::render_tags::RenderTags;
 
 pub fn update_and_build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
     cameras: Query<&Camera>,
-    state: Res<AppState>,
+    frame_time: Res<FrameTime>,
     window: NonSend<Window>,
 ) {
     if !cameras.iter().any(|c| c.should_render(RenderTags::DEBUG_UI)) {
@@ -18,7 +18,7 @@ pub fn update_and_build_debug_ui(
         return;
     }
 
-    ui.update_and_build(&window, state.frame_time.delta, |frame| {
+    ui.update_and_build(&window, frame_time.delta, |frame| {
         frame
             .window("Debug info")
             .position([10.0, 10.0], imgui::Condition::FirstUseEver)
