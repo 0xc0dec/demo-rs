@@ -1,4 +1,4 @@
-mod debug_ui;
+mod update_and_build_debug_ui;
 mod handle_system_events;
 mod init;
 mod render;
@@ -12,7 +12,7 @@ use bevy_ecs::prelude::*;
 use winit::event::{MouseButton, VirtualKeyCode};
 use winit::window::{CursorGrabMode, Window};
 
-pub use debug_ui::update_and_build_debug_ui;
+pub use update_and_build_debug_ui::update_and_build_debug_ui;
 pub use handle_system_events::handle_system_events;
 pub use init::init;
 pub use render::render;
