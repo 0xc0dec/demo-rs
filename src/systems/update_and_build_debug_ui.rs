@@ -2,12 +2,22 @@ use crate::debug_ui::DebugUI;
 use crate::app_state::AppState;
 use bevy_ecs::prelude::*;
 use winit::window::Window;
+use crate::components::Camera;
+use crate::render_tags::RenderTags;
 
 pub fn update_and_build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
+    cameras: Query<&Camera>,
     state: Res<AppState>,
     window: NonSend<Window>,
 ) {
+    if !cameras.iter().any(|c| c.should_render(RenderTags::DEBUG_UI)) {
+        // No point. Also if we don't render the UI later (because there's no cameras)
+        // imgui will fail on the next iteration when we start a new frame because the previous frame
+        // will not been finished (i.e. rendered). Perhaps that could be worked around differently.
+        return;
+    }
+
     ui.update_and_build(&window, state.frame_time.delta, |frame| {
         frame
             .window("Debug info")
