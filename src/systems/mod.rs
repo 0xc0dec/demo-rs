@@ -22,9 +22,7 @@ pub use grab_cursor::grab_cursor;
 pub use schedules::*;
 
 pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<WindowResizeEvent>) {
-    for evt in events.iter() {
-        device.resize(evt.new_size);
-    }
+    events.iter().last().map(|e| device.resize(e.new_size));
 }
 
 pub fn escape_on_exit(mut state: ResMut<AppState>, mut keyboard_events: EventReader<KeyboardEvent>) {
