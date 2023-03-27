@@ -14,12 +14,12 @@ pub struct Texture {
 }
 
 fn new_sampler(
-    device: &Device,
+    device: &wgpu::Device,
     filter: wgpu::FilterMode,
     mipmap_filter: wgpu::FilterMode,
     compare: Option<wgpu::CompareFunction>,
 ) -> wgpu::Sampler {
-    device.device().create_sampler(&wgpu::SamplerDescriptor {
+    device.create_sampler(&wgpu::SamplerDescriptor {
         label: None,
         address_mode_u: wgpu::AddressMode::ClampToEdge,
         address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -48,15 +48,14 @@ impl Texture {
         self.format
     }
 
-    pub fn new_depth(device: &Device, size: TextureSize) -> Self {
+    pub fn new_depth(device: &wgpu::Device, format: wgpu::TextureFormat, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,
             depth_or_array_layers: 1,
         };
 
-        let format = device.depth_texture_format();
-        let texture = device.device().create_texture(&wgpu::TextureDescriptor {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -83,15 +82,14 @@ impl Texture {
         }
     }
 
-    pub fn new_render_attachment(device: &Device, size: TextureSize) -> Self {
+    pub fn new_render_attachment(device: &wgpu::Device, format: wgpu::TextureFormat, size: TextureSize) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,
             depth_or_array_layers: 1,
         };
-        let format = device.surface_texture_format(); // TODO Configurable
 
-        let texture = device.device().create_texture(&wgpu::TextureDescriptor {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -120,15 +118,15 @@ impl Texture {
 
     pub async fn new_2d_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_2d_from_mem(device, &data)
+        Self::new_2d_from_mem(device.device(), device.queue(), &data)
     }
 
     pub async fn new_cube_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_cube_from_mem(device, &data)
+        Self::new_cube_from_mem(device.device(), device.queue(), &data)
     }
 
-    fn new_2d_from_mem(device: &Device, bytes: &[u8]) -> Result<Self> {
+    fn new_2d_from_mem(device: &wgpu::Device, queue: &wgpu::Queue, bytes: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(bytes)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -139,8 +137,8 @@ impl Texture {
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
-        let texture = device.device().create_texture_with_data(
-            device.queue(),
+        let texture = device.create_texture_with_data(
+            queue,
             &wgpu::TextureDescriptor {
                 label: None,
                 size,
@@ -170,10 +168,10 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(device: &Device, bytes: &[u8]) -> Result<Self> {
+    fn new_cube_from_mem(device: &wgpu::Device, queue: &wgpu::Queue, bytes: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
 
-        let format = wgpu::TextureFormat::Rgba8UnormSrgb;
+        let format = wgpu::TextureFormat::Rgba8UnormSrgb; // TODO Configurable
 
         let size = wgpu::Extent3d {
             width: 128,
@@ -187,8 +185,8 @@ impl Texture {
         };
         let max_mips = layer_size.max_mips(wgpu::TextureDimension::D2);
 
-        let texture = device.device().create_texture_with_data(
-            device.queue(),
+        let texture = device.create_texture_with_data(
+            queue,
             &wgpu::TextureDescriptor {
                 size,
                 mip_level_count: max_mips,

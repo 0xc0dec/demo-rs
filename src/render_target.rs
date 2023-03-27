@@ -9,8 +9,12 @@ pub struct RenderTarget {
 impl RenderTarget {
     pub fn new(device: &Device, size: Option<TextureSize>) -> Self {
         let size = size.unwrap_or(device.surface_size().into());
-        let color_tex = Texture::new_render_attachment(device, size.into());
-        let depth_tex = Texture::new_depth(&device, size.into());
+        let color_tex = Texture::new_render_attachment(
+            device.device(), device.surface_texture_format(), size.into()
+        );
+        let depth_tex = Texture::new_depth(
+            device.device(), device.depth_texture_format(), size.into()
+        );
 
         Self {
             color_tex,

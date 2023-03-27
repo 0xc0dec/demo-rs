@@ -2,15 +2,12 @@ use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
-// TODO Replace pub's with getters
 pub struct Device {
     surface: wgpu::Surface,
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
     queue: wgpu::Queue,
-    // TODO Make it non-optional. Currently it is just because Texture's ctor requires
-    // a reference to Device, which we cannot provide before we have constructed the device.
-    pub depth_tex: Option<Texture>,
+    depth_tex: Texture,
 }
 
 impl Device {
@@ -71,12 +68,14 @@ impl Device {
         };
         surface.configure(&device, &surface_config);
 
+        let depth_tex = Texture::new_depth(&device, Self::DEPTH_TEX_FORMAT, surface_size.into());
+
         Self {
             surface_config,
             surface,
             device,
             queue,
-            depth_tex: None,
+            depth_tex,
         }
     }
     
@@ -85,7 +84,9 @@ impl Device {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Some(Texture::new_depth(&self, new_size.into()));
+            self.depth_tex = Texture::new_depth(
+                &self.device, Self::DEPTH_TEX_FORMAT, new_size.into()
+            );
         }
     }
 
@@ -111,5 +112,9 @@ impl Device {
 
     pub fn surface(&self) -> &wgpu::Surface {
         &self.surface
+    }
+
+    pub fn depth_tex(&self) -> &Texture {
+        &self.depth_tex
     }
 }

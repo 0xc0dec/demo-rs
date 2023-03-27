@@ -36,7 +36,7 @@ fn render_pass(
 
     let depth_tex_view = target
         .map(|t| t.depth_tex().view())
-        .or(device.depth_tex.as_ref().map(|t| t.view()))
+        .or(Some(device.depth_tex().view()))
         .unwrap();
     let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
         view: depth_tex_view,
