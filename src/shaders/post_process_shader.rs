@@ -1,4 +1,4 @@
-use crate::device::{Device};
+use crate::device::Device;
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;

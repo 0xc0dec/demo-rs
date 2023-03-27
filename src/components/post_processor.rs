@@ -1,9 +1,9 @@
-use bevy_ecs::prelude::{Commands, NonSend, Query};
 use crate::components::{Camera, ModelRenderer, ModelShader, Player, RenderOrder, Transform};
 use crate::device::Device;
 use crate::model::Model;
 use crate::render_tags::RenderTags;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
+use bevy_ecs::prelude::*;
 
 pub struct PostProcessor;
 
@@ -25,7 +25,8 @@ impl PostProcessor {
                 PostProcessShaderParams {
                     texture: source_camera_rt.color_tex(),
                 },
-            ).await
+            )
+            .await
         });
 
         let model_renderer = ModelRenderer {

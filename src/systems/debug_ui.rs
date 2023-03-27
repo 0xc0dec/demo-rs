@@ -1,12 +1,12 @@
-use bevy_ecs::prelude::{NonSend, NonSendMut, Res};
-use winit::window::Window;
 use crate::debug_ui::DebugUI;
 use crate::state::State;
+use bevy_ecs::prelude::*;
+use winit::window::Window;
 
 pub fn update_and_build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
     state: Res<State>,
-    window: NonSend<Window>
+    window: NonSend<Window>,
 ) {
     ui.update_and_build(&window, state.frame_time.delta, |frame| {
         frame
@@ -18,11 +18,13 @@ pub fn update_and_build_debug_ui(
             .collapsible(false)
             .no_decoration()
             .build(|| {
-                frame.text("\
+                frame.text(
+                    "\
                     Controls:\n\
                     * Hold right click to control camera\n\
                     * Q-W-E-A-S-D to move\n\
-                    * Esc to quit the app");
+                    * Esc to quit the app",
+                );
 
                 let mut mouse_pos = frame.io().mouse_pos;
                 // Prevent UI jumping at start when the mouse position is not yet known

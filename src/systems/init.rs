@@ -1,6 +1,3 @@
-use bevy_ecs::prelude::{Events, World};
-use winit::event_loop::EventLoop;
-use winit::window::WindowBuilder;
 use crate::assets::Assets;
 use crate::debug_ui::DebugUI;
 use crate::device::{Device, SurfaceSize};
@@ -9,6 +6,9 @@ use crate::frame_time::FrameTime;
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
+use bevy_ecs::prelude::*;
+use winit::event_loop::EventLoop;
+use winit::window::WindowBuilder;
 
 pub fn init(world: &mut World) {
     pollster::block_on(async {
@@ -24,7 +24,10 @@ pub fn init(world: &mut World) {
         let physics = PhysicsWorld::new();
         let debug_ui = DebugUI::new(&device, &window);
 
-        world.insert_resource(State { running: true, frame_time: FrameTime::new() });
+        world.insert_resource(State {
+            running: true,
+            frame_time: FrameTime::new(),
+        });
         world.insert_resource(input);
 
         world.init_resource::<Events<WindowResizeEvent>>();

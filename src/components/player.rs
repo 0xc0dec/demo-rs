@@ -1,17 +1,17 @@
-use bevy_ecs::prelude::{Commands, Component, EventReader, NonSend, Query, Res};
-use bevy_ecs::system::NonSendMut;
 use crate::components::camera::Camera;
-use crate::math::{Vec3};
-use crate::physics_world::PhysicsWorld;
 use crate::components::transform::TransformSpace;
-use rapier3d::prelude::*;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::events::WindowResizeEvent;
 use crate::input_state::InputState;
+use crate::math::Vec3;
+use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
 use crate::state::State;
+use bevy_ecs::prelude::*;
+use bevy_ecs::system::NonSendMut;
+use rapier3d::prelude::*;
 
 #[derive(Component)]
 pub struct Player {
@@ -30,7 +30,7 @@ impl Player {
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
             RenderTags::SCENE,
-            Some(rt)
+            Some(rt),
         );
         let mut transform = Transform::from_pos(pos);
         transform.look_at(Vec3::from_element(0.0));
@@ -42,11 +42,7 @@ impl Player {
         let collider_handle = physics.colliders.insert(collider);
 
         // TODO Use component bundles?
-        commands.spawn((
-            Player { collider_handle },
-            camera,
-            transform
-        ));
+        commands.spawn((Player { collider_handle }, camera, transform));
     }
 
     pub fn collider_handle(&self) -> ColliderHandle {
@@ -58,7 +54,7 @@ impl Player {
         input: Res<InputState>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: NonSendMut<PhysicsWorld>,
-        mut resize_events: EventReader<WindowResizeEvent>
+        mut resize_events: EventReader<WindowResizeEvent>,
     ) {
         let dt = state.frame_time.delta;
 
@@ -68,8 +64,7 @@ impl Player {
             camera.set_aspect(e.new_size.width as f32 / e.new_size.height as f32);
         }
 
-        let spectator_rot = transform
-            .spectator_rotation(dt, &input);
+        let spectator_rot = transform.spectator_rotation(dt, &input);
         if let Some(spectator_rot) = spectator_rot {
             transform.rotate_around_axis(
                 Vec3::y_axis().xyz(),
@@ -83,8 +78,7 @@ impl Player {
             );
         }
 
-        let spectator_translation = transform
-            .spectator_translation(dt, 10.0, &input);
+        let spectator_translation = transform.spectator_translation(dt, 10.0, &input);
         if let Some(spectator_translation) = spectator_translation {
             let (effective_movement, collider_current_pos) =
                 physics.move_character(dt, spectator_translation, player.collider_handle);

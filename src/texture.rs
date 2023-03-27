@@ -1,5 +1,5 @@
-use crate::device::Device;
 use crate::assets::load_binary;
+use crate::device::Device;
 use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
@@ -48,7 +48,11 @@ impl Texture {
         self.format
     }
 
-    pub fn new_depth(device: &wgpu::Device, format: wgpu::TextureFormat, size: TextureSize) -> Self {
+    pub fn new_depth(
+        device: &wgpu::Device,
+        format: wgpu::TextureFormat,
+        size: TextureSize,
+    ) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,
@@ -82,7 +86,11 @@ impl Texture {
         }
     }
 
-    pub fn new_render_attachment(device: &wgpu::Device, format: wgpu::TextureFormat, size: TextureSize) -> Self {
+    pub fn new_render_attachment(
+        device: &wgpu::Device,
+        format: wgpu::TextureFormat,
+        size: TextureSize,
+    ) -> Self {
         let size = wgpu::Extent3d {
             width: size.0,
             height: size.1,

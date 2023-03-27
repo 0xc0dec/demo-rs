@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-use anyhow::*;
-use std::path::PathBuf;
-use std::rc::Rc;
 use crate::device::Device;
 use crate::model::Model;
 use crate::texture::Texture;
+use anyhow::*;
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::rc::Rc;
 
 fn full_path(relative_path: &str) -> PathBuf {
     std::path::Path::new("./assets").join(relative_path)
@@ -28,7 +28,7 @@ impl Assets {
     pub fn new() -> Self {
         Self {
             models: HashMap::new(),
-            textures: HashMap::new()
+            textures: HashMap::new(),
         }
     }
 

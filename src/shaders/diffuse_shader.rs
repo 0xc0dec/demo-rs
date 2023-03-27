@@ -1,12 +1,12 @@
 use super::Shader;
-use crate::device::{Device};
+use crate::components::Camera;
+use crate::components::Transform;
+use crate::device::Device;
+use crate::math::Mat4;
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
-use crate::components::Camera;
-use crate::math::{Mat4};
-use crate::components::Transform;
 
 pub struct DiffuseShader {
     texture_bind_group: BindGroup,
@@ -42,7 +42,7 @@ impl DiffuseShader {
                 vertex_buffer_layouts: &[ModelVertex::desc()],
             },
         )
-            .await;
+        .await;
 
         Self {
             texture_bind_group,
@@ -53,7 +53,12 @@ impl DiffuseShader {
         }
     }
 
-    pub fn update(&mut self, device: &Device, camera: (&Camera, &Transform), transform: &Transform) {
+    pub fn update(
+        &mut self,
+        device: &Device,
+        camera: (&Camera, &Transform),
+        transform: &Transform,
+    ) {
         self.matrices_uniform.update(camera, transform);
         device.queue().write_buffer(
             &self.matrices_uniform_buf,
@@ -95,11 +100,8 @@ impl MatricesUniform {
     }
 
     fn update(&mut self, camera: (&Camera, &Transform), transform: &Transform) {
-        self.view_proj = (
-            Self::OPENGL_TO_WGPU_MATRIX
-                * camera.0.proj_matrix()
-                * camera.1.view_matrix()
-        ).into();
+        self.view_proj =
+            (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
         self.world = transform.matrix().into();
     }
 }

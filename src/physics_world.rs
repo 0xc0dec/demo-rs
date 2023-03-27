@@ -1,4 +1,4 @@
-use crate::math::{Vec3};
+use crate::math::Vec3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
 
@@ -84,10 +84,7 @@ impl PhysicsWorld {
             (effective_movement, collider_pos.translation.vector)
         };
 
-        (
-            translation,
-            collider_current_pos,
-        )
+        (translation, collider_current_pos)
     }
 
     pub fn cast_ray(

@@ -1,4 +1,3 @@
-use bevy_ecs::prelude::{Commands, Component, NonSend, Query, With, Without};
 use crate::components::{ModelRenderer, ModelShader, Player, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
@@ -6,6 +5,7 @@ use crate::model::Model;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::ColorShader;
+use bevy_ecs::prelude::*;
 
 #[derive(Component)]
 pub struct Tracer;
@@ -24,7 +24,7 @@ impl Tracer {
         let renderer = ModelRenderer {
             shader: ModelShader::Color(shader),
             model,
-            tags: RenderTags::HIDDEN
+            tags: RenderTags::HIDDEN,
         };
 
         commands.spawn((Tracer, transform, renderer));
@@ -34,7 +34,7 @@ impl Tracer {
         physics: NonSend<PhysicsWorld>,
         // Without this Without it crashes :|
         player: Query<(&Player, &Transform), Without<Tracer>>,
-        mut tracer: Query<(&mut Transform, &mut ModelRenderer), With<Tracer>>
+        mut tracer: Query<(&mut Transform, &mut ModelRenderer), With<Tracer>>,
     ) {
         let (player, player_transform) = player.single();
         let (mut tracer_transform, mut tracer_renderer) = tracer.single_mut();

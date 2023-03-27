@@ -1,6 +1,6 @@
-use bevy_ecs::prelude::Component;
-use rapier3d::na;
 use crate::math::{Mat4, Quat, UnitQuat, Vec3};
+use bevy_ecs::prelude::*;
+use rapier3d::na;
 
 pub enum TransformSpace {
     Local,
@@ -12,7 +12,7 @@ pub struct Transform {
     m: Mat4,
     scale: Vec3,
     pos: Vec3,
-    rot: UnitQuat
+    rot: UnitQuat,
 }
 
 // TODO Parent-child relationships
@@ -20,12 +20,7 @@ impl Transform {
     pub fn new(pos: Vec3, scale: Vec3) -> Self {
         let m = Mat4::identity();
         let rot = UnitQuat::identity();
-        let mut res = Self {
-            m,
-            rot,
-            scale,
-            pos
-        };
+        let mut res = Self { m, rot, scale, pos };
         res.rebuild_matrix();
         res
     }
@@ -59,10 +54,7 @@ impl Transform {
     }
 
     pub fn look_at(&mut self, target: Vec3) {
-        self.rot = UnitQuat::look_at_rh(
-            &(target - self.pos),
-            &Vec3::y_axis()
-        );
+        self.rot = UnitQuat::look_at_rh(&(target - self.pos), &Vec3::y_axis());
         self.rebuild_matrix();
     }
 
@@ -88,16 +80,11 @@ impl Transform {
         self.rebuild_matrix();
     }
 
-    pub fn rotate_around_axis(
-        &mut self,
-        axis: Vec3,
-        angle: f32,
-        space: TransformSpace,
-    ) {
+    pub fn rotate_around_axis(&mut self, axis: Vec3, angle: f32, space: TransformSpace) {
         let axis = axis.normalize();
         let axis = match space {
             TransformSpace::Local => axis,
-            TransformSpace::World => self.m.try_inverse().unwrap().transform_vector(&axis)
+            TransformSpace::World => self.m.try_inverse().unwrap().transform_vector(&axis),
         };
 
         self.rot = UnitQuat::from_scaled_axis(axis * angle) * self.rot;

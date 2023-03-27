@@ -1,5 +1,5 @@
-use bevy_ecs::prelude::Resource;
 use crate::frame_time::FrameTime;
+use bevy_ecs::prelude::*;
 
 #[derive(Resource)]
 pub struct State {

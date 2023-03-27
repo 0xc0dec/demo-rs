@@ -1,11 +1,11 @@
 use super::Shader;
+use crate::components::Camera;
+use crate::components::Transform;
 use crate::device::Device;
+use crate::math::Mat4;
 use crate::model::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
-use crate::components::Transform;
 use wgpu::{BindGroup, RenderPipeline};
-use crate::components::Camera;
-use crate::math::{Mat4};
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,
@@ -30,7 +30,7 @@ impl ColorShader {
                 vertex_buffer_layouts: &[ModelVertex::desc()],
             },
         )
-            .await;
+        .await;
 
         Self {
             matrices_uniform,
@@ -40,7 +40,12 @@ impl ColorShader {
         }
     }
 
-    pub fn update(&mut self, device: &Device, camera: (&Camera, &Transform), transform: &Transform) {
+    pub fn update(
+        &mut self,
+        device: &Device,
+        camera: (&Camera, &Transform),
+        transform: &Transform,
+    ) {
         self.matrices_uniform.update(camera, transform);
         device.queue().write_buffer(
             &self.matrices_uniform_buf,
@@ -82,11 +87,8 @@ impl MatricesUniform {
     }
 
     fn update(&mut self, camera: (&Camera, &Transform), model_transform: &Transform) {
-        self.view_proj = (
-            Self::OPENGL_TO_WGPU_MATRIX
-                * camera.0.proj_matrix()
-                * camera.1.view_matrix()
-        ).into();
+        self.view_proj =
+            (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
         self.world = model_transform.matrix().into();
     }
 }

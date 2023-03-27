@@ -78,15 +78,14 @@ impl Device {
             depth_tex,
         }
     }
-    
+
     pub fn resize(&mut self, new_size: SurfaceSize) {
         if new_size.width > 0 && new_size.height > 0 {
             self.surface_config.width = new_size.width;
             self.surface_config.height = new_size.height;
             self.surface.configure(&self.device, &self.surface_config);
-            self.depth_tex = Texture::new_depth(
-                &self.device, Self::DEPTH_TEX_FORMAT, new_size.into()
-            );
+            self.depth_tex =
+                Texture::new_depth(&self.device, Self::DEPTH_TEX_FORMAT, new_size.into());
         }
     }
 

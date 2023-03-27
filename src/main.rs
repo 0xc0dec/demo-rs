@@ -1,24 +1,24 @@
+mod assets;
+mod components;
 mod debug_ui;
 mod device;
+mod events;
+mod frame_time;
 mod input_state;
 mod math;
 mod model;
 mod physics_world;
+mod render_tags;
 mod render_target;
-mod assets;
 mod shaders;
-mod texture;
-mod frame_time;
 mod state;
 mod systems;
-mod components;
-mod events;
-mod render_tags;
+mod texture;
 
-use bevy_ecs::prelude::*;
 use crate::components::*;
 use crate::state::State;
 use crate::systems::*;
+use bevy_ecs::prelude::*;
 
 fn main() {
     let mut world = World::default();
@@ -66,6 +66,8 @@ fn main() {
         update_schedule.run(&mut world);
         render_schedule.run(&mut world);
 
-        if !world.resource::<State>().running { return; }
+        if !world.resource::<State>().running {
+            return;
+        }
     }
 }

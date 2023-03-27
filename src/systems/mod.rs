@@ -1,35 +1,29 @@
-mod init;
-mod handle_system_events;
-mod render;
 mod debug_ui;
+mod handle_system_events;
+mod init;
+mod render;
 
-use bevy_ecs::prelude::{EventReader, NonSend, NonSendMut, Res, ResMut};
-use winit::event::{MouseButton, VirtualKeyCode};
-use winit::window::{CursorGrabMode, Window};
 use crate::device::Device;
 use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 use crate::input_state::InputState;
 use crate::physics_world::PhysicsWorld;
 use crate::state::State;
+use bevy_ecs::prelude::*;
+use winit::event::{MouseButton, VirtualKeyCode};
+use winit::window::{CursorGrabMode, Window};
 
-pub use init::init;
-pub use handle_system_events::handle_system_events;
-pub use render::render;
 pub use debug_ui::update_and_build_debug_ui;
+pub use handle_system_events::handle_system_events;
+pub use init::init;
+pub use render::render;
 
-pub fn resize_device(
-    mut device: NonSendMut<Device>,
-    mut events: EventReader<WindowResizeEvent>,
-) {
+pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<WindowResizeEvent>) {
     for evt in events.iter() {
         device.resize(evt.new_size);
     }
 }
 
-pub fn grab_cursor(
-    window: NonSend<Window>,
-    mut mouse_events: EventReader<MouseEvent>
-) {
+pub fn grab_cursor(window: NonSend<Window>, mut mouse_events: EventReader<MouseEvent>) {
     for e in mouse_events.iter() {
         if let MouseEvent::Button { button, pressed } = e {
             if *button == MouseButton::Right {
@@ -48,10 +42,7 @@ pub fn grab_cursor(
     }
 }
 
-pub fn escape_on_exit(
-    mut state: ResMut<State>,
-    mut keyboard_events: EventReader<KeyboardEvent>,
-) {
+pub fn escape_on_exit(mut state: ResMut<State>, mut keyboard_events: EventReader<KeyboardEvent>) {
     if keyboard_events
         .iter()
         .any(|e| e.code == VirtualKeyCode::Escape && e.pressed)
@@ -71,7 +62,7 @@ pub fn update_frame_time(mut state: ResMut<State>) {
 pub fn update_input_state(
     mut input: ResMut<InputState>,
     mut keyboard_events: EventReader<KeyboardEvent>,
-    mut mouse_events: EventReader<MouseEvent>
+    mut mouse_events: EventReader<MouseEvent>,
 ) {
     input.reset();
     for e in keyboard_events.iter() {
@@ -81,7 +72,7 @@ pub fn update_input_state(
     for e in mouse_events.iter() {
         match e {
             MouseEvent::Move(dx, dy) => input.on_mouse_move((*dx, *dy)),
-            MouseEvent::Button { button, pressed } => input.on_mouse_button(*button, *pressed)
+            MouseEvent::Button { button, pressed } => input.on_mouse_button(*button, *pressed),
         }
     }
 }

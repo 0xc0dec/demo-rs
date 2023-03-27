@@ -1,19 +1,23 @@
-use bevy_ecs::prelude::*;
+use crate::components::transform::Transform;
 use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::model::Model;
 use crate::physics_world::PhysicsWorld;
+use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
 use crate::texture::Texture;
-use crate::components::transform::Transform;
-use crate::render_tags::RenderTags;
+use bevy_ecs::prelude::*;
 
 #[derive(Component)]
 pub struct FreeBox;
 
 impl FreeBox {
-    pub fn spawn(mut commands: Commands, device: NonSend<Device>, mut physics: NonSendMut<PhysicsWorld>) {
+    pub fn spawn(
+        mut commands: Commands,
+        device: NonSend<Device>,
+        mut physics: NonSendMut<PhysicsWorld>,
+    ) {
         pollster::block_on(async {
             let pos = Vec3::y_axis().xyz() * 15.0;
             let scale = Vec3::from_element(1.0);
@@ -29,28 +33,21 @@ impl FreeBox {
                 &mut physics,
             );
 
-            let texture = Texture::new_2d_from_file("stonewall.jpg", &device).await.unwrap();
-            let shader = DiffuseShader::new(
-                &device,
-                DiffuseShaderParams {
-                    texture: &texture
-                },
-            ).await;
+            let texture = Texture::new_2d_from_file("stonewall.jpg", &device)
+                .await
+                .unwrap();
+            let shader =
+                DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
             let model = Model::from_file("cube.obj", &device).await.unwrap();
             let render_model = ModelRenderer {
                 shader: ModelShader::Diffuse(shader),
                 model,
-                tags: RenderTags::SCENE
+                tags: RenderTags::SCENE,
             };
 
             let transform = Transform::new(pos, scale);
 
-            commands.spawn((
-                FreeBox,
-                physics_body,
-                render_model,
-                transform
-            ));
+            commands.spawn((FreeBox, physics_body, render_model, transform));
         });
     }
 }

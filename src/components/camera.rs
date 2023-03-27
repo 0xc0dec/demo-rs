@@ -1,7 +1,7 @@
-use bevy_ecs::prelude::Component;
-use rapier3d::na;
 use crate::math::Mat4;
 use crate::render_target::RenderTarget;
+use bevy_ecs::prelude::*;
+use rapier3d::na;
 
 #[derive(Component)]
 pub struct Camera {
@@ -12,7 +12,7 @@ pub struct Camera {
     proj_matrix: Mat4,
     // Tags to render via this camera
     render_tags: u32,
-    target: Option<RenderTarget>
+    target: Option<RenderTarget>,
 }
 
 impl Camera {
@@ -29,7 +29,7 @@ impl Camera {
             fov,
             proj_matrix,
             render_tags,
-            target
+            target,
         }
     }
 
@@ -47,7 +47,7 @@ impl Camera {
 
     pub fn set_aspect(&mut self, aspect: f32) {
         self.aspect = aspect;
-        self.proj_matrix = na::Perspective3::new(self.aspect, self.fov, self.znear, self.zfar)
-            .to_homogeneous();
+        self.proj_matrix =
+            na::Perspective3::new(self.aspect, self.fov, self.znear, self.zfar).to_homogeneous();
     }
 }

@@ -1,6 +1,6 @@
-use std::f32::consts::PI;
 use crate::input_state::InputState;
 use crate::math::Vec3;
+use std::f32::consts::PI;
 
 pub struct SpectatorRotationDelta {
     pub vertical_rotation: f32,
@@ -8,7 +8,11 @@ pub struct SpectatorRotationDelta {
 }
 
 impl crate::components::Transform {
-    pub fn spectator_rotation(&self, dt: f32, input: &InputState) -> Option<SpectatorRotationDelta> {
+    pub fn spectator_rotation(
+        &self,
+        dt: f32,
+        input: &InputState,
+    ) -> Option<SpectatorRotationDelta> {
         if !input.rmb_down {
             return None;
         }
@@ -33,12 +37,7 @@ impl crate::components::Transform {
         })
     }
 
-    pub fn spectator_translation(
-        &self,
-        dt: f32,
-        speed: f32,
-        input: &InputState,
-    ) -> Option<Vec3> {
+    pub fn spectator_translation(&self, dt: f32, speed: f32, input: &InputState) -> Option<Vec3> {
         if !input.rmb_down {
             return None;
         }

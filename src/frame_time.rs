@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::Resource;
+use bevy_ecs::prelude::*;
 use std::collections::VecDeque;
 use std::time::Instant;
 
@@ -6,7 +6,7 @@ use std::time::Instant;
 pub struct FrameTime {
     pub delta: f32,
     queue: VecDeque<f32>,
-    last_frame_instant: Instant
+    last_frame_instant: Instant,
 }
 
 impl FrameTime {
@@ -19,7 +19,7 @@ impl FrameTime {
         Self {
             queue,
             last_frame_instant,
-            delta: 0.0
+            delta: 0.0,
         }
     }
 
