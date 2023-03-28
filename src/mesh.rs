@@ -45,13 +45,37 @@ impl Vertex for MeshVertex {
 struct MeshPart {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
-    num_elements: u32,
+    num_indices: u32,
 }
 
 impl MeshPart {
+    fn from_buffers(device: &Device, vertices: &[MeshVertex], indices: &[u32]) -> Self {
+        let vertex_buffer = device
+            .device()
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: None,
+                contents: bytemuck::cast_slice(vertices),
+                usage: wgpu::BufferUsages::VERTEX,
+            });
+
+        let index_buffer = device
+            .device()
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: None,
+                contents: bytemuck::cast_slice(indices),
+                usage: wgpu::BufferUsages::INDEX,
+            });
+
+        Self {
+            vertex_buffer,
+            index_buffer,
+            num_indices: indices.len() as u32
+        }
+    }
+
     // TODO Use different vertex description and remove unused attributes
     fn quad(device: &Device) -> MeshPart {
-        let vertices = [
+        let vertices = vec![
             // Bottom left
             MeshVertex {
                 position: [-1.0, -1.0, 0.0],
@@ -78,29 +102,9 @@ impl MeshPart {
             },
         ];
 
-        let indices = [0, 1, 2, 0, 2, 3];
+        let indices: Vec<u32> = vec![0, 1, 2, 0, 2, 3];
 
-        // TODO Remove copypasta
-        let vertex_buffer = device
-            .device()
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: None,
-                contents: bytemuck::cast_slice(&vertices),
-                usage: wgpu::BufferUsages::VERTEX,
-            });
-        let index_buffer = device
-            .device()
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: None,
-                contents: bytemuck::cast_slice(&indices),
-                usage: wgpu::BufferUsages::INDEX,
-            });
-
-        MeshPart {
-            vertex_buffer,
-            index_buffer,
-            num_elements: indices.len() as u32,
-        }
+        Self::from_buffers(device, &vertices, &indices)
     }
 }
 
@@ -134,7 +138,7 @@ impl Mesh {
         )
         .await?;
 
-        let meshes = meshes
+        let parts = meshes
             .into_iter()
             .map(|m| {
                 let vertices = (0..m.mesh.positions.len() / 3)
@@ -153,32 +157,11 @@ impl Mesh {
                     })
                     .collect::<Vec<_>>();
 
-                let vertex_buffer =
-                    device
-                        .device()
-                        .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                            label: None,
-                            contents: bytemuck::cast_slice(&vertices),
-                            usage: wgpu::BufferUsages::VERTEX,
-                        });
-                let index_buffer =
-                    device
-                        .device()
-                        .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                            label: None,
-                            contents: bytemuck::cast_slice(&m.mesh.indices),
-                            usage: wgpu::BufferUsages::INDEX,
-                        });
-
-                MeshPart {
-                    vertex_buffer,
-                    index_buffer,
-                    num_elements: m.mesh.indices.len() as u32,
-                }
+                MeshPart::from_buffers(device, &vertices, &m.mesh.indices)
             })
             .collect::<Vec<_>>();
 
-        Ok(Mesh { parts: meshes })
+        Ok(Mesh { parts })
     }
 }
 
@@ -191,7 +174,7 @@ impl<'a> DrawMesh<'a> for wgpu::RenderBundleEncoder<'a> {
         for part in &mesh.parts {
             self.set_vertex_buffer(0, part.vertex_buffer.slice(..));
             self.set_index_buffer(part.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-            self.draw_indexed(0..part.num_elements, 0, 0..1);
+            self.draw_indexed(0..part.num_indices, 0, 0..1);
         }
     }
 }
