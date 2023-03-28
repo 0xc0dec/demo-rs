@@ -3,7 +3,7 @@ use crate::components::transform::Transform;
 use crate::components::{ModelRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::model::Model;
+use crate::mesh::Model;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};

@@ -1,6 +1,6 @@
 use crate::components::{Camera, ModelRenderer, ModelShader, Player, RenderOrder, Transform};
 use crate::device::Device;
-use crate::model::Model;
+use crate::mesh::Model;
 use crate::render_tags::RenderTags;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use bevy_ecs::prelude::*;

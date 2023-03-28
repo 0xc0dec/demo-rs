@@ -1,7 +1,7 @@
 use crate::components::{Camera, Transform};
 use crate::device::Device;
 use crate::math::Mat4;
-use crate::model::{ModelVertex, Vertex};
+use crate::mesh::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
 use crate::texture::Texture;

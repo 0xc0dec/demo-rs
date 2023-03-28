@@ -1,7 +1,7 @@
 use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
-use crate::model::{DrawModel, Model};
+use crate::mesh::{DrawModel, Model};
 use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, Shader, SkyboxShader};
 use bevy_ecs::prelude::*;
 

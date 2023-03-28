@@ -19,10 +19,10 @@ struct VertexOutput {
 }
 
 @vertex
-fn vs_main(model: VertexInput) -> VertexOutput {
+fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.tex_coords = model.tex_coords;
-    out.clip_position = matrices.view_proj * matrices.world * vec4<f32>(model.position, 1.0);
+    out.tex_coords = in.tex_coords;
+    out.clip_position = matrices.view_proj * matrices.world * vec4<f32>(in.position, 1.0);
     return out;
 }
 

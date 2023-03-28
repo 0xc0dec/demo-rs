@@ -1,7 +1,7 @@
 use crate::components::transform::Transform;
 use crate::components::{ModelRenderer, ModelShader, RenderOrder};
 use crate::device::Device;
-use crate::model::Model;
+use crate::mesh::Model;
 use crate::render_tags::RenderTags;
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;

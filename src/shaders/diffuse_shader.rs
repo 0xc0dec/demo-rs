@@ -3,7 +3,7 @@ use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::math::Mat4;
-use crate::model::{ModelVertex, Vertex};
+use crate::mesh::{ModelVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};

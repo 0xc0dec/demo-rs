@@ -6,7 +6,7 @@ mod events;
 mod frame_time;
 mod input;
 mod math;
-mod model;
+mod mesh;
 mod physics_world;
 mod render_tags;
 mod render_target;

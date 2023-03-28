@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::model::Model;
+use crate::mesh::Model;
 use crate::texture::Texture;
 use anyhow::*;
 use std::collections::HashMap;
