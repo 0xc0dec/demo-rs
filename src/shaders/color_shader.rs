@@ -3,7 +3,7 @@ use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::math::Mat4;
-use crate::mesh::{ModelVertex, Vertex};
+use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use wgpu::{BindGroup, RenderPipeline};
 
@@ -27,7 +27,7 @@ impl ColorShader {
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],
-                vertex_buffer_layouts: &[ModelVertex::desc()],
+                vertex_buffer_layouts: &[MeshVertex::desc()],
             },
         )
         .await;
@@ -86,9 +86,9 @@ impl MatricesUniform {
         }
     }
 
-    fn update(&mut self, camera: (&Camera, &Transform), model_transform: &Transform) {
+    fn update(&mut self, camera: (&Camera, &Transform), mesh_transform: &Transform) {
         self.view_proj =
             (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
-        self.world = model_transform.matrix().into();
+        self.world = mesh_transform.matrix().into();
     }
 }

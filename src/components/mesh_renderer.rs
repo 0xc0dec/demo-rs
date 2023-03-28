@@ -1,11 +1,11 @@
 use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
-use crate::mesh::{DrawModel, Model};
+use crate::mesh::{DrawMesh, CombinedMesh};
 use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, Shader, SkyboxShader};
 use bevy_ecs::prelude::*;
 
-pub enum ModelShader {
+pub enum ShaderVariant {
     Color(ColorShader),
     Diffuse(DiffuseShader),
     Skybox(SkyboxShader),
@@ -13,16 +13,16 @@ pub enum ModelShader {
 }
 
 #[derive(Component)]
-pub struct ModelRenderer {
-    model: Model,
-    shader: ModelShader,
+pub struct MeshRenderer {
+    mesh: CombinedMesh,
+    shader: ShaderVariant,
     tags: u32, // TODO As a component?
 }
 
-impl ModelRenderer {
-    pub fn new(model: Model, shader: ModelShader, tags: u32) -> ModelRenderer {
+impl MeshRenderer {
+    pub fn new(mesh: CombinedMesh, shader: ShaderVariant, tags: u32) -> MeshRenderer {
         Self {
-            model,
+            mesh,
             shader,
             tags
         }
@@ -37,23 +37,23 @@ impl ModelRenderer {
     ) {
         // TODO Generalize
         match self.shader {
-            ModelShader::Color(ref mut color) => {
+            ShaderVariant::Color(ref mut color) => {
                 color.update(device, camera, &transform);
                 color.apply(encoder);
             }
-            ModelShader::Diffuse(ref mut diffuse) => {
+            ShaderVariant::Diffuse(ref mut diffuse) => {
                 diffuse.update(device, camera, &transform);
                 diffuse.apply(encoder);
             }
-            ModelShader::Skybox(ref mut skybox) => {
+            ShaderVariant::Skybox(ref mut skybox) => {
                 skybox.update(device, camera);
                 skybox.apply(encoder);
             }
-            ModelShader::PostProcess(ref mut pp) => {
+            ShaderVariant::PostProcess(ref mut pp) => {
                 pp.apply(encoder);
             }
         }
-        encoder.draw_model(&self.model);
+        encoder.draw_combined_mesh(&self.mesh);
     }
 
     pub fn tags(&self) -> u32 {
@@ -64,7 +64,7 @@ impl ModelRenderer {
         self.tags = tags;
     }
 
-    pub fn set_shader(&mut self, shader: ModelShader) {
+    pub fn set_shader(&mut self, shader: ShaderVariant) {
         self.shader = shader;
     }
 }

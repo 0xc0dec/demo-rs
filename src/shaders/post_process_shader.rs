@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::mesh::{ModelVertex, Vertex};
+use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
 use crate::texture::Texture;
@@ -26,7 +26,7 @@ impl PostProcessShader {
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&texture_bind_group_layout],
-                vertex_buffer_layouts: &[ModelVertex::desc()],
+                vertex_buffer_layouts: &[MeshVertex::desc()],
             },
         )
         .await;

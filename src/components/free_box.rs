@@ -1,8 +1,8 @@
 use crate::components::transform::Transform;
-use crate::components::{ModelRenderer, ModelShader, PhysicsBody, PhysicsBodyParams};
+use crate::components::{MeshRenderer, ShaderVariant, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::mesh::Model;
+use crate::mesh::CombinedMesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
@@ -38,16 +38,16 @@ impl FreeBox {
                 .unwrap();
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
-            let model = Model::from_file("cube.obj", &device).await.unwrap();
-            let render_model = ModelRenderer::new(
-                model,
-                ModelShader::Diffuse(shader),
+            let mesh = CombinedMesh::from_file("cube.obj", &device).await.unwrap();
+            let renderer = MeshRenderer::new(
+                mesh,
+                ShaderVariant::Diffuse(shader),
                 RenderTags::SCENE,
             );
 
             let transform = Transform::new(pos, scale);
 
-            commands.spawn((FreeBox, physics_body, render_model, transform));
+            commands.spawn((FreeBox, physics_body, renderer, transform));
         });
     }
 }

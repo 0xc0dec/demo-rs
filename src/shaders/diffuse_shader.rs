@@ -3,7 +3,7 @@ use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::math::Mat4;
-use crate::mesh::{ModelVertex, Vertex};
+use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
@@ -39,7 +39,7 @@ impl DiffuseShader {
                     &texture_bind_group_layout,
                     &matrices_uniform_bind_group_layout,
                 ],
-                vertex_buffer_layouts: &[ModelVertex::desc()],
+                vertex_buffer_layouts: &[MeshVertex::desc()],
             },
         )
         .await;

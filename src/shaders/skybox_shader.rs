@@ -1,7 +1,7 @@
 use crate::components::{Camera, Transform};
 use crate::device::Device;
 use crate::math::Mat4;
-use crate::mesh::{ModelVertex, Vertex};
+use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
 use crate::texture::Texture;
@@ -35,7 +35,7 @@ impl SkyboxShader {
                 depth_write: false,
                 depth_enabled: true,
                 bind_group_layouts: &[&data_uniform_bind_group_layout, &texture_bind_group_layout],
-                vertex_buffer_layouts: &[ModelVertex::desc()],
+                vertex_buffer_layouts: &[MeshVertex::desc()],
             },
         )
         .await;

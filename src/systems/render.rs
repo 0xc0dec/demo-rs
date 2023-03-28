@@ -1,4 +1,4 @@
-use crate::components::{Camera, ModelRenderer, RenderOrder, Transform};
+use crate::components::{Camera, MeshRenderer, RenderOrder, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
 use crate::render_target::RenderTarget;
@@ -93,7 +93,7 @@ fn new_bundle_encoder<'a>(device: &'a Device, target: Option<&RenderTarget>) -> 
 }
 
 fn build_render_bundles<'a>(
-    renderers: &mut [(&'a mut ModelRenderer, &'a Transform)],
+    renderers: &mut [(&'a mut MeshRenderer, &'a Transform)],
     camera: (&Camera, &Transform),
     device: &Device,
 ) -> Vec<RenderBundle> {
@@ -112,7 +112,7 @@ fn build_render_bundles<'a>(
 
 pub fn render(
     cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
-    mut renderers: Query<(&mut ModelRenderer, &Transform, Option<&RenderOrder>)>,
+    mut renderers: Query<(&mut MeshRenderer, &Transform, Option<&RenderOrder>)>,
     device: NonSend<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {

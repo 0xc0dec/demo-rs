@@ -9,17 +9,17 @@ pub trait Vertex {
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct ModelVertex {
+pub struct MeshVertex {
     pub position: [f32; 3],
     pub tex_coords: [f32; 2],
     pub normal: [f32; 3],
 }
 
-impl Vertex for ModelVertex {
+impl Vertex for MeshVertex {
     fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         use std::mem;
         wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<ModelVertex>() as wgpu::BufferAddress,
+            array_stride: mem::size_of::<MeshVertex>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &[
                 wgpu::VertexAttribute {
@@ -42,10 +42,12 @@ impl Vertex for ModelVertex {
     }
 }
 
-pub struct Model {
+// TODO Rename to Mesh
+pub struct CombinedMesh {
     meshes: Vec<Mesh>,
 }
 
+// TODO Rename to MeshPart
 pub struct Mesh {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
@@ -57,25 +59,25 @@ impl Mesh {
     pub fn quad(device: &Device) -> Mesh {
         let vertices = [
             // Bottom left
-            ModelVertex {
+            MeshVertex {
                 position: [-1.0, -1.0, 0.0],
                 tex_coords: [0.0, 0.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Top left
-            ModelVertex {
+            MeshVertex {
                 position: [-1.0, 1.0, 0.0],
                 tex_coords: [0.0, 1.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Top right
-            ModelVertex {
+            MeshVertex {
                 position: [1.0, 1.0, 0.0],
                 tex_coords: [1.0, 1.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Bottom right
-            ModelVertex {
+            MeshVertex {
                 position: [1.0, -1.0, 0.0],
                 tex_coords: [1.0, 0.0],
                 normal: [0.0, 0.0, 0.0], // unused
@@ -108,19 +110,19 @@ impl Mesh {
     }
 }
 
-impl Model {
+impl CombinedMesh {
     pub fn quad(device: &Device) -> Self {
         Self {
             meshes: vec![Mesh::quad(device)],
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<Model> {
+    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<CombinedMesh> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
 
-        let (models, _) = tobj::load_obj_buf_async(
+        let (meshes, _) = tobj::load_obj_buf_async(
             &mut reader,
             &tobj::LoadOptions {
                 triangulate: true,
@@ -134,11 +136,11 @@ impl Model {
         )
         .await?;
 
-        let meshes = models
+        let meshes = meshes
             .into_iter()
             .map(|m| {
                 let vertices = (0..m.mesh.positions.len() / 3)
-                    .map(|i| ModelVertex {
+                    .map(|i| MeshVertex {
                         position: [
                             m.mesh.positions[i * 3],
                             m.mesh.positions[i * 3 + 1],
@@ -178,24 +180,24 @@ impl Model {
             })
             .collect::<Vec<_>>();
 
-        Ok(Model { meshes })
+        Ok(CombinedMesh { meshes })
     }
 }
 
-pub trait DrawModel<'a> {
+pub trait DrawMesh<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh);
-    fn draw_model(&mut self, model: &'a Model);
+    fn draw_combined_mesh(&mut self, mesh: &'a CombinedMesh);
 }
 
-impl<'a> DrawModel<'a> for wgpu::RenderBundleEncoder<'a> {
+impl<'a> DrawMesh<'a> for wgpu::RenderBundleEncoder<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh) {
         self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
         self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
         self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
-    fn draw_model(&mut self, model: &'a Model) {
-        for mesh in &model.meshes {
+    fn draw_combined_mesh(&mut self, mesh: &'a CombinedMesh) {
+        for mesh in &mesh.meshes {
             self.draw_mesh(mesh);
         }
     }

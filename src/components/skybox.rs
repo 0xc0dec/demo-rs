@@ -1,7 +1,7 @@
 use crate::components::transform::Transform;
-use crate::components::{ModelRenderer, ModelShader, RenderOrder};
+use crate::components::{MeshRenderer, ShaderVariant, RenderOrder};
 use crate::device::Device;
-use crate::mesh::Model;
+use crate::mesh::CombinedMesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
@@ -18,16 +18,16 @@ impl Skybox {
                 .await
                 .unwrap();
             let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture }).await;
-            let model = Model::quad(&device);
-            let render_model = ModelRenderer::new(
-                model,
-                ModelShader::Skybox(shader),
+            let mesh = CombinedMesh::quad(&device);
+            let renderer = MeshRenderer::new(
+                mesh,
+                ShaderVariant::Skybox(shader),
                 RenderTags::SCENE,
             );
 
             let transform = Transform::default();
 
-            commands.spawn((Skybox, RenderOrder(-100), render_model, transform));
+            commands.spawn((Skybox, RenderOrder(-100), renderer, transform));
         });
     }
 }

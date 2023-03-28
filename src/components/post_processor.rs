@@ -1,6 +1,6 @@
-use crate::components::{Camera, ModelRenderer, ModelShader, Player, RenderOrder, Transform};
+use crate::components::{Camera, MeshRenderer, ShaderVariant, Player, RenderOrder, Transform};
 use crate::device::Device;
-use crate::mesh::Model;
+use crate::mesh::CombinedMesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use bevy_ecs::prelude::*;
@@ -20,7 +20,7 @@ impl PostProcessor {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
 
-        let model = Model::quad(&device);
+        let mesh = CombinedMesh::quad(&device);
 
         // TODO Refactor similar places - use blocking only on the async pieces of code
         let shader = pollster::block_on(async {
@@ -32,9 +32,9 @@ impl PostProcessor {
             ).await
         });
 
-        let renderer = ModelRenderer::new(
-            model,
-            ModelShader::PostProcess(shader),
+        let renderer = MeshRenderer::new(
+            mesh,
+            ShaderVariant::PostProcess(shader),
             RenderTags::POST_PROCESS,
         );
         let transform = Transform::default();
@@ -50,7 +50,7 @@ impl PostProcessor {
 
     pub fn update(
         device: NonSend<Device>,
-        mut pp: Query<(&PostProcessor, &mut ModelRenderer)>,
+        mut pp: Query<(&PostProcessor, &mut MeshRenderer)>,
         player_cam: Query<&Camera, With<Player>>
     ) {
         if let Some(pp) = pp.iter_mut().next().as_mut() {
@@ -67,7 +67,7 @@ impl PostProcessor {
                     ).await
                 });
 
-                pp.1.set_shader(ModelShader::PostProcess(shader));
+                pp.1.set_shader(ShaderVariant::PostProcess(shader));
             }
         }
     }

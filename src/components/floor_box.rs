@@ -1,9 +1,9 @@
-use crate::components::model_renderer::ModelShader;
+use crate::components::mesh_renderer::ShaderVariant;
 use crate::components::transform::Transform;
-use crate::components::{ModelRenderer, PhysicsBody, PhysicsBodyParams};
+use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::mesh::Model;
+use crate::mesh::CombinedMesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
@@ -19,19 +19,19 @@ impl FloorBox {
         device: NonSend<Device>,
         mut physics: NonSendMut<PhysicsWorld>,
     ) {
-        let (shader, model) = pollster::block_on(async {
+        let (shader, mesh) = pollster::block_on(async {
             let texture = Texture::new_2d_from_file("stonewall.jpg", &device)
                 .await
                 .unwrap();
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
-            let model = Model::from_file("cube.obj", &device).await.unwrap();
-            (shader, model)
+            let mesh = CombinedMesh::from_file("cube.obj", &device).await.unwrap();
+            (shader, mesh)
         });
 
-        let render_model = ModelRenderer::new(
-            model,
-            ModelShader::Diffuse(shader),
+        let renderer = MeshRenderer::new(
+            mesh,
+            ShaderVariant::Diffuse(shader),
             RenderTags::SCENE,
         );
 
@@ -50,6 +50,6 @@ impl FloorBox {
             &mut physics,
         );
 
-        commands.spawn((FloorBox, physics_body, render_model, transform));
+        commands.spawn((FloorBox, physics_body, renderer, transform));
     }
 }

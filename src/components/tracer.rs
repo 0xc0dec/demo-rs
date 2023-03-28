@@ -1,7 +1,7 @@
-use crate::components::{ModelRenderer, ModelShader, Player, Transform};
+use crate::components::{MeshRenderer, ShaderVariant, Player, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::mesh::Model;
+use crate::mesh::CombinedMesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::ColorShader;
@@ -14,16 +14,15 @@ impl Tracer {
     pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
         let transform = Transform::default();
 
-        let (model, shader) = pollster::block_on(async {
-            let model = Model::from_file("cube.obj", &device).await.unwrap();
+        let (mesh, shader) = pollster::block_on(async {
+            let mesh = CombinedMesh::from_file("cube.obj", &device).await.unwrap();
             let shader = ColorShader::new(&device).await;
-            (model, shader)
+            (mesh, shader)
         });
 
-        // TODO Fix other variables' names of this type
-        let renderer = ModelRenderer::new(
-            model,
-            ModelShader::Color(shader),
+        let renderer = MeshRenderer::new(
+            mesh,
+            ShaderVariant::Color(shader),
             RenderTags::HIDDEN,
         );
 
@@ -34,7 +33,7 @@ impl Tracer {
         physics: NonSend<PhysicsWorld>,
         // Without this Without it crashes :|
         player: Query<(&Player, &Transform), Without<Tracer>>,
-        mut tracer: Query<(&mut Transform, &mut ModelRenderer), With<Tracer>>,
+        mut tracer: Query<(&mut Transform, &mut MeshRenderer), With<Tracer>>,
     ) {
         let (player, player_transform) = player.single();
         let (mut tracer_transform, mut tracer_renderer) = tracer.single_mut();

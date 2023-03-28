@@ -1,7 +1,7 @@
 mod camera;
 mod floor_box;
 mod free_box;
-mod model_renderer;
+mod mesh_renderer;
 mod physics_body;
 mod player;
 mod post_processor;
@@ -13,7 +13,7 @@ mod transform;
 pub use camera::Camera;
 pub use floor_box::FloorBox;
 pub use free_box::FreeBox;
-pub use model_renderer::{ModelRenderer, ModelShader};
+pub use mesh_renderer::{MeshRenderer, ShaderVariant};
 pub use physics_body::{PhysicsBody, PhysicsBodyParams};
 pub use player::Player;
 pub use post_processor::PostProcessor;
