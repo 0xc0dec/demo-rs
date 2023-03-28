@@ -1,7 +1,7 @@
 use crate::components::{MeshRenderer, ShaderVariant, Player, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::mesh::CombinedMesh;
+use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::ColorShader;
@@ -15,7 +15,7 @@ impl Tracer {
         let transform = Transform::default();
 
         let (mesh, shader) = pollster::block_on(async {
-            let mesh = CombinedMesh::from_file("cube.obj", &device).await.unwrap();
+            let mesh = Mesh::from_file("cube.obj", &device).await.unwrap();
             let shader = ColorShader::new(&device).await;
             (mesh, shader)
         });

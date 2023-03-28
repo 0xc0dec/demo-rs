@@ -1,7 +1,7 @@
 use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
-use crate::mesh::{DrawMesh, CombinedMesh};
+use crate::mesh::{DrawMesh, Mesh};
 use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, Shader, SkyboxShader};
 use bevy_ecs::prelude::*;
 
@@ -14,13 +14,13 @@ pub enum ShaderVariant {
 
 #[derive(Component)]
 pub struct MeshRenderer {
-    mesh: CombinedMesh,
+    mesh: Mesh,
     shader: ShaderVariant,
     tags: u32, // TODO As a component?
 }
 
 impl MeshRenderer {
-    pub fn new(mesh: CombinedMesh, shader: ShaderVariant, tags: u32) -> MeshRenderer {
+    pub fn new(mesh: Mesh, shader: ShaderVariant, tags: u32) -> MeshRenderer {
         Self {
             mesh,
             shader,
@@ -53,7 +53,7 @@ impl MeshRenderer {
                 pp.apply(encoder);
             }
         }
-        encoder.draw_combined_mesh(&self.mesh);
+        encoder.draw_mesh(&self.mesh);
     }
 
     pub fn tags(&self) -> u32 {

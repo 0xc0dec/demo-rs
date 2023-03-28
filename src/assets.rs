@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::mesh::CombinedMesh;
+use crate::mesh::Mesh;
 use crate::texture::Texture;
 use anyhow::*;
 use std::collections::HashMap;
@@ -20,7 +20,7 @@ pub async fn load_string(file_path: &str) -> Result<String> {
 
 // TODO Remove
 pub struct Assets {
-    models: HashMap<String, Rc<CombinedMesh>>,
+    models: HashMap<String, Rc<Mesh>>,
     textures: HashMap<String, Rc<Texture>>,
 }
 
@@ -33,10 +33,10 @@ impl Assets {
         }
     }
 
-    pub async fn model(&mut self, file_name: &str, device: &Device) -> Rc<CombinedMesh> {
+    pub async fn model(&mut self, file_name: &str, device: &Device) -> Rc<Mesh> {
         if !self.models.contains_key(file_name) {
             println!("Model {file_name} not found in cache, loading...");
-            let model = CombinedMesh::from_file(file_name, device)
+            let model = Mesh::from_file(file_name, device)
                 .await
                 .expect(format!("Unable to load model {file_name}").as_str());
             self.models.insert(file_name.to_owned(), Rc::new(model));

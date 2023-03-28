@@ -3,7 +3,7 @@ use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
-use crate::mesh::CombinedMesh;
+use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
@@ -25,7 +25,7 @@ impl FloorBox {
                 .unwrap();
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
-            let mesh = CombinedMesh::from_file("cube.obj", &device).await.unwrap();
+            let mesh = Mesh::from_file("cube.obj", &device).await.unwrap();
             (shader, mesh)
         });
 

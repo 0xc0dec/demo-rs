@@ -1,6 +1,6 @@
 use crate::components::{Camera, MeshRenderer, ShaderVariant, Player, RenderOrder, Transform};
 use crate::device::Device;
-use crate::mesh::CombinedMesh;
+use crate::mesh::Mesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use bevy_ecs::prelude::*;
@@ -20,7 +20,7 @@ impl PostProcessor {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
 
-        let mesh = CombinedMesh::quad(&device);
+        let mesh = Mesh::quad(&device);
 
         // TODO Refactor similar places - use blocking only on the async pieces of code
         let shader = pollster::block_on(async {

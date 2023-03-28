@@ -42,21 +42,15 @@ impl Vertex for MeshVertex {
     }
 }
 
-// TODO Rename to Mesh
-pub struct CombinedMesh {
-    meshes: Vec<Mesh>,
-}
-
-// TODO Rename to MeshPart
-pub struct Mesh {
+struct MeshPart {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     num_elements: u32,
 }
 
-impl Mesh {
+impl MeshPart {
     // TODO Use different vertex description and remove unused attributes
-    pub fn quad(device: &Device) -> Mesh {
+    fn quad(device: &Device) -> MeshPart {
         let vertices = [
             // Bottom left
             MeshVertex {
@@ -102,7 +96,7 @@ impl Mesh {
                 usage: wgpu::BufferUsages::INDEX,
             });
 
-        Mesh {
+        MeshPart {
             vertex_buffer,
             index_buffer,
             num_elements: indices.len() as u32,
@@ -110,14 +104,18 @@ impl Mesh {
     }
 }
 
-impl CombinedMesh {
+pub struct Mesh {
+    parts: Vec<MeshPart>,
+}
+
+impl Mesh {
     pub fn quad(device: &Device) -> Self {
         Self {
-            meshes: vec![Mesh::quad(device)],
+            parts: vec![MeshPart::quad(device)],
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<CombinedMesh> {
+    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<Mesh> {
         let text = load_string(file_name).await?;
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
@@ -172,7 +170,7 @@ impl CombinedMesh {
                             usage: wgpu::BufferUsages::INDEX,
                         });
 
-                Mesh {
+                MeshPart {
                     vertex_buffer,
                     index_buffer,
                     num_elements: m.mesh.indices.len() as u32,
@@ -180,25 +178,20 @@ impl CombinedMesh {
             })
             .collect::<Vec<_>>();
 
-        Ok(CombinedMesh { meshes })
+        Ok(Mesh { parts: meshes })
     }
 }
 
 pub trait DrawMesh<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh);
-    fn draw_combined_mesh(&mut self, mesh: &'a CombinedMesh);
 }
 
 impl<'a> DrawMesh<'a> for wgpu::RenderBundleEncoder<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh) {
-        self.set_vertex_buffer(0, mesh.vertex_buffer.slice(..));
-        self.set_index_buffer(mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-        self.draw_indexed(0..mesh.num_elements, 0, 0..1);
-    }
-
-    fn draw_combined_mesh(&mut self, mesh: &'a CombinedMesh) {
-        for mesh in &mesh.meshes {
-            self.draw_mesh(mesh);
+        for part in &mesh.parts {
+            self.set_vertex_buffer(0, part.vertex_buffer.slice(..));
+            self.set_index_buffer(part.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+            self.draw_indexed(0..part.num_elements, 0, 0..1);
         }
     }
 }
