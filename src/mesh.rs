@@ -10,9 +10,9 @@ pub trait Vertex {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct MeshVertex {
-    pub position: [f32; 3],
-    pub tex_coords: [f32; 2],
-    pub normal: [f32; 3],
+    position: [f32; 3],
+    tex_coords: [f32; 2],
+    normal: [f32; 3],
 }
 
 impl Vertex for MeshVertex {
@@ -147,7 +147,10 @@ impl Mesh {
                             m.mesh.positions[i * 3 + 1],
                             m.mesh.positions[i * 3 + 2],
                         ],
-                        tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
+                        tex_coords: [
+                            m.mesh.texcoords[i * 2],
+                            m.mesh.texcoords[i * 2 + 1]
+                        ],
                         normal: [
                             m.mesh.normals[i * 3],
                             m.mesh.normals[i * 3 + 1],
