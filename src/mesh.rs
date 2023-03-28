@@ -119,8 +119,8 @@ impl Mesh {
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &Device) -> anyhow::Result<Mesh> {
-        let text = load_string(file_name).await?;
+    pub async fn from_file(file_name: &str, device: &Device) -> Mesh {
+        let text = load_string(file_name).await.unwrap();
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
 
@@ -135,8 +135,7 @@ impl Mesh {
                 let mat_text = load_string(&p).await.unwrap();
                 tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
             },
-        )
-        .await?;
+        ).await.unwrap();
 
         let parts = meshes
             .into_iter()
@@ -161,7 +160,7 @@ impl Mesh {
             })
             .collect::<Vec<_>>();
 
-        Ok(Mesh { parts })
+        Mesh { parts }
     }
 }
 

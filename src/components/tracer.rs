@@ -15,7 +15,7 @@ impl Tracer {
         let transform = Transform::default();
 
         let (mesh, shader) = pollster::block_on(async {
-            let mesh = Mesh::from_file("cube.obj", &device).await.unwrap();
+            let mesh = Mesh::from_file("cube.obj", &device).await;
             let shader = ColorShader::new(&device).await;
             (mesh, shader)
         });

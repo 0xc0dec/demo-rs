@@ -25,7 +25,7 @@ impl FloorBox {
                 .unwrap();
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
-            let mesh = Mesh::from_file("cube.obj", &device).await.unwrap();
+            let mesh = Mesh::from_file("cube.obj", &device).await;
             (shader, mesh)
         });
 
