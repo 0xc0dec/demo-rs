@@ -1,6 +1,6 @@
 use crate::components::{Camera, Transform};
 use crate::device::Device;
-use crate::math::Mat4;
+use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::shaders::Shader;
@@ -76,14 +76,6 @@ struct DataUniform {
 }
 
 impl DataUniform {
-    #[rustfmt::skip]
-    const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.5,
-        0.0, 0.0, 0.0, 1.0,
-    );
-
     fn new() -> Self {
         Self {
             proj_mat_inv: Mat4::identity().into(),
@@ -93,7 +85,7 @@ impl DataUniform {
 
     fn update(&mut self, camera: (&Camera, &Transform)) {
         self.view_mat = camera.1.view_matrix().into();
-        self.proj_mat_inv = (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix())
+        self.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix())
             .try_inverse()
             .unwrap()
             .into();

@@ -2,7 +2,7 @@ use super::Shader;
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
-use crate::math::Mat4;
+use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use crate::texture::Texture;
@@ -84,14 +84,6 @@ struct MatricesUniform {
 }
 
 impl MatricesUniform {
-    #[rustfmt::skip]
-    const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.5,
-        0.0, 0.0, 0.0, 1.0,
-    );
-
     fn new() -> Self {
         Self {
             view_proj: Mat4::identity().into(),
@@ -101,7 +93,7 @@ impl MatricesUniform {
 
     fn update(&mut self, camera: (&Camera, &Transform), transform: &Transform) {
         self.view_proj =
-            (Self::OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
+            (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
         self.world = transform.matrix().into();
     }
 }
