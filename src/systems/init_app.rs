@@ -1,4 +1,3 @@
-use crate::assets::Assets;
 use crate::debug_ui::DebugUI;
 use crate::device::{Device, SurfaceSize};
 use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
@@ -34,7 +33,6 @@ pub fn init_app(world: &mut World) {
 
     world.insert_non_send_resource(PhysicsWorld::new());
     world.insert_non_send_resource(event_loop);
-    world.insert_non_send_resource(Assets::new());
     world.insert_non_send_resource(DebugUI::new(&device, &window));
     world.insert_non_send_resource(device);
     world.insert_non_send_resource(window);
