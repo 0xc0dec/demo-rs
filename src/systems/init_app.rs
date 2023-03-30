@@ -26,12 +26,12 @@ pub fn init_app(world: &mut World) {
     });
     world.insert_resource(FrameTime::new());
     world.insert_resource(Input::new());
+    world.insert_resource(PhysicsWorld::new());
 
     world.init_resource::<Events<WindowResizeEvent>>();
     world.init_resource::<Events<KeyboardEvent>>();
     world.init_resource::<Events<MouseEvent>>();
 
-    world.insert_non_send_resource(PhysicsWorld::new());
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(DebugUI::new(&device, &window));
     world.insert_non_send_resource(device);

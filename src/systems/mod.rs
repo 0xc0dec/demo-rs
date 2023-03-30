@@ -23,7 +23,7 @@ pub use schedules::*;
 use crate::frame_time::FrameTime;
 
 pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<WindowResizeEvent>) {
-    events.iter().last().map(|e| device.resize(e.new_size));
+    if let Some(e) = events.iter().last() { device.resize(e.new_size) }
 }
 
 pub fn escape_on_exit(mut app: ResMut<App>, mut keyboard_events: EventReader<KeyboardEvent>) {
@@ -35,7 +35,7 @@ pub fn escape_on_exit(mut app: ResMut<App>, mut keyboard_events: EventReader<Key
     }
 }
 
-pub fn update_physics(mut physics: NonSendMut<PhysicsWorld>, frame_time: Res<FrameTime>) {
+pub fn update_physics(mut physics: ResMut<PhysicsWorld>, frame_time: Res<FrameTime>) {
     physics.update(frame_time.delta);
 }
 

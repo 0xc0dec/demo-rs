@@ -17,7 +17,7 @@ impl FloorBox {
     pub fn spawn(
         mut commands: Commands,
         device: NonSend<Device>,
-        mut physics: NonSendMut<PhysicsWorld>,
+        mut physics: ResMut<PhysicsWorld>,
     ) {
         let (shader, mesh) = pollster::block_on(async {
             let texture = Texture::new_2d_from_file("stonewall.jpg", &device)

@@ -1,7 +1,9 @@
+use bevy_ecs::prelude::Resource;
 use crate::math::Vec3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
 
+#[derive(Resource)]
 pub struct PhysicsWorld {
     pub bodies: RigidBodySet,
     pub colliders: ColliderSet,

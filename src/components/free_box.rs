@@ -16,7 +16,7 @@ impl FreeBox {
     pub fn spawn(
         mut commands: Commands,
         device: NonSend<Device>,
-        mut physics: NonSendMut<PhysicsWorld>,
+        mut physics: ResMut<PhysicsWorld>,
     ) {
         pollster::block_on(async {
             let pos = Vec3::y_axis().xyz() * 15.0;

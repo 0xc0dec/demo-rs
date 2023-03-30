@@ -22,7 +22,7 @@ pub struct Player {
 impl Player {
     pub fn spawn(
         device: NonSend<Device>,
-        mut physics: NonSendMut<PhysicsWorld>,
+        mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
         let pos = Vec3::new(10.0, 10.0, 10.0);
@@ -55,7 +55,7 @@ impl Player {
         device: NonSend<Device>,
         input: Res<Input>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
-        mut physics: NonSendMut<PhysicsWorld>,
+        mut physics: ResMut<PhysicsWorld>,
         mut resize_events: EventReader<WindowResizeEvent>,
     ) {
         let (player, mut camera, mut transform) = q.single_mut();
@@ -65,11 +65,12 @@ impl Player {
             camera.set_aspect(
                 last_resize.new_size.width as f32 / last_resize.new_size.height as f32
             );
-            camera.target_mut()
-                .map(|t| t.resize(
+            if let Some(target) = camera.target_mut() {
+                target.resize(
                     (last_resize.new_size.width, last_resize.new_size.height),
                     &device
-                ));
+                )
+            }
         }
 
         let dt = frame_time.delta;
@@ -88,7 +89,7 @@ impl Player {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
         let angle_to_top = transform.forward().angle(&Vec3::y_axis());
-        let mut v_rot = input.mouse_delta.1 as f32 * dt;
+        let mut v_rot = input.mouse_delta.1 * dt;
         // Protect from overturning - prevent camera from reaching the vertical line with small
         // margin angles.
         if angle_to_top + v_rot <= MIN_TOP_ANGLE {
@@ -97,7 +98,7 @@ impl Player {
             v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
         }
 
-        let h_rot = input.mouse_delta.0 as f32 * dt;
+        let h_rot = input.mouse_delta.0 * dt;
 
         transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);

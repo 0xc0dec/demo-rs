@@ -48,7 +48,7 @@ impl PhysicsBody {
         Self { rigid_body_handle }
     }
 
-    pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>, physics: NonSend<PhysicsWorld>) {
+    pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>, physics: Res<PhysicsWorld>) {
         for (mut transform, body) in q.iter_mut() {
             let body = physics.bodies.get(body.rigid_body_handle).unwrap();
             let phys_pos = body.translation();

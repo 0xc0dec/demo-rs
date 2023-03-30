@@ -30,7 +30,7 @@ impl Tracer {
     }
 
     pub fn update(
-        physics: NonSend<PhysicsWorld>,
+        physics: Res<PhysicsWorld>,
         // Without this Without it crashes :|
         player: Query<(&Player, &Transform), Without<Tracer>>,
         mut tracer: Query<(&mut Transform, &mut MeshRenderer), With<Tracer>>,
