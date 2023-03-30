@@ -37,8 +37,7 @@ fn render_pass(
 
     let depth_tex_view = target
         .map(|t| t.depth_tex().view())
-        .or(Some(device.depth_tex().view()))
-        .unwrap();
+        .unwrap_or(device.depth_tex().view());
     let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
         view: depth_tex_view,
         depth_ops: Some(wgpu::Operations {
@@ -60,14 +59,14 @@ fn render_pass(
             });
 
             pass.execute_bundles(bundles.iter());
-            debug_ui.map(|ui| ui.render(&device, &mut pass));
+            if let Some(ui) = debug_ui { ui.render(device, &mut pass) }
         }
 
         encoder.finish()
     };
 
     device.queue().submit(Some(cmd_buffer));
-    surface_tex.map(|t| t.present());
+    if let Some(t) = surface_tex { t.present() }
 }
 
 fn new_bundle_encoder<'a>(device: &'a Device, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder<'a> {
@@ -98,10 +97,10 @@ fn build_render_bundles<'a>(
     renderers
         .iter_mut()
         .filter(|(r, _)| camera.0.should_render(r.tags()))
-        .map(|(ref mut r, ref tr)| {
-            let mut encoder = new_bundle_encoder(&device, camera.0.target().as_ref());
+        .map(|(ref mut r, tr)| {
+            let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
             // TODO Create render bundle inside the function?
-            r.render(&device, camera, tr, &mut encoder);
+            r.render(device, camera, tr, &mut encoder);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
         .collect::<Vec<_>>()
@@ -110,7 +109,7 @@ fn build_render_bundles<'a>(
 pub fn render(
     cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
     mut renderers: Query<(&mut MeshRenderer, &Transform, Option<&RenderOrder>)>,
-    device: NonSend<Device>,
+    device: Res<Device>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
     let mut cameras = cameras.into_iter().collect::<Vec<_>>();

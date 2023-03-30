@@ -11,7 +11,7 @@ use bevy_ecs::prelude::*;
 pub struct Tracer;
 
 impl Tracer {
-    pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
+    pub fn spawn(mut commands: Commands, device: Res<Device>) {
         let transform = Transform::default();
 
         let (mesh, shader) = pollster::block_on(async {

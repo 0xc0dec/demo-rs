@@ -22,7 +22,7 @@ pub use grab_cursor::grab_cursor;
 pub use schedules::*;
 use crate::frame_time::FrameTime;
 
-pub fn resize_device(mut device: NonSendMut<Device>, mut events: EventReader<WindowResizeEvent>) {
+pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<WindowResizeEvent>) {
     if let Some(e) = events.iter().last() { device.resize(e.new_size) }
 }
 

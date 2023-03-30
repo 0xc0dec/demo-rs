@@ -15,7 +15,7 @@ impl PostProcessor {
     pub fn spawn(
         mut commands: Commands,
         player: Query<&Camera, With<Player>>,
-        device: NonSend<Device>,
+        device: Res<Device>,
     ) {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
@@ -49,7 +49,7 @@ impl PostProcessor {
     }
 
     pub fn update(
-        device: NonSend<Device>,
+        device: Res<Device>,
         mut pp: Query<(&PostProcessor, &mut MeshRenderer)>,
         player_cam: Query<&Camera, With<Player>>
     ) {

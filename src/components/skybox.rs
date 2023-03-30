@@ -6,13 +6,12 @@ use crate::render_tags::RenderTags;
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 use crate::texture::Texture;
 use bevy_ecs::prelude::*;
-use bevy_ecs::system::NonSend;
 
 #[derive(Component)]
 pub struct Skybox;
 
 impl Skybox {
-    pub fn spawn(mut commands: Commands, device: NonSend<Device>) {
+    pub fn spawn(mut commands: Commands, device: Res<Device>) {
         pollster::block_on(async {
             let texture = Texture::new_cube_from_file("skybox_bgra.dds", &device)
                 .await

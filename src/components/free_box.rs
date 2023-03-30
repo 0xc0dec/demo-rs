@@ -15,7 +15,7 @@ pub struct FreeBox;
 impl FreeBox {
     pub fn spawn(
         mut commands: Commands,
-        device: NonSend<Device>,
+        device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
     ) {
         pollster::block_on(async {

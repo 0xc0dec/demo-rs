@@ -10,7 +10,6 @@ use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
 use bevy_ecs::prelude::*;
-use bevy_ecs::system::NonSendMut;
 use rapier3d::prelude::*;
 use crate::frame_time::FrameTime;
 
@@ -21,7 +20,7 @@ pub struct Player {
 
 impl Player {
     pub fn spawn(
-        device: NonSend<Device>,
+        device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
@@ -52,7 +51,7 @@ impl Player {
 
     pub fn update(
         frame_time: Res<FrameTime>,
-        device: NonSend<Device>,
+        device: Res<Device>,
         input: Res<Input>,
         mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,

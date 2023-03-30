@@ -16,7 +16,7 @@ pub struct FloorBox;
 impl FloorBox {
     pub fn spawn(
         mut commands: Commands,
-        device: NonSend<Device>,
+        device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
     ) {
         let (shader, mesh) = pollster::block_on(async {
