@@ -6,6 +6,7 @@ use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use wgpu::{BindGroup, RenderPipeline};
+use crate::assets::load_string;
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,
@@ -20,17 +21,18 @@ impl ColorShader {
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
+        let shader_module = new_shader_module(device, "color.wgsl").await;
+
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_file_name: "color.wgsl",
+                shader_module,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],
                 vertex_buffer_layouts: &[MeshVertex::desc()],
             },
-        )
-        .await;
+        ).await;
 
         Self {
             matrices_uniform,

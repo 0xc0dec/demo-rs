@@ -19,10 +19,12 @@ impl PostProcessShader {
         let (texture_bind_group_layout, texture_bind_group) =
             new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
 
+        let shader_module = new_shader_module(device, "post-process.wgsl").await;
+
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_file_name: "post-process.wgsl",
+                shader_module,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&texture_bind_group_layout],

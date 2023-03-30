@@ -3,6 +3,17 @@ use crate::device::Device;
 use crate::texture::Texture;
 use wgpu::util::DeviceExt;
 
+pub async fn new_shader_module(device: &Device, src_file_name: &str) -> wgpu::ShaderModule {
+    let src = load_string(src_file_name).await.unwrap();
+
+    device
+        .device()
+        .create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: None,
+            source: wgpu::ShaderSource::Wgsl(src.into()),
+        })
+}
+
 pub fn new_uniform_bind_group(
     device: &Device,
     data: &[u8],
@@ -95,7 +106,7 @@ pub fn new_texture_bind_group(
 }
 
 pub struct RenderPipelineParams<'a> {
-    pub shader_file_name: &'a str,
+    pub shader_module: wgpu::ShaderModule,
     pub depth_write: bool,
     pub depth_enabled: bool,
     pub bind_group_layouts: &'a [&'a wgpu::BindGroupLayout],
@@ -106,15 +117,6 @@ pub async fn new_render_pipeline(
     device: &Device,
     params: RenderPipelineParams<'_>,
 ) -> wgpu::RenderPipeline {
-    let shader_src = load_string(params.shader_file_name).await.unwrap();
-
-    let shader = device
-        .device()
-        .create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(shader_src.into()),
-        });
-
     let layout = device
         .device()
         .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -129,12 +131,12 @@ pub async fn new_render_pipeline(
             label: None,
             layout: Some(&layout),
             vertex: wgpu::VertexState {
-                module: &shader,
+                module: &params.shader_module,
                 entry_point: "vs_main",
                 buffers: params.vertex_buffer_layouts,
             },
             fragment: Some(wgpu::FragmentState {
-                module: &shader,
+                module: &params.shader_module,
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
                     format: device.surface_texture_format(),
