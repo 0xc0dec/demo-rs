@@ -2,7 +2,7 @@ use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
 use crate::mesh::{DrawMesh, Mesh};
-use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, Shader, SkyboxShader};
+use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, SkyboxShader};
 use bevy_ecs::prelude::*;
 
 pub enum ShaderVariant {
@@ -38,11 +38,11 @@ impl MeshRenderer {
         // TODO Generalize
         match self.shader {
             ShaderVariant::Color(ref mut color) => {
-                color.update_uniforms(device, camera, &transform);
+                color.update_uniforms(device, camera, transform);
                 color.apply(encoder);
             }
             ShaderVariant::Diffuse(ref mut diffuse) => {
-                diffuse.update_uniforms(device, camera, &transform);
+                diffuse.update_uniforms(device, camera, transform);
                 diffuse.apply(encoder);
             }
             ShaderVariant::Skybox(ref mut skybox) => {

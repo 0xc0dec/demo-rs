@@ -1,4 +1,3 @@
-use super::Shader;
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
@@ -68,10 +67,8 @@ impl DiffuseShader {
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
-}
 
-impl Shader for DiffuseShader {
-    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
         encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);

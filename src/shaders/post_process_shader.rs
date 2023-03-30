@@ -1,7 +1,6 @@
 use crate::device::Device;
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
-use crate::shaders::Shader;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
 
@@ -38,10 +37,8 @@ impl PostProcessShader {
             texture_bind_group,
         }
     }
-}
 
-impl Shader for PostProcessShader {
-    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
     }

@@ -3,7 +3,6 @@ use crate::device::Device;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
-use crate::shaders::Shader;
 use crate::texture::Texture;
 
 pub struct SkyboxShader {
@@ -59,10 +58,8 @@ impl SkyboxShader {
             bytemuck::cast_slice(&[self.data_uniform]),
         );
     }
-}
 
-impl Shader for SkyboxShader {
-    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.data_uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.texture_bind_group, &[]);

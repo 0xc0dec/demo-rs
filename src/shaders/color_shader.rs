@@ -1,4 +1,3 @@
-use super::Shader;
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
@@ -6,7 +5,6 @@ use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::{MeshVertex, Vertex};
 use crate::shaders::utils::*;
 use wgpu::{BindGroup, RenderPipeline};
-use crate::assets::load_string;
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,
@@ -55,10 +53,8 @@ impl ColorShader {
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
-}
 
-impl Shader for ColorShader {
-    fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
