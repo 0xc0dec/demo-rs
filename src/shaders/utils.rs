@@ -6,52 +6,44 @@ use wgpu::util::DeviceExt;
 pub async fn new_shader_module(device: &Device, src_file_name: &str) -> wgpu::ShaderModule {
     let src = load_string(src_file_name).await.unwrap();
 
-    device
-        .device()
-        .create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: None,
-            source: wgpu::ShaderSource::Wgsl(src.into()),
-        })
+    device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: wgpu::ShaderSource::Wgsl(src.into()),
+    })
 }
 
 pub fn new_uniform_bind_group(
     device: &Device,
     data: &[u8],
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer) {
-    let buffer = device
-        .device()
-        .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: None,
-            contents: data,
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
+    let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: None,
+        contents: data,
+        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+    });
 
-    let group_layout = device
-        .device()
-        .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-            label: None,
-        });
+    let group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        entries: &[wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::VERTEX,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: None,
+    });
 
-    let group = device
-        .device()
-        .create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &group_layout,
-            entries: &[wgpu::BindGroupEntry {
-                binding: 0,
-                resource: buffer.as_entire_binding(),
-            }],
-            label: None,
-        });
+    let group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &group_layout,
+        entries: &[wgpu::BindGroupEntry {
+            binding: 0,
+            resource: buffer.as_entire_binding(),
+        }],
+        label: None,
+    });
 
     (group_layout, group, buffer)
 }
@@ -62,7 +54,6 @@ pub fn new_texture_bind_group(
     view_dimension: wgpu::TextureViewDimension,
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup) {
     let layout = device
-        .device()
         .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
@@ -85,22 +76,20 @@ pub fn new_texture_bind_group(
             label: None,
         });
 
-    let group = device
-        .device()
-        .create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &layout,
-            entries: &[
-                wgpu::BindGroupEntry {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(texture.view()),
-                },
-                wgpu::BindGroupEntry {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(texture.sampler()),
-                },
-            ],
-            label: None,
-        });
+    let group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &layout,
+        entries: &[
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::TextureView(texture.view()),
+            },
+            wgpu::BindGroupEntry {
+                binding: 1,
+                resource: wgpu::BindingResource::Sampler(texture.sampler()),
+            },
+        ],
+        label: None,
+    });
 
     (layout, group)
 }
@@ -118,7 +107,6 @@ pub async fn new_render_pipeline(
     params: RenderPipelineParams<'_>,
 ) -> wgpu::RenderPipeline {
     let layout = device
-        .device()
         .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
             bind_group_layouts: params.bind_group_layouts,
@@ -126,7 +114,6 @@ pub async fn new_render_pipeline(
         });
 
     let pipeline = device
-        .device()
         .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: None,
             layout: Some(&layout),

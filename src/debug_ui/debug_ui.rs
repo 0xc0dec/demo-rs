@@ -41,7 +41,7 @@ impl DebugUI {
 
         let renderer = imgui_wgpu::Renderer::new(
             &mut context,
-            device.device(),
+            device,
             device.queue(),
             renderer_config,
         );
@@ -80,7 +80,7 @@ impl DebugUI {
     pub fn render<'a>(&'a mut self, device: &Device, pass: &mut wgpu::RenderPass<'a>) {
         let draw_data = self.context.render();
         self.renderer
-            .render(draw_data, device.queue(), device.device(), pass)
+            .render(draw_data, device.queue(), device, pass)
             .expect("Failed to render debug UI");
     }
 }

@@ -50,7 +50,6 @@ fn render_pass(
 
     let cmd_buffer = {
         let mut encoder = device
-            .device()
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
@@ -77,19 +76,17 @@ fn new_bundle_encoder<'a>(device: &'a Device, target: Option<&RenderTarget>) -> 
     let depth_format = target
         .map_or(device.depth_texture_format(), |t| t.depth_tex().format());
 
-    device
-        .device()
-        .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
-            label: None,
-            multiview: None,
-            sample_count: 1,
-            color_formats: &[Some(color_format)],
-            depth_stencil: Some(wgpu::RenderBundleDepthStencil {
-                format: depth_format,
-                depth_read_only: false,
-                stencil_read_only: false,
-            }),
-        })
+    device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+        label: None,
+        multiview: None,
+        sample_count: 1,
+        color_formats: &[Some(color_format)],
+        depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+            format: depth_format,
+            depth_read_only: false,
+            stencil_read_only: false,
+        }),
+    })
 }
 
 fn build_render_bundles<'a>(

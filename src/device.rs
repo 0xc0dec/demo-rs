@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
@@ -101,10 +102,6 @@ impl Device {
         SurfaceSize::new(self.surface_config.width, self.surface_config.height)
     }
 
-    pub fn device(&self) -> &wgpu::Device {
-        &self.device
-    }
-
     pub fn queue(&self) -> &wgpu::Queue {
         &self.queue
     }
@@ -115,5 +112,13 @@ impl Device {
 
     pub fn depth_tex(&self) -> &Texture {
         &self.depth_tex
+    }
+}
+
+impl Deref for Device {
+    type Target = wgpu::Device;
+
+    fn deref(&self) -> &Self::Target {
+        &self.device
     }
 }

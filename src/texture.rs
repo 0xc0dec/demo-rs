@@ -114,12 +114,12 @@ impl Texture {
 
     pub async fn new_2d_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_2d_from_mem(device.device(), device.queue(), &data)
+        Self::new_2d_from_mem(device, device.queue(), &data)
     }
 
     pub async fn new_cube_from_file(file_name: &str, device: &Device) -> Result<Self> {
         let data = load_binary(file_name).await?;
-        Self::new_cube_from_mem(device.device(), device.queue(), &data)
+        Self::new_cube_from_mem(device, device.queue(), &data)
     }
 
     pub fn view(&self) -> &wgpu::TextureView {
