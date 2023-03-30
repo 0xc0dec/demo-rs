@@ -38,15 +38,15 @@ impl MeshRenderer {
         // TODO Generalize
         match self.shader {
             ShaderVariant::Color(ref mut color) => {
-                color.update(device, camera, &transform);
+                color.update_uniforms(device, camera, &transform);
                 color.apply(encoder);
             }
             ShaderVariant::Diffuse(ref mut diffuse) => {
-                diffuse.update(device, camera, &transform);
+                diffuse.update_uniforms(device, camera, &transform);
                 diffuse.apply(encoder);
             }
             ShaderVariant::Skybox(ref mut skybox) => {
-                skybox.update(device, camera);
+                skybox.update_uniforms(device, camera);
                 skybox.apply(encoder);
             }
             ShaderVariant::PostProcess(ref mut pp) => {

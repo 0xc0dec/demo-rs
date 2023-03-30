@@ -53,7 +53,7 @@ impl DiffuseShader {
         }
     }
 
-    pub fn update(
+    pub fn update_uniforms(
         &mut self,
         device: &Device,
         camera: (&Camera, &Transform),

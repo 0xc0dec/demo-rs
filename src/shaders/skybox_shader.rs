@@ -49,7 +49,7 @@ impl SkyboxShader {
         }
     }
 
-    pub fn update(&mut self, device: &Device, camera: (&Camera, &Transform)) {
+    pub fn update_uniforms(&mut self, device: &Device, camera: (&Camera, &Transform)) {
         self.data_uniform.update(camera);
         device.queue().write_buffer(
             &self.data_uniform_buf,
