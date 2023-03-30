@@ -16,7 +16,7 @@ pub struct PostProcessShaderParams<'a> {
 impl PostProcessShader {
     pub async fn new(device: &Device, params: PostProcessShaderParams<'_>) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::D2);
 
         let shader_module = new_shader_module(device, "post-process.wgsl").await;
 

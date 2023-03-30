@@ -17,7 +17,7 @@ impl Skybox {
             let texture = Texture::new_cube_from_file("skybox_bgra.dds", &device)
                 .await
                 .unwrap();
-            let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture }).await;
+            let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture: &texture }).await;
             let mesh = Mesh::quad(&device);
             let renderer = MeshRenderer::new(
                 mesh,

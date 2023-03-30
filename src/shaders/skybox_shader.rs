@@ -13,19 +13,19 @@ pub struct SkyboxShader {
     data_uniform_bind_group: wgpu::BindGroup,
 }
 
-pub struct SkyboxShaderParams {
-    pub texture: Texture,
+pub struct SkyboxShaderParams<'t> {
+    pub texture: &'t Texture,
 }
 
 impl SkyboxShader {
-    pub async fn new(device: &Device, params: SkyboxShaderParams) -> Self {
+    pub async fn new(device: &Device, params: SkyboxShaderParams<'_>) -> Self {
         let data_uniform = DataUniform::new();
 
         let (data_uniform_bind_group_layout, data_uniform_bind_group, data_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, &params.texture, wgpu::TextureViewDimension::Cube);
+            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::Cube);
 
         let shader_module = new_shader_module(device, "skybox.wgsl").await;
 
