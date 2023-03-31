@@ -15,6 +15,7 @@ use crate::frame_time::FrameTime;
 
 #[derive(Component)]
 pub struct Player {
+    raycast_pt: Option<Vec3>,
     collider_handle: ColliderHandle,
 }
 
@@ -41,24 +42,24 @@ impl Player {
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
-        // TODO Use component bundles?
-        commands.spawn((Player { collider_handle }, camera, transform));
+        commands.spawn((Player { collider_handle, raycast_pt: None }, camera, transform));
     }
 
-    pub fn collider_handle(&self) -> ColliderHandle {
-        self.collider_handle
+    pub fn raycast_pt(&self) -> Option<Vec3> {
+        self.raycast_pt
     }
 
     pub fn update(
         frame_time: Res<FrameTime>,
         device: Res<Device>,
         input: Res<Input>,
-        mut q: Query<(&mut Self, &mut Camera, &mut Transform)>,
+        mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,
         mut resize_events: EventReader<WindowResizeEvent>,
     ) {
-        let (player, mut camera, mut transform) = q.single_mut();
+        let (mut player, mut camera, mut transform) = player.single_mut();
 
+        // Update camera aspect
         let last_resize = resize_events.iter().last();
         if let Some(last_resize) = last_resize {
             camera.set_aspect(
@@ -67,81 +68,91 @@ impl Player {
             if let Some(target) = camera.target_mut() {
                 target.resize(
                     (last_resize.new_size.width, last_resize.new_size.height),
-                    &device
+                    &device,
                 )
             }
         }
 
+        // Move and rotate
         let dt = frame_time.delta;
-
         if input.rmb_down {
-            Self::rotate(&mut transform, dt, &input);
-            Self::translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
+            rotate(&mut transform, dt, &input);
+            translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
+        }
+
+        // Update raycast target
+        if let Some((hit_pt, _, _)) = physics.cast_ray(
+            transform.position(),
+            transform.forward(),
+            Some(player.collider_handle),
+        ) {
+            player.raycast_pt = Some(hit_pt);
+        } else {
+            player.raycast_pt = None;
         }
     }
+}
 
-    fn rotate(
-        transform: &mut Transform,
-        dt: f32,
-        input: &Input,
-    ) {
-        const MIN_TOP_ANGLE: f32 = 0.1;
-        const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
-        let mut v_rot = input.mouse_delta.1 * dt;
-        // Protect from overturning - prevent camera from reaching the vertical line with small
-        // margin angles.
-        if angle_to_top + v_rot <= MIN_TOP_ANGLE {
-            v_rot = -(angle_to_top - MIN_TOP_ANGLE);
-        } else if angle_to_top + v_rot >= MIN_BOTTOM_ANGLE {
-            v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
-        }
+fn translate(
+    transform: &mut Transform,
+    collider_handle: ColliderHandle,
+    dt: f32,
+    speed: f32,
+    input: &Input,
+    physics: &mut PhysicsWorld,
+) {
+    let mut translation: Vec3 = Vec3::from_element(0.0);
+    if input.forward_down {
+        translation += transform.forward();
+    }
+    if input.back_down {
+        translation -= transform.forward();
+    }
+    if input.right_down {
+        translation += transform.right();
+    }
+    if input.left_down {
+        translation -= transform.right();
+    }
+    if input.up_down {
+        translation += transform.up();
+    }
+    if input.down_down {
+        translation -= transform.up();
+    }
+    let translation = translation.normalize() * dt * speed;
 
-        let h_rot = input.mouse_delta.0 * dt;
+    let (effective_movement, collider_current_pos) =
+        physics.move_character(dt, translation, collider_handle);
 
-        transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
-        transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
+    transform.translate(effective_movement);
+
+    physics
+        .colliders
+        .get_mut(collider_handle)
+        .unwrap()
+        .set_translation(collider_current_pos + effective_movement);
+}
+
+fn rotate(
+    transform: &mut Transform,
+    dt: f32,
+    input: &Input,
+) {
+    const MIN_TOP_ANGLE: f32 = 0.1;
+    const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
+    let angle_to_top = transform.forward().angle(&Vec3::y_axis());
+    let mut v_rot = input.mouse_delta.1 * dt;
+    // Protect from overturning - prevent camera from reaching the vertical line with small
+    // margin angles.
+    if angle_to_top + v_rot <= MIN_TOP_ANGLE {
+        v_rot = -(angle_to_top - MIN_TOP_ANGLE);
+    } else if angle_to_top + v_rot >= MIN_BOTTOM_ANGLE {
+        v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
     }
 
-    fn translate(
-        transform: &mut Transform,
-        collider_handle: ColliderHandle,
-        dt: f32,
-        speed: f32,
-        input: &Input,
-        physics: &mut PhysicsWorld
-    ) {
-        let mut translation: Vec3 = Vec3::from_element(0.0);
-        if input.forward_down {
-            translation += transform.forward();
-        }
-        if input.back_down {
-            translation -= transform.forward();
-        }
-        if input.right_down {
-            translation += transform.right();
-        }
-        if input.left_down {
-            translation -= transform.right();
-        }
-        if input.up_down {
-            translation += transform.up();
-        }
-        if input.down_down {
-            translation -= transform.up();
-        }
-        let translation = translation.normalize() * dt * speed;
+    let h_rot = input.mouse_delta.0 * dt;
 
-        let (effective_movement, collider_current_pos) =
-            physics.move_character(dt, translation, collider_handle);
-
-        transform.translate(effective_movement);
-
-        physics
-            .colliders
-            .get_mut(collider_handle)
-            .unwrap()
-            .set_translation(collider_current_pos + effective_movement);
-
-    }
+    transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
+    transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
 }

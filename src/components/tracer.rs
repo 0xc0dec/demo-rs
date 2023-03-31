@@ -30,7 +30,6 @@ impl Tracer {
     }
 
     pub fn update(
-        physics: Res<PhysicsWorld>,
         // Without this Without it crashes :|
         player: Query<(&Player, &Transform), Without<Tracer>>,
         mut tracer: Query<(&mut Transform, &mut MeshRenderer), With<Tracer>>,
@@ -38,16 +37,12 @@ impl Tracer {
         let (player, player_transform) = player.single();
         let (mut tracer_transform, mut tracer_renderer) = tracer.single_mut();
 
-        if let Some((hit_pt, _, _)) = physics.cast_ray(
-            player_transform.position(),
-            player_transform.forward(),
-            Some(player.collider_handle()),
-        ) {
-            let dist_to_camera = (player_transform.position() - hit_pt).magnitude();
+        if let Some(player_raycast_pt) = player.raycast_pt() {
+            let dist_to_camera = (player_transform.position() - player_raycast_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
             tracer_renderer.set_tags(RenderTags::SCENE);
-            tracer_transform.set_position(hit_pt);
+            tracer_transform.set_position(player_raycast_pt);
             tracer_transform.set_scale(Vec3::from_element(scale));
         } else {
             tracer_renderer.set_tags(RenderTags::HIDDEN);
