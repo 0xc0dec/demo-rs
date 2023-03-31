@@ -53,9 +53,8 @@ impl PhysicsWorld {
         collider: Collider,
     ) -> (RigidBodyHandle, ColliderHandle) {
         let body_handle = self.bodies.insert(body);
-        let collider_handle =
-            self.colliders
-                .insert_with_parent(collider, body_handle, &mut self.bodies);
+        let collider_handle = self.colliders
+            .insert_with_parent(collider, body_handle, &mut self.bodies);
         (body_handle, collider_handle)
     }
 

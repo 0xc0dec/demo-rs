@@ -36,7 +36,7 @@ impl PlayerTarget {
         let (player, player_transform) = player.single();
         let (mut target_transform, mut target_renderer) = target.single_mut();
 
-        if let Some(player_raycast_pt) = player.raycast_pt() {
+        if let Some(player_raycast_pt) = player.target_pt() {
             let dist_to_camera = (player_transform.position() - player_raycast_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 

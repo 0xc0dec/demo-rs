@@ -3,6 +3,7 @@ use winit::event::*;
 
 #[derive(Resource)]
 pub struct Input {
+    pub lmb_down: bool,
     pub rmb_down: bool,
     pub forward_down: bool,
     pub back_down: bool,
@@ -16,6 +17,7 @@ pub struct Input {
 impl Input {
     pub fn new() -> Self {
         Input {
+            lmb_down: false,
             rmb_down: false,
             forward_down: false,
             back_down: false,
@@ -36,7 +38,8 @@ impl Input {
     }
 
     pub fn on_mouse_button(&mut self, btn: MouseButton, pressed: bool) {
-        self.rmb_down = btn == MouseButton::Right && pressed;
+        if btn == MouseButton::Left { self.lmb_down = pressed; }
+        if btn == MouseButton::Right { self.rmb_down = pressed; }
     }
 
     pub fn on_key(&mut self, code: VirtualKeyCode, pressed: bool) {

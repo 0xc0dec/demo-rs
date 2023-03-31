@@ -11,11 +11,13 @@ use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
+use crate::components::grab::Grab;
 use crate::frame_time::FrameTime;
 
 #[derive(Component)]
 pub struct Player {
-    raycast_pt: Option<Vec3>,
+    target_pt: Option<Vec3>,
+    target_body: Option<RigidBodyHandle>,
     collider_handle: ColliderHandle,
 }
 
@@ -42,11 +44,24 @@ impl Player {
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
-        commands.spawn((Player { collider_handle, raycast_pt: None }, camera, transform));
+        commands.spawn((
+            Player {
+                collider_handle,
+                target_pt: None,
+                target_body: None
+            },
+            Grab::new(),
+            camera,
+            transform
+        ));
     }
 
-    pub fn raycast_pt(&self) -> Option<Vec3> {
-        self.raycast_pt
+    pub fn target_pt(&self) -> Option<Vec3> {
+        self.target_pt
+    }
+
+    pub fn target_body(&self) -> Option<RigidBodyHandle> {
+        self.target_body
     }
 
     pub fn update(
@@ -81,14 +96,21 @@ impl Player {
         }
 
         // Update raycast target
-        if let Some((hit_pt, _, _)) = physics.cast_ray(
+        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
             transform.position(),
             transform.forward(),
             Some(player.collider_handle),
         ) {
-            player.raycast_pt = Some(hit_pt);
+            player.target_pt = Some(hit_pt);
+            player.target_body = Some(
+                physics.colliders.get(hit_collider)
+                    .unwrap()
+                    .parent()
+                    .unwrap()
+            );
         } else {
-            player.raycast_pt = None;
+            player.target_pt = None;
+            player.target_body = None;
         }
     }
 }

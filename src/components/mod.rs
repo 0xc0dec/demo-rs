@@ -9,6 +9,7 @@ mod render_order;
 mod skybox;
 mod player_target;
 mod transform;
+mod grab;
 
 pub use camera::Camera;
 pub use floor_box::FloorBox;
@@ -21,3 +22,4 @@ pub use render_order::RenderOrder;
 pub use skybox::Skybox;
 pub use player_target::PlayerTarget;
 pub use transform::{Transform, TransformSpace};
+pub use grab::Grab;
