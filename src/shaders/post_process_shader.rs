@@ -1,5 +1,5 @@
 use crate::device::Device;
-use crate::mesh::{MeshVertex, Vertex};
+use crate::mesh::MeshVertex;
 use crate::shaders::utils::*;
 use crate::texture::Texture;
 use wgpu::{BindGroup, RenderPipeline};
@@ -27,7 +27,7 @@ impl PostProcessShader {
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&texture_bind_group_layout],
-                vertex_buffer_layouts: &[MeshVertex::desc()],
+                vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
         )
         .await;
