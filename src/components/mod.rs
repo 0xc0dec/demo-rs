@@ -7,7 +7,7 @@ mod player;
 mod post_processor;
 mod render_order;
 mod skybox;
-mod tracer;
+mod player_target;
 mod transform;
 
 pub use camera::Camera;
@@ -19,5 +19,5 @@ pub use player::Player;
 pub use post_processor::PostProcessor;
 pub use render_order::RenderOrder;
 pub use skybox::Skybox;
-pub use tracer::Tracer;
+pub use player_target::PlayerTarget;
 pub use transform::{Transform, TransformSpace};

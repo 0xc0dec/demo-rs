@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::{Schedule};
 use bevy_ecs::schedule::ScheduleLabel;
-use crate::components::{PhysicsBody, Player, PostProcessor, Tracer};
+use crate::components::{PhysicsBody, Player, PostProcessor, PlayerTarget};
 use crate::systems::*;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -12,7 +12,7 @@ pub fn new_update_schedule() -> (Schedule, Label) {
         .add_system(update_physics)
         .add_system(PhysicsBody::sync.after(update_physics))
         .add_system(Player::update.after(update_physics))
-        .add_system(Tracer::update.after(Player::update))
+        .add_system(PlayerTarget::update.after(Player::update))
         .add_system(PostProcessor::update.after(Player::update))
         .add_system(update_and_build_debug_ui.after(update_physics));
     (schedule, Label)
