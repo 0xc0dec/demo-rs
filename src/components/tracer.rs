@@ -14,10 +14,10 @@ impl Tracer {
     pub fn spawn(mut commands: Commands, device: Res<Device>) {
         let transform = Transform::default();
 
-        let (mesh, shader) = pollster::block_on(async {
+        let (shader, mesh) = pollster::block_on(async {
             let mesh = Mesh::from_file("cube.obj", &device).await;
             let shader = ColorShader::new(&device).await;
-            (mesh, shader)
+            (shader, mesh)
         });
 
         let renderer = MeshRenderer::new(

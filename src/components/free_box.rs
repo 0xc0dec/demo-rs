@@ -18,36 +18,38 @@ impl FreeBox {
         device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
     ) {
-        pollster::block_on(async {
-            let pos = Vec3::y_axis().xyz() * 15.0;
-            let scale = Vec3::from_element(1.0);
-
-            let physics_body = PhysicsBody::new(
-                PhysicsBodyParams {
-                    pos,
-                    scale,
-                    rotation_axis: Vec3::from_element(1.0),
-                    rotation_angle: 50.0,
-                    movable: true,
-                },
-                &mut physics,
-            );
-
+        let (shader, mesh) = pollster::block_on(async {
             let texture = Texture::new_2d_from_file("stonewall.jpg", &device)
                 .await
                 .unwrap();
             let shader =
                 DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
             let mesh = Mesh::from_file("cube.obj", &device).await;
-            let renderer = MeshRenderer::new(
-                mesh,
-                ShaderVariant::Diffuse(shader),
-                RenderTags::SCENE,
-            );
-
-            let transform = Transform::new(pos, scale);
-
-            commands.spawn((FreeBox, physics_body, renderer, transform));
+            (shader, mesh)
         });
+
+        let pos = Vec3::y_axis().xyz() * 5.0;
+        let scale = Vec3::from_element(1.0);
+
+        let physics_body = PhysicsBody::new(
+            PhysicsBodyParams {
+                pos,
+                scale,
+                rotation_axis: Vec3::from_element(1.0),
+                rotation_angle: 50.0,
+                movable: true,
+            },
+            &mut physics,
+        );
+
+        let renderer = MeshRenderer::new(
+            mesh,
+            ShaderVariant::Diffuse(shader),
+            RenderTags::SCENE,
+        );
+
+        let transform = Transform::new(pos, scale);
+
+        commands.spawn((FreeBox, physics_body, renderer, transform));
     }
 }

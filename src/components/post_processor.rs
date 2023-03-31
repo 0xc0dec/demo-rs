@@ -22,7 +22,6 @@ impl PostProcessor {
 
         let mesh = Mesh::quad(&device);
 
-        // TODO Refactor similar places - use blocking only on the async pieces of code
         let shader = pollster::block_on(async {
             PostProcessShader::new(
                 &device,

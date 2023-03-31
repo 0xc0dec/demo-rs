@@ -10,7 +10,6 @@ pub struct PhysicsBody {
     rigid_body_handle: RigidBodyHandle,
 }
 
-#[derive(Copy, Clone)]
 pub struct PhysicsBodyParams {
     pub pos: Vec3,
     pub scale: Vec3,
