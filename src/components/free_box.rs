@@ -28,7 +28,7 @@ impl FreeBox {
             (shader, mesh)
         });
 
-        let pos = Vec3::y_axis().xyz() * 5.0;
+        let pos = Vec3::y_axis().xyz() * 10.0;
         let scale = Vec3::from_element(1.0);
 
         let physics_body = PhysicsBody::new(

@@ -33,10 +33,10 @@ impl PhysicsBody {
         } else {
             RigidBodyBuilder::fixed()
         }
-        .translation(vector![pos.x, pos.y, pos.z])
-        // TODO Verify this conversion
-        .rotation(rotation_axis * rotation_angle)
-        .build();
+            .translation(vector![pos.x, pos.y, pos.z])
+            .rotation(rotation_axis * rotation_angle)
+            .build();
+
         // TODO Other shapes
         let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
             .restitution(0.2)
@@ -51,7 +51,7 @@ impl PhysicsBody {
         for (mut transform, body) in q.iter_mut() {
             let body = physics.bodies.get(body.rigid_body_handle).unwrap();
             let phys_pos = body.translation();
-            let phys_rot = body.rotation();
+            let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
             transform.set(*phys_pos, *phys_rot.quaternion());
         }
     }

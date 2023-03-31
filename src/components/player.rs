@@ -24,7 +24,7 @@ impl Player {
         mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
-        let pos = Vec3::new(10.0, 10.0, 10.0);
+        let pos = Vec3::new(7.0, 7.0, 7.0);
 
         let rt = RenderTarget::new(&device, None);
         let camera = Camera::new(

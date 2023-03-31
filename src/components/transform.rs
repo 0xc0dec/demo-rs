@@ -73,7 +73,6 @@ impl Transform {
         self.rebuild_matrix();
     }
 
-    // TODO Fix, the visuals don't always match physics
     pub fn set(&mut self, pos: Vec3, rotation: Quat) {
         self.rot = UnitQuat::from_quaternion(rotation);
         self.pos = pos;
