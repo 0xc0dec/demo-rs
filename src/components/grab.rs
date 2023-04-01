@@ -1,3 +1,4 @@
+use std::ops::Add;
 use bevy_ecs::prelude::{Component, Query, Res, ResMut};
 use rapier3d::na::Point3;
 use rapier3d::prelude::RigidBodyHandle;
@@ -8,22 +9,23 @@ use crate::physics_world::PhysicsWorld;
 
 #[derive(Component)]
 pub struct Grab {
-    body_handle: Option<RigidBodyHandle>,
-    offset: Vec3
+    target_handle: Option<RigidBodyHandle>,
+    // Coordinates of the body in Player's local coord. system
+    body_local_pos: Vec3,
 }
 
 impl Grab {
     pub fn new() -> Grab {
         Self {
-            body_handle: None,
-            offset: Vec3::zeros()
+            target_handle: None,
+            body_local_pos: Vec3::zeros(),
         }
     }
 
     pub fn update(
         mut grab: Query<&mut Grab>,
         player: Query<(&Player, &Transform)>,
-        mut bodies: Query<&mut PhysicsBody>,
+        bodies: Query<&PhysicsBody>,
         input: Res<Input>,
         mut physics: ResMut<PhysicsWorld>
     ) {
@@ -31,27 +33,34 @@ impl Grab {
         let (player, player_transform) = player.single();
 
         if input.lmb_down {
-            if let Some(body_handle) = grab.body_handle {
-                bodies.iter_mut()
-                    .find(|b| b.body_handle() == body_handle).unwrap()
-                    .move_to(player_transform.position() + grab.offset, &mut physics);
+            if let Some(target_handle) = grab.target_handle {
+                let new_pos = player_transform.matrix()
+                    // WTF, how else to cast?
+                    .transform_point(&Point3::origin().add(grab.body_local_pos));
+                bodies.iter()
+                    .find(|b| b.body_handle() == target_handle).unwrap()
+                    .move_to(new_pos.coords, &mut physics);
             } else if let Some(target_body) = player.target_body() {
-                grab.body_handle = Some(target_body);
-                grab.offset = player_transform
-                    .matrix().try_inverse().unwrap()
-                    .transform_point(&Point3::from(player.target_pt().unwrap()))
+                grab.target_handle = Some(target_body);
+
+                let body_pos = physics.bodies.get(target_body).unwrap().translation();
+                grab.body_local_pos = player_transform.matrix()
+                    .try_inverse()
+                    .unwrap()
+                    // WTF, how else to cast?
+                    .transform_point(&Point3::origin().add(body_pos))
                     .coords;
 
-                bodies.iter_mut()
+                bodies.iter()
                     .find(|b| b.body_handle() == target_body).unwrap()
                     .grab(&mut physics);
             }
-        } else if let Some(body_handle) = grab.body_handle {
+        } else if let Some(target_handle) = grab.target_handle {
             // TODO Avoid this copypasta
-            bodies.iter_mut()
-                .find(|b| b.body_handle() == body_handle).unwrap()
+            bodies.iter()
+                .find(|b| b.body_handle() == target_handle).unwrap()
                 .release(&mut physics);
-            grab.body_handle = None
+            grab.target_handle = None
         }
     }
 }
