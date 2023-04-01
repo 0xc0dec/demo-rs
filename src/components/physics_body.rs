@@ -83,11 +83,9 @@ impl PhysicsBody {
         mut physics: ResMut<PhysicsWorld>
     ) {
         let player_transform = player.single();
-
-        // Update currently being grabbed
-        for g in grabbed.iter() {
-            let body = physics.bodies.get_mut(g.0.handle).unwrap();
-            let new_pos = player_transform.matrix().transform_point(&to_point(g.1.body_local_pos));
+        if let Ok(grabbed) = grabbed.get_single() {
+            let body = physics.bodies.get_mut(grabbed.0.handle).unwrap();
+            let new_pos = player_transform.matrix().transform_point(&to_point(grabbed.1.body_local_pos));
             body.set_translation(new_pos.coords, true);
         }
     }
