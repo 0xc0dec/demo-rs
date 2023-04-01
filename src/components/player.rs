@@ -18,6 +18,8 @@ pub struct Player {
     target_pt: Option<Vec3>,
     target_body: Option<RigidBodyHandle>,
     collider_handle: ColliderHandle,
+    h_rot_acc: f32,
+    v_rot_acc: f32,
 }
 
 impl Player {
@@ -47,7 +49,9 @@ impl Player {
             Player {
                 collider_handle,
                 target_pt: None,
-                target_body: None
+                target_body: None,
+                h_rot_acc: 0.0,
+                v_rot_acc: 0.0
             },
             camera,
             transform
@@ -81,11 +85,36 @@ impl Player {
         // Move and rotate
         let dt = frame_time.delta;
         if input.rmb_down {
-            rotate(&mut transform, dt, &input);
+            player.rotate(&mut transform, &input, dt);
             translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
         }
 
         update_target((&mut player, &transform), &physics);
+    }
+
+    fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
+        const MIN_TOP_ANGLE: f32 = 0.1;
+        const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
+        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
+        self.v_rot_acc += input.mouse_delta.1 * dt;
+        // Protect from overturning - prevent camera from reaching the vertical line with small
+        // margin angles.
+        if angle_to_top + self.v_rot_acc <= MIN_TOP_ANGLE {
+            self.v_rot_acc = -(angle_to_top - MIN_TOP_ANGLE);
+        } else if angle_to_top + self.v_rot_acc >= MIN_BOTTOM_ANGLE {
+            self.v_rot_acc = MIN_BOTTOM_ANGLE - angle_to_top;
+        }
+
+        // Smooth the movement a bit
+        let v_rot = 20.0 * dt * self.v_rot_acc;
+        self.v_rot_acc -= v_rot;
+
+        self.h_rot_acc += input.mouse_delta.0 * dt;
+        let h_rot = 20.0 * dt * self.h_rot_acc;
+        self.h_rot_acc -= h_rot;
+
+        transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
+        transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 }
 
@@ -157,27 +186,4 @@ fn translate(
         .get_mut(collider_handle)
         .unwrap()
         .set_translation(collider_current_pos + effective_movement);
-}
-
-fn rotate(
-    transform: &mut Transform,
-    dt: f32,
-    input: &Input,
-) {
-    const MIN_TOP_ANGLE: f32 = 0.1;
-    const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-    let angle_to_top = transform.forward().angle(&Vec3::y_axis());
-    let mut v_rot = input.mouse_delta.1 * dt;
-    // Protect from overturning - prevent camera from reaching the vertical line with small
-    // margin angles.
-    if angle_to_top + v_rot <= MIN_TOP_ANGLE {
-        v_rot = -(angle_to_top - MIN_TOP_ANGLE);
-    } else if angle_to_top + v_rot >= MIN_BOTTOM_ANGLE {
-        v_rot = MIN_BOTTOM_ANGLE - angle_to_top;
-    }
-
-    let h_rot = input.mouse_delta.0 * dt;
-
-    transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
-    transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
 }
