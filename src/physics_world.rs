@@ -70,7 +70,7 @@ impl PhysicsWorld {
                 (collider.position(), collider.shape())
             };
 
-            let effective_movement = self.char_controller.move_shape(
+            let possible_movement = self.char_controller.move_shape(
                 dt,
                 &self.bodies,
                 &self.colliders,
@@ -82,7 +82,7 @@ impl PhysicsWorld {
                 |_| {},
             );
 
-            (effective_movement, collider_pos.translation.vector)
+            (possible_movement, collider_pos.translation.vector)
         };
 
         (translation, collider_current_pos)

@@ -20,6 +20,7 @@ pub struct Player {
     collider_handle: ColliderHandle,
     h_rot_acc: f32,
     v_rot_acc: f32,
+    translation_acc: Vec3
 }
 
 impl Player {
@@ -51,7 +52,8 @@ impl Player {
                 target_pt: None,
                 target_body: None,
                 h_rot_acc: 0.0,
-                v_rot_acc: 0.0
+                v_rot_acc: 0.0,
+                translation_acc: Vec3::zeros()
             },
             camera,
             transform
@@ -86,10 +88,53 @@ impl Player {
         let dt = frame_time.delta;
         if input.rmb_down {
             player.rotate(&mut transform, &input, dt);
-            translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
+            player.translate(&mut transform, dt, &input, &mut physics);
         }
 
         update_target((&mut player, &transform), &physics);
+    }
+
+    fn translate(
+        &mut self,
+        transform: &mut Transform,
+        dt: f32,
+        input: &Input,
+        physics: &mut PhysicsWorld,
+    ) {
+        let mut translation: Vec3 = Vec3::from_element(0.0);
+        if input.forward_down {
+            translation += transform.forward();
+        }
+        if input.back_down {
+            translation -= transform.forward();
+        }
+        if input.right_down {
+            translation += transform.right();
+        }
+        if input.left_down {
+            translation -= transform.right();
+        }
+        if input.up_down {
+            translation += transform.up();
+        }
+        if input.down_down {
+            translation -= transform.up();
+        }
+        self.translation_acc += translation.normalize() * dt * 10.0;
+
+        let (possible_translation, collider_current_pos) = physics
+            .move_character(dt, self.translation_acc, self.collider_handle);
+        self.translation_acc = possible_translation;
+
+        let movement = 10.0 * dt * self.translation_acc;
+        self.translation_acc -= movement;
+        transform.translate(movement);
+
+        physics
+            .colliders
+            .get_mut(self.collider_handle)
+            .unwrap()
+            .set_translation(collider_current_pos + movement);
     }
 
     fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
@@ -145,45 +190,4 @@ fn update_cam_aspect(camera: &mut Camera, new_surface_size: SurfaceSize, device:
             device,
         )
     }
-}
-
-fn translate(
-    transform: &mut Transform,
-    collider_handle: ColliderHandle,
-    dt: f32,
-    speed: f32,
-    input: &Input,
-    physics: &mut PhysicsWorld,
-) {
-    let mut translation: Vec3 = Vec3::from_element(0.0);
-    if input.forward_down {
-        translation += transform.forward();
-    }
-    if input.back_down {
-        translation -= transform.forward();
-    }
-    if input.right_down {
-        translation += transform.right();
-    }
-    if input.left_down {
-        translation -= transform.right();
-    }
-    if input.up_down {
-        translation += transform.up();
-    }
-    if input.down_down {
-        translation -= transform.up();
-    }
-    let translation = translation.normalize() * dt * speed;
-
-    let (effective_movement, collider_current_pos) =
-        physics.move_character(dt, translation, collider_handle);
-
-    transform.translate(effective_movement);
-
-    physics
-        .colliders
-        .get_mut(collider_handle)
-        .unwrap()
-        .set_translation(collider_current_pos + effective_movement);
 }
