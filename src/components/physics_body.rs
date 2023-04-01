@@ -7,6 +7,7 @@ use rapier3d::prelude::*;
 #[derive(Component)]
 pub struct PhysicsBody {
     body_handle: RigidBodyHandle,
+    movable: bool
 }
 
 pub struct PhysicsBodyParams {
@@ -27,8 +28,8 @@ impl PhysicsBody {
             movable,
         } = params;
 
-        let body = movable.then(RigidBodyBuilder::dynamic)
-            .unwrap_or_else(RigidBodyBuilder::fixed)
+
+        let body = RigidBodyBuilder::new(orig_type(movable))
             .translation(vector![pos.x, pos.y, pos.z])
             .rotation(rotation_axis * rotation_angle)
             .build();
@@ -42,6 +43,7 @@ impl PhysicsBody {
 
         Self {
             body_handle,
+            movable
         }
     }
 
@@ -70,6 +72,10 @@ impl PhysicsBody {
 
     pub fn release(&self, physics: &mut PhysicsWorld) {
         let body = physics.bodies.get_mut(self.body_handle).unwrap();
-        body.set_body_type(RigidBodyType::Dynamic, true);
+        body.set_body_type(orig_type(self.movable), true);
     }
+}
+
+fn orig_type(movable: bool) -> RigidBodyType {
+    if movable { RigidBodyType::Dynamic } else { RigidBodyType::Fixed }
 }
