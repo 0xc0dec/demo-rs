@@ -14,6 +14,7 @@ for a low-level graphics API. There is no attempt to create an "engine", everyth
   - Simple rigid bodies with colliders.
   - Prevention of camera passing through objects (via character controller).
   - Ray casting.
+  - Drag-n-drop of bodies.
 - Skybox rendering on a full-screen quad.
 - Post-processing: the scene is first rendered into a texture, which is then rendered on a full-screen quad
 with a separate shader (currently applying vignette).
