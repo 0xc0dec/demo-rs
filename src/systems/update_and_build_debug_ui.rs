@@ -31,8 +31,9 @@ pub fn update_and_build_debug_ui(
                 frame.text(
                     "\
                     Controls:\n\
-                    * Hold right click to control camera\n\
+                    * Right mouse button to control camera\n\
                     * Q-W-E-A-S-D to move\n\
+                    * Left mouse button to grab and release an object\n\
                     * Esc to quit the app",
                 );
 
