@@ -36,12 +36,12 @@ impl PlayerTarget {
         let (player, player_transform) = player.single();
         let (mut target_transform, mut target_renderer) = target.single_mut();
 
-        if let Some(player_raycast_pt) = player.target_pt() {
-            let dist_to_camera = (player_transform.position() - player_raycast_pt).magnitude();
+        if let Some(player_target_pt) = player.target_pt() {
+            let dist_to_camera = (player_transform.position() - player_target_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
             target_renderer.set_tags(RenderTags::SCENE);
-            target_transform.set_position(player_raycast_pt);
+            target_transform.set_position(player_target_pt);
             target_transform.set_scale(Vec3::from_element(scale));
         } else {
             target_renderer.set_tags(RenderTags::HIDDEN);

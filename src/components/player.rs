@@ -11,7 +11,6 @@ use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
-use crate::components::grab::Grab;
 use crate::frame_time::FrameTime;
 
 #[derive(Component)]
@@ -50,7 +49,6 @@ impl Player {
                 target_pt: None,
                 target_body: None
             },
-            Grab::new(),
             camera,
             transform
         ));
