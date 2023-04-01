@@ -27,11 +27,8 @@ impl PhysicsBody {
             movable,
         } = params;
 
-        let body = if movable {
-            RigidBodyBuilder::dynamic()
-        } else {
-            RigidBodyBuilder::fixed()
-        }
+        let body = movable.then(RigidBodyBuilder::dynamic)
+            .unwrap_or_else(RigidBodyBuilder::fixed)
             .translation(vector![pos.x, pos.y, pos.z])
             .rotation(rotation_axis * rotation_angle)
             .build();
