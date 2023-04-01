@@ -32,11 +32,9 @@ impl Grab {
 
         if input.lmb_down {
             if let Some(body_handle) = grab.body_handle {
-                for body in bodies.iter_mut() {
-                    if body.body_handle() == body_handle {
-                        body.move_to(player_transform.position() + grab.offset, &mut physics)
-                    }
-                }
+                bodies.iter_mut()
+                    .find(|b| b.body_handle() == body_handle).unwrap()
+                    .move_to(player_transform.position() + grab.offset, &mut physics);
             } else if let Some(target_body) = player.target_body() {
                 grab.body_handle = Some(target_body);
                 grab.offset = player_transform
@@ -44,18 +42,15 @@ impl Grab {
                     .transform_point(&Point3::from(player.target_pt().unwrap()))
                     .coords;
 
-                for body in bodies.iter_mut() {
-                    if body.body_handle() == target_body {
-                        body.grab(&mut physics)
-                    }
-                }
+                bodies.iter_mut()
+                    .find(|b| b.body_handle() == target_body).unwrap()
+                    .grab(&mut physics);
             }
         } else if let Some(body_handle) = grab.body_handle {
-            for body in bodies.iter_mut() {
-                if body.body_handle() == body_handle {
-                    body.release(&mut physics);
-                }
-            }
+            // TODO Avoid this copypasta
+            bodies.iter_mut()
+                .find(|b| b.body_handle() == body_handle).unwrap()
+                .release(&mut physics);
             grab.body_handle = None
         }
     }
