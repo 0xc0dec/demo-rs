@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 use crate::components::camera::Camera;
 use crate::components::transform::TransformSpace;
 use crate::components::Transform;
-use crate::device::Device;
+use crate::device::{Device, SurfaceSize};
 use crate::events::WindowResizeEvent;
 use crate::input::Input;
 use crate::math::Vec3;
@@ -77,15 +77,7 @@ impl Player {
         // Update camera aspect
         let last_resize = resize_events.iter().last();
         if let Some(last_resize) = last_resize {
-            camera.set_aspect(
-                last_resize.new_size.width as f32 / last_resize.new_size.height as f32
-            );
-            if let Some(target) = camera.target_mut() {
-                target.resize(
-                    (last_resize.new_size.width, last_resize.new_size.height),
-                    &device,
-                )
-            }
+            update_cam_aspect(&mut camera, last_resize.new_size, &device);
         }
 
         // Move and rotate
@@ -95,23 +87,36 @@ impl Player {
             translate(&mut transform, player.collider_handle, dt, 10.0, &input, &mut physics);
         }
 
-        // Update raycast target
-        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
-            transform.position(),
-            transform.forward(),
-            Some(player.collider_handle),
-        ) {
-            player.target_pt = Some(hit_pt);
-            player.target_body = Some(
-                physics.colliders.get(hit_collider)
-                    .unwrap()
-                    .parent()
-                    .unwrap()
-            );
-        } else {
-            player.target_pt = None;
-            player.target_body = None;
-        }
+        update_target((&mut player, &transform), &physics);
+    }
+}
+
+fn update_target(player: (&mut Player, &Transform), physics: &PhysicsWorld) {
+    if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
+        player.1.position(),
+        player.1.forward(),
+        Some(player.0.collider_handle),
+    ) {
+        player.0.target_pt = Some(hit_pt);
+        player.0.target_body = Some(
+            physics.colliders.get(hit_collider)
+                .unwrap()
+                .parent()
+                .unwrap()
+        );
+    } else {
+        player.0.target_pt = None;
+        player.0.target_body = None;
+    }
+}
+
+fn update_cam_aspect(camera: &mut Camera, new_surface_size: SurfaceSize, device: &Device) {
+    camera.set_aspect(new_surface_size.width as f32 / new_surface_size.height as f32);
+    if let Some(target) = camera.target_mut() {
+        target.resize(
+            (new_surface_size.width, new_surface_size.height),
+            device,
+        )
     }
 }
 
