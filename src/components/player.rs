@@ -120,26 +120,32 @@ impl Player {
         if input.down_down {
             translation -= transform.up();
         }
-        self.translation_acc += translation.normalize() * dt * 10.0;
 
+        const SPEED: f32 = 10.0;
+
+        // Apply only if there's anything to apply. Otherwise getting NaN after normalize() :|
+        if translation.magnitude() > 0.01 {
+            self.translation_acc += translation.normalize() * dt * SPEED;
+        }
+
+        let translation = SPEED * dt * self.translation_acc;
         let (possible_translation, collider_current_pos) = physics
-            .move_character(dt, self.translation_acc, self.collider_handle);
-        self.translation_acc = possible_translation;
+            .move_character(dt, translation, self.collider_handle);
+        self.translation_acc -= possible_translation;
 
-        let movement = 10.0 * dt * self.translation_acc;
-        self.translation_acc -= movement;
-        transform.translate(movement);
-
+        transform.translate(possible_translation);
         physics
             .colliders
             .get_mut(self.collider_handle)
             .unwrap()
-            .set_translation(collider_current_pos + movement);
+            .set_translation(collider_current_pos + possible_translation);
     }
 
     fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
+        const SPEED: f32 = 25.0;
+
         let angle_to_top = transform.forward().angle(&Vec3::y_axis());
         self.v_rot_acc += input.mouse_delta.1 * dt;
         // Protect from overturning - prevent camera from reaching the vertical line with small
@@ -151,11 +157,11 @@ impl Player {
         }
 
         // Smooth the movement a bit
-        let v_rot = 20.0 * dt * self.v_rot_acc;
+        let v_rot = SPEED * dt * self.v_rot_acc;
         self.v_rot_acc -= v_rot;
 
         self.h_rot_acc += input.mouse_delta.0 * dt;
-        let h_rot = 20.0 * dt * self.h_rot_acc;
+        let h_rot = SPEED * dt * self.h_rot_acc;
         self.h_rot_acc -= h_rot;
 
         transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
