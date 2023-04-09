@@ -1,3 +1,4 @@
+use crate::assets::Assets;
 use crate::components::mesh_renderer::ShaderVariant;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
@@ -7,7 +8,6 @@ use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
-use crate::texture::Texture;
 use bevy_ecs::prelude::*;
 
 #[derive(Component)]
@@ -18,22 +18,21 @@ impl FloorBox {
         mut commands: Commands,
         device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
+        assets: Res<Assets>,
     ) {
         let (shader, mesh) = pollster::block_on(async {
-            let texture = Texture::new_2d_from_file("stonewall.jpg", &device)
-                .await
-                .unwrap();
-            let shader =
-                DiffuseShader::new(&device, DiffuseShaderParams { texture: &texture }).await;
+            let shader = DiffuseShader::new(
+                &device,
+                DiffuseShaderParams {
+                    texture: &assets.stone_tex,
+                },
+            )
+            .await;
             let mesh = Mesh::from_file("cube.obj", &device).await;
             (shader, mesh)
         });
 
-        let renderer = MeshRenderer::new(
-            mesh,
-            ShaderVariant::Diffuse(shader),
-            RenderTags::SCENE,
-        );
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader), RenderTags::SCENE);
 
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);

@@ -1,22 +1,27 @@
+use crate::assets::Assets;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, ShaderVariant};
 use crate::device::Device;
+use crate::input::Input;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
-use crate::texture::Texture;
 use bevy_ecs::prelude::*;
-use crate::input::Input;
 
 #[derive(Component)]
 pub struct FreeBox;
 
 impl FreeBox {
-    pub fn spawn(mut commands: Commands, device: Res<Device>, mut physics: ResMut<PhysicsWorld>) {
+    pub fn spawn(
+        mut commands: Commands,
+        device: Res<Device>,
+        mut physics: ResMut<PhysicsWorld>,
+        assets: Res<Assets>,
+    ) {
         let pos = Vec3::y_axis().xyz() * 10.0;
-        commands.spawn(Self::new_components(pos, &device, &mut physics));
+        commands.spawn(Self::new_components(pos, &device, &mut physics, &assets));
     }
 
     pub fn spawn_by_player(
@@ -24,12 +29,13 @@ impl FreeBox {
         mut commands: Commands,
         device: Res<Device>,
         mut physics: ResMut<PhysicsWorld>,
-        input: Res<Input>
+        input: Res<Input>,
+        assets: Res<Assets>,
     ) {
         if input.space_just_pressed {
             let player_transform = player.single();
             let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
-            commands.spawn(Self::new_components(pos, &device, &mut physics));
+            commands.spawn(Self::new_components(pos, &device, &mut physics, &assets));
         }
     }
 
@@ -37,13 +43,16 @@ impl FreeBox {
         pos: Vec3,
         device: &Device,
         physics: &mut PhysicsWorld,
+        assets: &Assets,
     ) -> (FreeBox, PhysicsBody, MeshRenderer, Transform) {
         let (shader, mesh) = pollster::block_on(async {
-            let texture = Texture::new_2d_from_file("stonewall.jpg", device)
-                .await
-                .unwrap();
-            let shader =
-                DiffuseShader::new(device, DiffuseShaderParams { texture: &texture }).await;
+            let shader = DiffuseShader::new(
+                device,
+                DiffuseShaderParams {
+                    texture: &assets.stone_tex,
+                },
+            )
+            .await;
             let mesh = Mesh::from_file("cube.obj", device).await;
             (shader, mesh)
         });
@@ -54,8 +63,8 @@ impl FreeBox {
             PhysicsBodyParams {
                 pos,
                 scale,
-                rotation_axis: Vec3::from_element(1.0),
-                rotation_angle: 50.0,
+                rotation_axis: Vec3::identity(),
+                rotation_angle: 0.0,
                 movable: true,
             },
             physics,
