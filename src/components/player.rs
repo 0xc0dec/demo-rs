@@ -138,7 +138,7 @@ impl Player {
             .colliders
             .get_mut(self.collider_handle)
             .unwrap()
-            .set_translation(collider_current_pos + possible_translation);
+            .set_translation(collider_current_pos + translation);
     }
 
     fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
