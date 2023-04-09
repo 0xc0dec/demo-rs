@@ -1,5 +1,6 @@
+use crate::assets::Assets;
 use crate::components::transform::Transform;
-use crate::components::{MeshRenderer, ShaderVariant, RenderOrder};
+use crate::components::{MeshRenderer, RenderOrder, ShaderVariant};
 use crate::device::Device;
 use crate::mesh::Mesh;
 use crate::render_tags::RenderTags;
@@ -11,21 +12,20 @@ use bevy_ecs::prelude::*;
 pub struct Skybox;
 
 impl Skybox {
-    pub fn spawn(mut commands: Commands, device: Res<Device>) {
+    pub fn spawn(mut commands: Commands, device: Res<Device>, assets: Res<Assets>) {
         let (shader, mesh) = pollster::block_on(async {
-            let texture = Texture::new_cube_from_file("skybox_bgra.dds", &device)
-                .await
-                .unwrap();
-            let shader = SkyboxShader::new(&device, SkyboxShaderParams { texture: &texture }).await;
+            let shader = SkyboxShader::new(
+                &device,
+                SkyboxShaderParams {
+                    texture: &assets.skybox_tex,
+                },
+            )
+            .await;
             let mesh = Mesh::quad(&device);
             (shader, mesh)
         });
 
-        let renderer = MeshRenderer::new(
-            mesh,
-            ShaderVariant::Skybox(shader),
-            RenderTags::SCENE,
-        );
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Skybox(shader), RenderTags::SCENE);
 
         let transform = Transform::default();
 

@@ -18,6 +18,7 @@ mod app;
 use crate::systems::*;
 use bevy_ecs::prelude::*;
 use crate::app::App;
+use crate::assets::Assets;
 
 fn main() {
     let mut world = World::default();
@@ -25,6 +26,7 @@ fn main() {
     // world.init_resource::<State<AppStates>>(); // TODO use states?
 
     Schedule::default().add_system(init_app).run(&mut world);
+    Schedule::default().add_system(Assets::load).run(&mut world);
 
     let spawn_scene_schedule = new_spawn_scene_schedule();
     world.add_schedule(spawn_scene_schedule.0, spawn_scene_schedule.1);
