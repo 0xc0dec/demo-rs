@@ -128,12 +128,14 @@ impl Player {
             self.translation_acc += translation.normalize() * dt * SPEED;
         }
 
-        let translation = SPEED * dt * self.translation_acc;
         let (possible_translation, collider_current_pos) = physics
-            .move_character(dt, translation, self.collider_handle);
-        self.translation_acc -= possible_translation;
+            .move_character(dt, self.translation_acc, self.collider_handle);
+        self.translation_acc = possible_translation;
 
-        transform.translate(possible_translation);
+        let translation = SPEED * dt * self.translation_acc;
+        self.translation_acc -= translation;
+
+        transform.translate(translation);
         physics
             .colliders
             .get_mut(self.collider_handle)
