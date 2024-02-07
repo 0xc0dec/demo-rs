@@ -30,7 +30,8 @@ impl ColorShader {
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
-        ).await;
+        )
+        .await;
 
         Self {
             matrices_uniform,

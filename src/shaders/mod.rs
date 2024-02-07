@@ -8,5 +8,4 @@ mod utils;
 pub use color_shader::*;
 pub use diffuse_shader::*;
 pub use post_process_shader::*;
-pub use shader::*;
 pub use skybox_shader::*;

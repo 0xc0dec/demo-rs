@@ -5,7 +5,6 @@ use crate::device::Device;
 use crate::mesh::Mesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
-use crate::texture::Texture;
 use bevy_ecs::prelude::*;
 
 #[derive(Component)]
