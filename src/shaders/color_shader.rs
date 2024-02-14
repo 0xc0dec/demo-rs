@@ -1,10 +1,11 @@
+use wgpu::{BindGroup, RenderPipeline};
+
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::MeshVertex;
 use crate::shaders::utils::*;
-use wgpu::{BindGroup, RenderPipeline};
 
 pub struct ColorShader {
     matrices_uniform: MatricesUniform,

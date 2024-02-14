@@ -75,12 +75,11 @@
 //! })
 //! ```
 
-use imgui::{self, BackendFlags, ConfigFlags, Context, Io, Key, Ui};
+#![allow(dead_code)]
+
 use std::cmp::Ordering;
 
-// Re-export winit to make it easier for users to use the correct version.
-use winit::dpi::{LogicalPosition, LogicalSize};
-
+use imgui::{self, BackendFlags, ConfigFlags, Context, Io, Key, Ui};
 use winit::{
     error::ExternalError,
     event::{
@@ -89,6 +88,8 @@ use winit::{
     },
     window::{CursorIcon as MouseCursor, Window},
 };
+// Re-export winit to make it easier for users to use the correct version.
+use winit::dpi::{LogicalPosition, LogicalSize};
 
 /// winit backend platform state
 #[derive(Debug)]

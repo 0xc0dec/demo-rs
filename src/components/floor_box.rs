@@ -1,3 +1,5 @@
+use bevy_ecs::prelude::*;
+
 use crate::assets::Assets;
 use crate::components::mesh_renderer::ShaderVariant;
 use crate::components::transform::Transform;
@@ -8,7 +10,6 @@ use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
-use bevy_ecs::prelude::*;
 
 #[derive(Component)]
 pub struct FloorBox;

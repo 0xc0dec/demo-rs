@@ -1,4 +1,5 @@
 use bevy_ecs::prelude::{Commands, Component, Entity, Query, Res, ResMut};
+
 use crate::components::{PhysicsBody, Player, Transform};
 use crate::input::Input;
 use crate::math::{to_point, Vec3};
@@ -30,13 +31,16 @@ impl Grab {
                         .unwrap();
 
                     let body = physics.bodies.get(target_body).unwrap();
-                    let body_local_pos = player_transform.matrix()
+                    let body_local_pos = player_transform
+                        .matrix()
                         .try_inverse()
                         .unwrap()
                         .transform_point(&to_point(*body.translation()))
                         .coords;
 
-                    commands.entity(body_entity).insert((Grab { body_local_pos }, ));
+                    commands
+                        .entity(body_entity)
+                        .insert((Grab { body_local_pos },));
                 }
             }
         } else {

@@ -1,17 +1,19 @@
 use std::f32::consts::PI;
+
+use bevy_ecs::prelude::*;
+use rapier3d::prelude::*;
+
 use crate::components::camera::Camera;
 use crate::components::transform::TransformSpace;
 use crate::components::Transform;
 use crate::device::{Device, SurfaceSize};
 use crate::events::WindowResizeEvent;
+use crate::frame_time::FrameTime;
 use crate::input::Input;
 use crate::math::Vec3;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RenderTags;
 use crate::render_target::RenderTarget;
-use bevy_ecs::prelude::*;
-use rapier3d::prelude::*;
-use crate::frame_time::FrameTime;
 
 #[derive(Component)]
 pub struct Player {
@@ -20,15 +22,11 @@ pub struct Player {
     collider_handle: ColliderHandle,
     h_rot_acc: f32,
     v_rot_acc: f32,
-    translation_acc: Vec3
+    translation_acc: Vec3,
 }
 
 impl Player {
-    pub fn spawn(
-        device: Res<Device>,
-        mut physics: ResMut<PhysicsWorld>,
-        mut commands: Commands,
-    ) {
+    pub fn spawn(device: Res<Device>, mut physics: ResMut<PhysicsWorld>, mut commands: Commands) {
         let pos = Vec3::new(7.0, 7.0, 7.0);
 
         let rt = RenderTarget::new(&device, None);
@@ -53,10 +51,10 @@ impl Player {
                 target_body: None,
                 h_rot_acc: 0.0,
                 v_rot_acc: 0.0,
-                translation_acc: Vec3::zeros()
+                translation_acc: Vec3::zeros(),
             },
             camera,
-            transform
+            transform,
         ));
     }
 
@@ -128,8 +126,8 @@ impl Player {
             self.translation_acc += translation.normalize() * dt * SPEED;
         }
 
-        let (possible_translation, collider_current_pos) = physics
-            .move_character(dt, self.translation_acc, self.collider_handle);
+        let (possible_translation, collider_current_pos) =
+            physics.move_character(dt, self.translation_acc, self.collider_handle);
         self.translation_acc = possible_translation;
 
         let translation = SPEED * dt * self.translation_acc;
@@ -179,10 +177,12 @@ fn update_target(player: (&mut Player, &Transform), physics: &PhysicsWorld) {
     ) {
         player.0.target_pt = Some(hit_pt);
         player.0.target_body = Some(
-            physics.colliders.get(hit_collider)
+            physics
+                .colliders
+                .get(hit_collider)
                 .unwrap()
                 .parent()
-                .unwrap()
+                .unwrap(),
         );
     } else {
         player.0.target_pt = None;
@@ -193,9 +193,6 @@ fn update_target(player: (&mut Player, &Transform), physics: &PhysicsWorld) {
 fn update_cam_aspect(camera: &mut Camera, new_surface_size: SurfaceSize, device: &Device) {
     camera.set_aspect(new_surface_size.width as f32 / new_surface_size.height as f32);
     if let Some(target) = camera.target_mut() {
-        target.resize(
-            (new_surface_size.width, new_surface_size.height),
-            device,
-        )
+        target.resize((new_surface_size.width, new_surface_size.height), device)
     }
 }

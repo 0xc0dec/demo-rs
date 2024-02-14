@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
 use winit::event::MouseButton;
 use winit::window::{CursorGrabMode, Window};
+
 use crate::events::MouseEvent;
 
 pub fn grab_cursor(window: NonSend<Window>, mut mouse_events: EventReader<MouseEvent>) {

@@ -1,6 +1,8 @@
-use anyhow::*;
 use std::path::PathBuf;
+
+use anyhow::*;
 use bevy_ecs::prelude::{Commands, Res, Resource};
+
 use crate::device::Device;
 use crate::texture::Texture;
 
@@ -37,7 +39,7 @@ impl Assets {
 
         commands.insert_resource(Self {
             skybox_tex,
-            stone_tex
+            stone_tex,
         })
     }
 }

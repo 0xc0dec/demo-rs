@@ -1,11 +1,12 @@
-use crate::debug_ui::DebugUI;
-use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
-use crate::input::Input;
 use bevy_ecs::prelude::*;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
+
+use crate::debug_ui::DebugUI;
+use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
+use crate::input::Input;
 
 pub fn handle_system_events(
     window: NonSend<Window>,

@@ -1,10 +1,11 @@
-use crate::components::{MeshRenderer, ShaderVariant, Player, Transform};
+use bevy_ecs::prelude::*;
+
+use crate::components::{MeshRenderer, Player, ShaderVariant, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::ColorShader;
-use bevy_ecs::prelude::*;
 
 #[derive(Component)]
 pub struct PlayerTarget;
@@ -19,11 +20,7 @@ impl PlayerTarget {
             (shader, mesh)
         });
 
-        let renderer = MeshRenderer::new(
-            mesh,
-            ShaderVariant::Color(shader),
-            RenderTags::HIDDEN,
-        );
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Color(shader), RenderTags::HIDDEN);
 
         commands.spawn((PlayerTarget, transform, renderer));
     }

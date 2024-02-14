@@ -1,14 +1,15 @@
+use bevy_ecs::prelude::*;
+use rapier3d::prelude::*;
+
+use crate::components::grab::Grab;
 use crate::components::{Player, Transform};
 use crate::math::{to_point, Vec3};
 use crate::physics_world::PhysicsWorld;
-use bevy_ecs::prelude::*;
-use rapier3d::prelude::*;
-use crate::components::grab::Grab;
 
 #[derive(Component)]
 pub struct PhysicsBody {
     handle: RigidBodyHandle,
-    movable: bool
+    movable: bool,
 }
 
 pub struct PhysicsBodyParams {
@@ -29,7 +30,6 @@ impl PhysicsBody {
             movable,
         } = params;
 
-
         let body = RigidBodyBuilder::new(orig_type(movable))
             .translation(vector![pos.x, pos.y, pos.z])
             .rotation(rotation_axis * rotation_angle)
@@ -42,10 +42,7 @@ impl PhysicsBody {
             .build();
         let (handle, _) = physics.add_body(body, collider);
 
-        Self {
-            handle,
-            movable
-        }
+        Self { handle, movable }
     }
 
     pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>, physics: Res<PhysicsWorld>) {
@@ -80,12 +77,14 @@ impl PhysicsBody {
     pub fn update_grabbed(
         player: Query<&Transform, With<Player>>,
         grabbed: Query<(&mut PhysicsBody, &Grab)>,
-        mut physics: ResMut<PhysicsWorld>
+        mut physics: ResMut<PhysicsWorld>,
     ) {
         let player_transform = player.single();
         if let Ok(grabbed) = grabbed.get_single() {
             let body = physics.bodies.get_mut(grabbed.0.handle).unwrap();
-            let new_pos = player_transform.matrix().transform_point(&to_point(grabbed.1.body_local_pos));
+            let new_pos = player_transform
+                .matrix()
+                .transform_point(&to_point(grabbed.1.body_local_pos));
             body.set_translation(new_pos.coords, true);
         }
     }
@@ -96,5 +95,9 @@ impl PhysicsBody {
 }
 
 fn orig_type(movable: bool) -> RigidBodyType {
-    if movable { RigidBodyType::Dynamic } else { RigidBodyType::Fixed }
+    if movable {
+        RigidBodyType::Dynamic
+    } else {
+        RigidBodyType::Fixed
+    }
 }

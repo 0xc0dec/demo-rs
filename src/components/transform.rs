@@ -1,6 +1,7 @@
-use crate::math::{Mat4, Quat, UnitQuat, Vec3};
 use bevy_ecs::prelude::*;
 use rapier3d::na;
+
+use crate::math::{Mat4, Quat, UnitQuat, Vec3};
 
 pub enum TransformSpace {
     Local,

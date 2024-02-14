@@ -1,10 +1,11 @@
+use bevy_ecs::prelude::*;
+use wgpu::RenderBundle;
+
 use crate::components::{Camera, MeshRenderer, RenderOrder, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
-use crate::render_target::RenderTarget;
-use bevy_ecs::prelude::*;
-use wgpu::RenderBundle;
 use crate::render_tags::RenderTags;
+use crate::render_target::RenderTarget;
 
 fn render_pass(
     device: &Device,
@@ -18,9 +19,10 @@ fn render_pass(
             .get_current_texture()
             .expect("Missing surface texture")
     });
-    let surface_tex_view = surface_tex
-        .as_ref()
-        .map(|t| t.texture.create_view(&wgpu::TextureViewDescriptor::default()));
+    let surface_tex_view = surface_tex.as_ref().map(|t| {
+        t.texture
+            .create_view(&wgpu::TextureViewDescriptor::default())
+    });
 
     let color_tex_view = target
         .map(|t| t.color_tex().view())
@@ -48,8 +50,8 @@ fn render_pass(
     });
 
     let cmd_buffer = {
-        let mut encoder = device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        let mut encoder =
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -59,21 +61,26 @@ fn render_pass(
             });
 
             pass.execute_bundles(bundles.iter());
-            if let Some(ui) = debug_ui { ui.render(device, &mut pass) }
+            if let Some(ui) = debug_ui {
+                ui.render(device, &mut pass)
+            }
         }
 
         encoder.finish()
     };
 
     device.queue().submit(Some(cmd_buffer));
-    if let Some(t) = surface_tex { t.present() }
+    if let Some(t) = surface_tex {
+        t.present()
+    }
 }
 
-fn new_bundle_encoder<'a>(device: &'a Device, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder<'a> {
-    let color_format = target
-        .map_or(device.surface_texture_format(), |t| t.color_tex().format());
-    let depth_format = target
-        .map_or(device.depth_texture_format(), |t| t.depth_tex().format());
+fn new_bundle_encoder<'a>(
+    device: &'a Device,
+    target: Option<&RenderTarget>,
+) -> wgpu::RenderBundleEncoder<'a> {
+    let color_format = target.map_or(device.surface_texture_format(), |t| t.color_tex().format());
+    let depth_format = target.map_or(device.depth_texture_format(), |t| t.depth_tex().format());
 
     device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
         label: None,
@@ -132,7 +139,10 @@ pub fn render(
             &device,
             &bundles,
             camera.0.target().as_ref(),
-            camera.0.should_render(RenderTags::DEBUG_UI).then(|| debug_ui.as_mut())
+            camera
+                .0
+                .should_render(RenderTags::DEBUG_UI)
+                .then(|| debug_ui.as_mut()),
         );
     }
 }

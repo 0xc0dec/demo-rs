@@ -1,9 +1,11 @@
-use crate::debug_ui::imgui_winit;
-use crate::device::Device;
-use imgui::MouseCursor;
 use std::time::Duration;
+
+use imgui::MouseCursor;
 use winit::event::Event;
 use winit::window::Window;
+
+use crate::debug_ui::imgui_winit;
+use crate::device::Device;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
@@ -39,12 +41,8 @@ impl DebugUI {
             ..Default::default()
         };
 
-        let renderer = imgui_wgpu::Renderer::new(
-            &mut context,
-            device,
-            device.queue(),
-            renderer_config,
-        );
+        let renderer =
+            imgui_wgpu::Renderer::new(&mut context, device, device.queue(), renderer_config);
 
         Self {
             context,

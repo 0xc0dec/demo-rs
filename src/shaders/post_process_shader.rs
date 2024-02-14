@@ -1,8 +1,9 @@
+use wgpu::{BindGroup, RenderPipeline};
+
 use crate::device::Device;
 use crate::mesh::MeshVertex;
 use crate::shaders::utils::*;
 use crate::texture::Texture;
-use wgpu::{BindGroup, RenderPipeline};
 
 pub struct PostProcessShader {
     pipeline: RenderPipeline,

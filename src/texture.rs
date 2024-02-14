@@ -1,9 +1,10 @@
-use crate::assets::load_binary;
-use crate::device::Device;
 use anyhow::*;
 use bevy_ecs::prelude::Resource;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
+
+use crate::assets::load_binary;
+use crate::device::Device;
 
 pub type TextureSize = (u32, u32);
 

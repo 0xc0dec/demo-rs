@@ -1,9 +1,10 @@
+use bevy_ecs::prelude::*;
+
 use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
 use crate::mesh::{DrawMesh, Mesh};
 use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, SkyboxShader};
-use bevy_ecs::prelude::*;
 
 pub enum ShaderVariant {
     Color(ColorShader),
@@ -21,11 +22,7 @@ pub struct MeshRenderer {
 
 impl MeshRenderer {
     pub fn new(mesh: Mesh, shader: ShaderVariant, tags: u32) -> MeshRenderer {
-        Self {
-            mesh,
-            shader,
-            tags
-        }
+        Self { mesh, shader, tags }
     }
 
     pub fn render<'a>(

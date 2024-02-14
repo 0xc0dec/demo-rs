@@ -1,4 +1,5 @@
 use std::ops::Add;
+
 use rapier3d::na;
 use rapier3d::na::Point3;
 use rapier3d::prelude::Real;

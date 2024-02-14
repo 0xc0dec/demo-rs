@@ -1,16 +1,3 @@
-mod camera;
-mod floor_box;
-mod free_box;
-mod grab;
-mod mesh_renderer;
-mod physics_body;
-mod player;
-mod player_target;
-mod post_processor;
-mod render_order;
-mod skybox;
-mod transform;
-
 pub use camera::Camera;
 pub use floor_box::FloorBox;
 pub use free_box::FreeBox;
@@ -23,3 +10,16 @@ pub use post_processor::PostProcessor;
 pub use render_order::RenderOrder;
 pub use skybox::Skybox;
 pub use transform::Transform;
+
+mod camera;
+mod floor_box;
+mod free_box;
+mod grab;
+mod mesh_renderer;
+mod physics_body;
+mod player;
+mod player_target;
+mod post_processor;
+mod render_order;
+mod skybox;
+mod transform;

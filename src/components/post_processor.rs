@@ -1,9 +1,10 @@
-use crate::components::{Camera, MeshRenderer, ShaderVariant, Player, RenderOrder, Transform};
+use bevy_ecs::prelude::*;
+
+use crate::components::{Camera, MeshRenderer, Player, RenderOrder, ShaderVariant, Transform};
 use crate::device::Device;
 use crate::mesh::Mesh;
 use crate::render_tags::RenderTags;
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
-use bevy_ecs::prelude::*;
 use crate::texture::TextureSize;
 
 #[derive(Component)]
@@ -28,7 +29,8 @@ impl PostProcessor {
                 PostProcessShaderParams {
                     texture: source_camera_rt.color_tex(),
                 },
-            ).await
+            )
+            .await
         });
 
         let renderer = MeshRenderer::new(
@@ -37,7 +39,9 @@ impl PostProcessor {
             RenderTags::POST_PROCESS,
         );
         let transform = Transform::default();
-        let pp = PostProcessor { size: source_camera_rt.color_tex().size() };
+        let pp = PostProcessor {
+            size: source_camera_rt.color_tex().size(),
+        };
 
         commands.spawn((renderer, transform, pp));
 
@@ -50,7 +54,7 @@ impl PostProcessor {
     pub fn update(
         device: Res<Device>,
         mut pp: Query<(&PostProcessor, &mut MeshRenderer)>,
-        player_cam: Query<&Camera, With<Player>>
+        player_cam: Query<&Camera, With<Player>>,
     ) {
         if let Some(pp) = pp.iter_mut().next().as_mut() {
             let source_camera_rt = player_cam.single().target().as_ref().unwrap();
@@ -63,7 +67,8 @@ impl PostProcessor {
                         PostProcessShaderParams {
                             texture: source_camera_rt.color_tex(),
                         },
-                    ).await
+                    )
+                    .await
                 });
 
                 pp.1.set_shader(ShaderVariant::PostProcess(shader));

@@ -1,7 +1,8 @@
 use bevy_ecs::prelude::Resource;
-use crate::math::Vec3;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
+
+use crate::math::Vec3;
 
 #[derive(Resource)]
 pub struct PhysicsWorld {
@@ -53,8 +54,9 @@ impl PhysicsWorld {
         collider: Collider,
     ) -> (RigidBodyHandle, ColliderHandle) {
         let body_handle = self.bodies.insert(body);
-        let collider_handle = self.colliders
-            .insert_with_parent(collider, body_handle, &mut self.bodies);
+        let collider_handle =
+            self.colliders
+                .insert_with_parent(collider, body_handle, &mut self.bodies);
         (body_handle, collider_handle)
     }
 

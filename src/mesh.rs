@@ -1,7 +1,9 @@
+use std::io::{BufReader, Cursor};
+
+use wgpu::util::DeviceExt;
+
 use crate::assets::load_string;
 use crate::device::Device;
-use std::io::{BufReader, Cursor};
-use wgpu::util::DeviceExt;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -61,7 +63,7 @@ impl MeshPart {
         Self {
             vertex_buffer,
             index_buffer,
-            num_indices: indices.len() as u32
+            num_indices: indices.len() as u32,
         }
     }
 
@@ -127,7 +129,9 @@ impl Mesh {
                 let mat_text = load_string(&p).await.unwrap();
                 tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
             },
-        ).await.unwrap();
+        )
+        .await
+        .unwrap();
 
         let parts = meshes
             .into_iter()
@@ -139,10 +143,7 @@ impl Mesh {
                             m.mesh.positions[i * 3 + 1],
                             m.mesh.positions[i * 3 + 2],
                         ],
-                        tex_coords: [
-                            m.mesh.texcoords[i * 2],
-                            m.mesh.texcoords[i * 2 + 1]
-                        ],
+                        tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
                         normal: [
                             m.mesh.normals[i * 3],
                             m.mesh.normals[i * 3 + 1],

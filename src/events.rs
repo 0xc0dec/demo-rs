@@ -1,5 +1,6 @@
-use crate::device::SurfaceSize;
 use winit::event::{MouseButton, VirtualKeyCode};
+
+use crate::device::SurfaceSize;
 
 pub struct WindowResizeEvent {
     pub new_size: SurfaceSize,

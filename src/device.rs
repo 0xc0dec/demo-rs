@@ -1,5 +1,7 @@
 use std::ops::Deref;
+
 use bevy_ecs::prelude::Resource;
+
 use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;

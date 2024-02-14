@@ -1,6 +1,7 @@
-use bevy_ecs::prelude::{Schedule};
+use bevy_ecs::prelude::Schedule;
 use bevy_ecs::schedule::ScheduleLabel;
-use crate::components::{PhysicsBody, Player, PostProcessor, PlayerTarget, Grab, FreeBox};
+
+use crate::components::{FreeBox, Grab, PhysicsBody, Player, PlayerTarget, PostProcessor};
 use crate::systems::*;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
