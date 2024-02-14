@@ -13,7 +13,7 @@ imgui = "0.10.0"
 imgui-wgpu = "0.22.0"
 instant = "0.1.12"
 pollster = "0.3.0"
-rapier3d = { version = "0.17.2", features = ["simd-stable"] }
+rapier3d = { version = "0.18.0", features = ["simd-stable"] }
 tobj = { version = "4.0.1", features = ["async"] }
 wgpu = "0.15.1"
 winit = "0.28.1"

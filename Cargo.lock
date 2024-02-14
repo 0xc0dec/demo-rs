@@ -1317,17 +1317,6 @@ dependencies = [
 
 [[package]]
 name = "num-derive"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "876a53fff98e03a936a674b29568b0e605f06b29372c2489ff4de23f1949743d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "num-derive"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
@@ -1528,7 +1517,7 @@ dependencies = [
  "downcast-rs",
  "either",
  "nalgebra",
- "num-derive 0.4.2",
+ "num-derive",
  "num-traits",
  "rustc-hash",
  "simba",
@@ -1632,9 +1621,9 @@ checksum = "9c8a99fddc9f0ba0a85884b8d14e3592853e787d581ca1816c91349b10e4eeab"
 
 [[package]]
 name = "rapier3d"
-version = "0.17.2"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62a8a0bd9d3135f7b4eb45d0796540e7bab47b6b7c974f90567ccc5a0454f42b"
+checksum = "92d07a833e0aa3bc57010caaa50bf75fa78afc03a74207607db740da4e4579a1"
 dependencies = [
  "approx",
  "arrayvec",
@@ -1643,7 +1632,7 @@ dependencies = [
  "crossbeam",
  "downcast-rs",
  "nalgebra",
- "num-derive 0.3.3",
+ "num-derive",
  "num-traits",
  "parry3d",
  "rustc-hash",
