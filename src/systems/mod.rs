@@ -24,14 +24,14 @@ mod update_and_build_debug_ui;
 mod update_input_state;
 
 pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<WindowResizeEvent>) {
-    if let Some(e) = events.iter().last() {
+    if let Some(e) = events.read().last() {
         device.resize(e.new_size)
     }
 }
 
 pub fn escape_on_exit(mut app: ResMut<App>, mut keyboard_events: EventReader<KeyboardEvent>) {
     if keyboard_events
-        .iter()
+        .read()
         .any(|e| e.code == VirtualKeyCode::Escape && e.pressed)
     {
         app.running = false;

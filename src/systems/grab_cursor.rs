@@ -5,7 +5,7 @@ use winit::window::{CursorGrabMode, Window};
 use crate::events::MouseEvent;
 
 pub fn grab_cursor(window: NonSend<Window>, mut mouse_events: EventReader<MouseEvent>) {
-    for e in mouse_events.iter() {
+    for e in mouse_events.read() {
         if let MouseEvent::Button { button, pressed } = e {
             if *button == MouseButton::Right {
                 if *pressed {

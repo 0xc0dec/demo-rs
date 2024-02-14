@@ -7,7 +7,7 @@ use crate::systems::*;
 pub struct Label;
 
 pub fn new_render_schedule() -> (Schedule, Label) {
-    let mut schedule = Schedule::default();
-    schedule.add_system(render);
+    let mut schedule = Schedule::new(Label {});
+    schedule.add_systems(render);
     (schedule, Label)
 }

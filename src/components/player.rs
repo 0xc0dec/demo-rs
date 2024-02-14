@@ -77,7 +77,7 @@ impl Player {
         let (mut player, mut camera, mut transform) = player.single_mut();
 
         // Update camera aspect
-        let last_resize = resize_events.iter().last();
+        let last_resize = resize_events.read().last();
         if let Some(last_resize) = last_resize {
             update_cam_aspect(&mut camera, last_resize.new_size, &device);
         }

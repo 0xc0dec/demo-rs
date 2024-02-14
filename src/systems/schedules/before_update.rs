@@ -7,8 +7,8 @@ use crate::systems::*;
 pub struct Label;
 
 pub fn new_preupdate_schedule() -> (Schedule, Label) {
-    let mut schedule = Schedule::default();
-    schedule.add_system(handle_system_events).add_systems(
+    let mut schedule = Schedule::new(Label {});
+    schedule.add_systems(handle_system_events).add_systems(
         (
             escape_on_exit,
             grab_cursor,

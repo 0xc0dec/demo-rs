@@ -67,7 +67,7 @@ impl PhysicsBody {
         }
 
         // Tweak no longer grabbed
-        if let Some(e) = ungrabbed.iter().next() {
+        if let Some(e) = ungrabbed.read().next() {
             let phys_body = bodies.get(e).unwrap();
             let body = physics.bodies.get_mut(phys_body.handle).unwrap();
             body.set_body_type(orig_type(phys_body.movable), true);
