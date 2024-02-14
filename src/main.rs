@@ -1,3 +1,10 @@
+use bevy_ecs::prelude::*;
+
+use crate::app::App;
+use crate::assets::Assets;
+use crate::systems::*;
+
+mod app;
 mod assets;
 mod components;
 mod debug_ui;
@@ -13,12 +20,6 @@ mod render_target;
 mod shaders;
 mod systems;
 mod texture;
-mod app;
-
-use crate::systems::*;
-use bevy_ecs::prelude::*;
-use crate::app::App;
-use crate::assets::Assets;
 
 fn main() {
     let mut world = World::default();

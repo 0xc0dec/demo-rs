@@ -1,7 +1,8 @@
-use crate::debug_ui::DebugUI;
 use bevy_ecs::prelude::*;
 use winit::window::Window;
+
 use crate::components::Camera;
+use crate::debug_ui::DebugUI;
 use crate::frame_time::FrameTime;
 use crate::render_tags::RenderTags;
 
@@ -11,7 +12,10 @@ pub fn update_and_build_debug_ui(
     frame_time: Res<FrameTime>,
     window: NonSend<Window>,
 ) {
-    if !cameras.iter().any(|c| c.should_render(RenderTags::DEBUG_UI)) {
+    if !cameras
+        .iter()
+        .any(|c| c.should_render(RenderTags::DEBUG_UI))
+    {
         // No point. Also if we don't render the UI later (because there's no cameras)
         // imgui will fail on the next iteration when we start a new frame because the previous frame
         // will not been finished (i.e. rendered). Perhaps that could be worked around differently.
@@ -31,11 +35,11 @@ pub fn update_and_build_debug_ui(
                 frame.text(
                     "\
                     Controls:\n\
-                    * Right mouse button to control camera\n\
-                    * Q-W-E-A-S-D to move\n\
-                    * Left mouse button to grab and release an object\n\
-                    * Space to spawn a new box\n\
-                    * Esc to quit the app",
+                    * Control camera: hold RMB\n\
+                    * Move (while controlling camera): WASDQE\n\
+                    * Grab and release objects: LMB\n\
+                    * Spawn new box: Space\n\
+                    * Quit: Escape",
                 );
 
                 let mut mouse_pos = frame.io().mouse_pos;
