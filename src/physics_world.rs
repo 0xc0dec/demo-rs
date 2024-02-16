@@ -21,30 +21,18 @@ pub struct PhysicsWorld {
 
 impl PhysicsWorld {
     pub fn new() -> Self {
-        let bodies = RigidBodySet::new();
-        let colliders = ColliderSet::new();
-        let physics_pipeline = PhysicsPipeline::new();
-        let query_pipeline = QueryPipeline::new();
-        let island_manager = IslandManager::new();
-        let broad_phase = BroadPhase::new();
-        let narrow_phase = NarrowPhase::new();
-        let impulse_joints = ImpulseJointSet::new();
-        let multibody_joints = MultibodyJointSet::new();
-        let ccd_solver = CCDSolver::new();
-        let char_controller = KinematicCharacterController::default();
-
         Self {
-            bodies,
-            colliders,
-            physics_pipeline,
-            query_pipeline,
-            island_manager,
-            broad_phase,
-            narrow_phase,
-            impulse_joints,
-            multibody_joints,
-            ccd_solver,
-            char_controller,
+            bodies: RigidBodySet::new(),
+            colliders: ColliderSet::new(),
+            physics_pipeline: PhysicsPipeline::new(),
+            query_pipeline: QueryPipeline::new(),
+            island_manager: IslandManager::new(),
+            broad_phase: BroadPhase::new(),
+            narrow_phase: NarrowPhase::new(),
+            impulse_joints: ImpulseJointSet::new(),
+            multibody_joints: MultibodyJointSet::new(),
+            ccd_solver: CCDSolver::new(),
+            char_controller: KinematicCharacterController::default(),
         }
     }
 
