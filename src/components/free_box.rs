@@ -21,7 +21,7 @@ impl FreeBox {
         mut physics: ResMut<PhysicsWorld>,
         assets: Res<Assets>,
     ) {
-        let pos = Vec3::y_axis().xyz() * 10.0;
+        let pos = Vec3::y_axis().xyz() * 5.0;
         commands.spawn(Self::new_components(pos, &device, &mut physics, &assets));
     }
 
@@ -51,9 +51,9 @@ impl FreeBox {
                 device,
                 DiffuseShaderParams {
                     texture: &assets.stone_tex,
+                    shader: &assets.diffuse_shader,
                 },
-            )
-            .await;
+            );
             let mesh = Mesh::from_file("cube.obj", device).await;
             (shader, mesh)
         });

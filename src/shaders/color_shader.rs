@@ -15,24 +15,21 @@ pub struct ColorShader {
 }
 
 impl ColorShader {
-    pub async fn new(device: &Device) -> Self {
+    pub fn new(device: &Device, shader: &wgpu::ShaderModule) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
-        let shader_module = new_shader_module(device, "color.wgsl").await;
-
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module,
+                shader_module: shader,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
-        )
-        .await;
+        );
 
         Self {
             matrices_uniform,

@@ -176,7 +176,7 @@ impl Texture {
         );
 
         Ok(Self {
-            texture: texture,
+            texture,
             view,
             sampler,
             format,
@@ -229,7 +229,7 @@ impl Texture {
         );
 
         Ok(Self {
-            texture: texture,
+            texture,
             view,
             sampler,
             format,

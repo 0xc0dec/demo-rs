@@ -103,7 +103,7 @@ fn build_render_bundles<'a>(
     // Couldn't make it work with a single bundler encoder due to lifetimes
     renderers
         .iter_mut()
-        .filter(|(r, _)| camera.0.should_render(r.tags()))
+        .filter(|(r, _)| camera.0.should_render(r.tags))
         .map(|(ref mut r, tr)| {
             let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
             // TODO Create render bundle inside the function?

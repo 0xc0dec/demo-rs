@@ -1,5 +1,6 @@
 use bevy_ecs::prelude::*;
 
+use crate::assets::Assets;
 use crate::components::{Camera, MeshRenderer, Player, RenderOrder, ShaderVariant, Transform};
 use crate::device::Device;
 use crate::mesh::Mesh;
@@ -17,21 +18,20 @@ impl PostProcessor {
         mut commands: Commands,
         player: Query<&Camera, With<Player>>,
         device: Res<Device>,
+        assets: Res<Assets>,
     ) {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
 
         let mesh = Mesh::quad(&device);
 
-        let shader = pollster::block_on(async {
-            PostProcessShader::new(
-                &device,
-                PostProcessShaderParams {
-                    texture: source_camera_rt.color_tex(),
-                },
-            )
-            .await
-        });
+        let shader = PostProcessShader::new(
+            &device,
+            PostProcessShaderParams {
+                texture: source_camera_rt.color_tex(),
+                shader: &assets.postprocess_shader,
+            },
+        );
 
         let renderer = MeshRenderer::new(
             mesh,
@@ -55,21 +55,20 @@ impl PostProcessor {
         device: Res<Device>,
         mut pp: Query<(&PostProcessor, &mut MeshRenderer)>,
         player_cam: Query<&Camera, With<Player>>,
+        assets: Res<Assets>,
     ) {
         if let Some(pp) = pp.iter_mut().next().as_mut() {
             let source_camera_rt = player_cam.single().target().as_ref().unwrap();
 
             if source_camera_rt.color_tex().size() != pp.0.size {
                 // TODO Better. We should NOT be re-creating the shader.
-                let shader = pollster::block_on(async {
-                    PostProcessShader::new(
-                        &device,
-                        PostProcessShaderParams {
-                            texture: source_camera_rt.color_tex(),
-                        },
-                    )
-                    .await
-                });
+                let shader = PostProcessShader::new(
+                    &device,
+                    PostProcessShaderParams {
+                        texture: source_camera_rt.color_tex(),
+                        shader: &assets.postprocess_shader,
+                    },
+                );
 
                 pp.1.set_shader(ShaderVariant::PostProcess(shader));
             }

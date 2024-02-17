@@ -13,11 +13,19 @@ pub enum ShaderVariant {
     PostProcess(PostProcessShader),
 }
 
+/**
+Plan:
+- Remove MeshRenderer, switch the code that uses it to use Mesh + Material pair.
+- Make shader lightweight and load it as a resource.
+- Uniforms should be part of a shader definition?
+- Make tags a component.
+ */
 #[derive(Component)]
 pub struct MeshRenderer {
+    pub tags: u32,
+    // TODO As a component?
     mesh: Mesh,
     shader: ShaderVariant,
-    tags: u32, // TODO As a component?
 }
 
 impl MeshRenderer {
@@ -51,14 +59,6 @@ impl MeshRenderer {
             }
         }
         encoder.draw_mesh(&self.mesh);
-    }
-
-    pub fn tags(&self) -> u32 {
-        self.tags
-    }
-
-    pub fn set_tags(&mut self, tags: u32) {
-        self.tags = tags;
     }
 
     pub fn set_shader(&mut self, shader: ShaderVariant) {

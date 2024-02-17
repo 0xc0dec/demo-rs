@@ -26,9 +26,9 @@ impl FloorBox {
                 &device,
                 DiffuseShaderParams {
                     texture: &assets.stone_tex,
+                    shader: &assets.diffuse_shader,
                 },
-            )
-            .await;
+            );
             let mesh = Mesh::from_file("cube.obj", &device).await;
             (shader, mesh)
         });

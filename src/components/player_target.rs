@@ -1,3 +1,4 @@
+use crate::assets::Assets;
 use bevy_ecs::prelude::*;
 
 use crate::components::{MeshRenderer, Player, ShaderVariant, Transform};
@@ -11,12 +12,12 @@ use crate::shaders::ColorShader;
 pub struct PlayerTarget;
 
 impl PlayerTarget {
-    pub fn spawn(mut commands: Commands, device: Res<Device>) {
+    pub fn spawn(mut commands: Commands, device: Res<Device>, assets: Res<Assets>) {
         let transform = Transform::default();
 
         let (shader, mesh) = pollster::block_on(async {
             let mesh = Mesh::from_file("cube.obj", &device).await;
-            let shader = ColorShader::new(&device).await;
+            let shader = ColorShader::new(&device, &assets.color_shader);
             (shader, mesh)
         });
 
@@ -37,11 +38,11 @@ impl PlayerTarget {
             let dist_to_camera = (player_transform.position() - player_target_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
-            target_renderer.set_tags(RenderTags::SCENE);
+            target_renderer.tags = RenderTags::SCENE;
             target_transform.set_position(player_target_pt);
             target_transform.set_scale(Vec3::from_element(scale));
         } else {
-            target_renderer.set_tags(RenderTags::HIDDEN);
+            target_renderer.tags = RenderTags::HIDDEN;
         }
     }
 }
