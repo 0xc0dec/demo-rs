@@ -17,16 +17,15 @@ pub fn init_app(world: &mut World) {
         .with_inner_size(SurfaceSize::new(1900, 1200))
         .build(&event_loop)
         .unwrap();
-
     let device = pollster::block_on(async { Device::new(&window).await });
-
-    world.init_resource::<Events<WindowResizeEvent>>();
-    world.init_resource::<Events<KeyboardEvent>>();
-    world.init_resource::<Events<MouseEvent>>();
 
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(DebugUI::new(&device, &window));
     world.insert_non_send_resource(window);
+
+    world.init_resource::<Events<WindowResizeEvent>>();
+    world.init_resource::<Events<KeyboardEvent>>();
+    world.init_resource::<Events<MouseEvent>>();
 
     world.insert_resource(App { running: true });
     world.insert_resource(device);

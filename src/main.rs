@@ -24,33 +24,31 @@ mod texture;
 fn main() {
     let mut world = World::default();
     world.init_resource::<Schedules>();
-    // world.init_resource::<State<AppStates>>(); // TODO use states?
 
-    Schedule::default().add_systems(init_app).run(&mut world);
     Schedule::default()
-        .add_systems(Assets::load)
+        .add_systems((init_app, Assets::load.after(init_app)))
         .run(&mut world);
 
-    let spawn_scene_schedule = new_spawn_scene_schedule();
-    world.add_schedule(spawn_scene_schedule.0);
+    let spawn_scene = new_spawn_scene_schedule();
+    world.add_schedule(spawn_scene.0);
 
-    let preupdate_schedule = new_preupdate_schedule();
-    world.add_schedule(preupdate_schedule.0);
+    let before_update = new_before_update_schedule();
+    world.add_schedule(before_update.0);
 
-    let update_schedule = new_update_schedule();
-    world.add_schedule(update_schedule.0);
+    let update = new_update_schedule();
+    world.add_schedule(update.0);
 
-    let render_schedule = new_render_schedule();
-    world.add_schedule(render_schedule.0);
+    let render = new_render_schedule();
+    world.add_schedule(render.0);
 
     loop {
-        world.run_schedule(spawn_scene_schedule.1);
-        world.run_schedule(preupdate_schedule.1);
-        world.run_schedule(update_schedule.1);
-        world.run_schedule(render_schedule.1);
+        world.run_schedule(spawn_scene.1);
+        world.run_schedule(before_update.1);
+        world.run_schedule(update.1);
+        world.run_schedule(render.1);
 
         if !world.resource::<App>().running {
-            return;
+            break;
         }
     }
 }

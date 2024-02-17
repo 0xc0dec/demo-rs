@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
-use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, ShaderVariant};
 use crate::components::transform::Transform;
+use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, ShaderVariant};
 use crate::device::Device;
 use crate::input::Input;
 use crate::math::Vec3;
@@ -60,7 +60,7 @@ impl FreeBox {
 
         let scale = Vec3::from_element(1.0);
 
-        let physics_body = PhysicsBody::new(
+        let body = PhysicsBody::new(
             PhysicsBodyParams {
                 pos,
                 scale,
@@ -75,6 +75,6 @@ impl FreeBox {
 
         let transform = Transform::new(pos, scale);
 
-        (FreeBox, physics_body, renderer, transform)
+        (FreeBox, body, renderer, transform)
     }
 }

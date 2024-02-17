@@ -6,19 +6,15 @@ use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
-use crate::input::Input;
 
 pub fn handle_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
-    mut input: ResMut<Input>,
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResizeEvent>,
     mut keyboard_events: EventWriter<KeyboardEvent>,
     mut mouse_events: EventWriter<MouseEvent>,
 ) {
-    input.reset();
-
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
 

@@ -39,7 +39,7 @@ impl FloorBox {
         let scale = Vec3::new(10.0, 0.5, 10.0);
         let transform = Transform::new(pos, scale);
 
-        let physics_body = PhysicsBody::new(
+        let body = PhysicsBody::new(
             PhysicsBodyParams {
                 pos,
                 scale,
@@ -50,6 +50,6 @@ impl FloorBox {
             &mut physics,
         );
 
-        commands.spawn((FloorBox, physics_body, renderer, transform));
+        commands.spawn((FloorBox, body, renderer, transform));
     }
 }

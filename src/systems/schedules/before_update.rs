@@ -6,7 +6,7 @@ use crate::systems::*;
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Label;
 
-pub fn new_preupdate_schedule() -> (Schedule, Label) {
+pub fn new_before_update_schedule() -> (Schedule, Label) {
     let mut schedule = Schedule::new(Label {});
     schedule.add_systems(handle_system_events).add_systems(
         (
