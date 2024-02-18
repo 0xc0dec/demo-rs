@@ -1,12 +1,12 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::device::Device;
+use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::MeshVertex;
-use crate::shaders::utils::*;
 use crate::texture::Texture;
 
-pub struct SkyboxShader {
+pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
     data_uniform: DataUniform,
@@ -14,7 +14,7 @@ pub struct SkyboxShader {
     data_uniform_bind_group: wgpu::BindGroup,
 }
 
-impl SkyboxShader {
+impl SkyboxMaterial {
     pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let data_uniform = DataUniform::new();
 

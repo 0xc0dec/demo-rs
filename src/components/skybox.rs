@@ -5,16 +5,16 @@ use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{Material, MeshRenderer, RenderOrder};
 use crate::device::Device;
+use crate::materials::SkyboxMaterial;
 use crate::mesh::Mesh;
 use crate::render_tags::RENDER_TAG_SCENE;
-use crate::shaders::SkyboxShader;
 
 #[derive(Component)]
 pub struct Skybox;
 
 impl Skybox {
     pub fn spawn(mut commands: Commands, device: Res<Device>, assets: Res<Assets>) {
-        let shader = SkyboxShader::new(&device, &assets, &assets.skybox_tex);
+        let shader = SkyboxMaterial::new(&device, &assets, &assets.skybox_tex);
         let mesh = Mesh::quad(&device);
         let renderer = MeshRenderer::new(mesh, Material::Skybox(shader));
         let transform = Transform::default();

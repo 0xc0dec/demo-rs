@@ -3,14 +3,14 @@ use bevy_ecs::prelude::*;
 use crate::components::transform::Transform;
 use crate::components::Camera;
 use crate::device::Device;
+use crate::materials::{ColorMaterial, DiffuseMaterial, PostProcessMaterial, SkyboxMaterial};
 use crate::mesh::{DrawMesh, Mesh};
-use crate::shaders::{ColorShader, DiffuseShader, PostProcessShader, SkyboxShader};
 
 pub enum Material {
-    Color(ColorShader),
-    Diffuse(DiffuseShader),
-    Skybox(SkyboxShader),
-    PostProcess(PostProcessShader),
+    Color(ColorMaterial),
+    Diffuse(DiffuseMaterial),
+    Skybox(SkyboxMaterial),
+    PostProcess(PostProcessMaterial),
 }
 
 /**

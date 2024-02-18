@@ -4,12 +4,12 @@ use wgpu::{BindGroup, RenderPipeline};
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
+use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::MeshVertex;
-use crate::shaders::utils::*;
 use crate::texture::Texture;
 
-pub struct DiffuseShader {
+pub struct DiffuseMaterial {
     texture_bind_group: BindGroup,
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
@@ -17,7 +17,7 @@ pub struct DiffuseShader {
     pipeline: RenderPipeline,
 }
 
-impl DiffuseShader {
+impl DiffuseMaterial {
     pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =

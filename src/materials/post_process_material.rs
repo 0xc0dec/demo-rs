@@ -2,16 +2,16 @@ use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
 use crate::device::Device;
+use crate::materials::utils::*;
 use crate::mesh::MeshVertex;
-use crate::shaders::utils::*;
 use crate::texture::Texture;
 
-pub struct PostProcessShader {
+pub struct PostProcessMaterial {
     pipeline: RenderPipeline,
     texture_bind_group: BindGroup,
 }
 
-impl PostProcessShader {
+impl PostProcessMaterial {
     pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
             new_texture_bind_group(device, texture, wgpu::TextureViewDimension::D2);

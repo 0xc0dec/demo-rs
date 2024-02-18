@@ -4,18 +4,18 @@ use wgpu::{BindGroup, RenderPipeline};
 use crate::components::Camera;
 use crate::components::Transform;
 use crate::device::Device;
+use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::mesh::MeshVertex;
-use crate::shaders::utils::*;
 
-pub struct ColorShader {
+pub struct ColorMaterial {
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: BindGroup,
     pipeline: RenderPipeline,
 }
 
-impl ColorShader {
+impl ColorMaterial {
     pub fn new(device: &Device, assets: &Assets) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =

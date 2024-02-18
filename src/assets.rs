@@ -4,7 +4,7 @@ use anyhow::*;
 use bevy_ecs::prelude::{Commands, Res, Resource};
 
 use crate::device::Device;
-use crate::shaders::new_shader_module;
+use crate::materials::new_shader_module;
 use crate::texture::Texture;
 
 fn full_path(relative_path: &str) -> PathBuf {

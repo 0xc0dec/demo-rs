@@ -6,11 +6,11 @@ use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
+use crate::materials::DiffuseMaterial;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RENDER_TAG_SCENE;
-use crate::shaders::DiffuseShader;
 
 #[derive(Component)]
 pub struct FloorBox;
@@ -23,7 +23,7 @@ impl FloorBox {
         assets: Res<Assets>,
     ) {
         let (shader, mesh) = pollster::block_on(async {
-            let shader = DiffuseShader::new(&device, &assets, &assets.stone_tex);
+            let shader = DiffuseMaterial::new(&device, &assets, &assets.stone_tex);
             let mesh = Mesh::from_file("cube.obj", &device).await;
             (shader, mesh)
         });

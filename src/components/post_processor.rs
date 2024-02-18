@@ -4,9 +4,9 @@ use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
 use crate::components::{Camera, Material, MeshRenderer, Player, RenderOrder, Transform};
 use crate::device::Device;
+use crate::materials::PostProcessMaterial;
 use crate::mesh::Mesh;
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
-use crate::shaders::PostProcessShader;
 use crate::texture::TextureSize;
 
 #[derive(Component)]
@@ -24,7 +24,7 @@ impl PostProcessor {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
         let mesh = Mesh::quad(&device);
-        let shader = PostProcessShader::new(&device, &assets, source_camera_rt.color_tex());
+        let shader = PostProcessMaterial::new(&device, &assets, source_camera_rt.color_tex());
         let renderer = MeshRenderer::new(mesh, Material::PostProcess(shader));
         let transform = Transform::default();
         let pp = PostProcessor {
@@ -50,7 +50,7 @@ impl PostProcessor {
 
             if source_camera_rt.color_tex().size() != pp.0.size {
                 // TODO Better. We should NOT be re-creating the shader.
-                pp.1.material = Material::PostProcess(PostProcessShader::new(
+                pp.1.material = Material::PostProcess(PostProcessMaterial::new(
                     &device,
                     &assets,
                     source_camera_rt.color_tex(),
