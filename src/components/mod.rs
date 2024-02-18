@@ -2,7 +2,7 @@ pub use camera::Camera;
 pub use floor_box::FloorBox;
 pub use free_box::FreeBox;
 pub use grab::Grab;
-pub use mesh_renderer::{MeshRenderer, ShaderVariant};
+pub use mesh_renderer::{Material, MeshRenderer};
 pub use physics_body::{PhysicsBody, PhysicsBodyParams};
 pub use player::Player;
 pub use player_target::PlayerTarget;

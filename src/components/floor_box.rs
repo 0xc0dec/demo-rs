@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
-use crate::components::mesh_renderer::ShaderVariant;
+use crate::components::mesh_renderer::Material;
 use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
@@ -34,7 +34,7 @@ impl FloorBox {
             (shader, mesh)
         });
 
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader));
+        let renderer = MeshRenderer::new(mesh, Material::Diffuse(shader));
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         let transform = Transform::new(pos, scale);

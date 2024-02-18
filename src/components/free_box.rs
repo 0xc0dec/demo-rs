@@ -3,7 +3,7 @@ use bevy_ecs::prelude::*;
 use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
-use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, ShaderVariant};
+use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, Material};
 use crate::device::Device;
 use crate::input::Input;
 use crate::math::Vec3;
@@ -70,7 +70,7 @@ impl FreeBox {
             },
             physics,
         );
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader));
+        let renderer = MeshRenderer::new(mesh, Material::Diffuse(shader));
         let transform = Transform::new(pos, scale);
 
         (

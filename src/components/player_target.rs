@@ -2,7 +2,7 @@ use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
-use crate::components::{MeshRenderer, Player, ShaderVariant, Transform};
+use crate::components::{MeshRenderer, Player, Material, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
@@ -22,7 +22,7 @@ impl PlayerTarget {
             let shader = ColorShader::new(&device, &assets.color_shader);
             (shader, mesh)
         });
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Color(shader));
+        let renderer = MeshRenderer::new(mesh, Material::Color(shader));
 
         commands.spawn((
             PlayerTarget,

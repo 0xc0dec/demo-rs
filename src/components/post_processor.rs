@@ -2,7 +2,7 @@ use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
-use crate::components::{Camera, MeshRenderer, Player, RenderOrder, ShaderVariant, Transform};
+use crate::components::{Camera, Material, MeshRenderer, Player, RenderOrder, Transform};
 use crate::device::Device;
 use crate::mesh::Mesh;
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
@@ -34,7 +34,7 @@ impl PostProcessor {
             },
         );
 
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::PostProcess(shader));
+        let renderer = MeshRenderer::new(mesh, Material::PostProcess(shader));
         let transform = Transform::default();
         let pp = PostProcessor {
             size: source_camera_rt.color_tex().size(),
@@ -67,7 +67,7 @@ impl PostProcessor {
                     },
                 );
 
-                pp.1.set_shader(ShaderVariant::PostProcess(shader));
+                pp.1.material = Material::PostProcess(shader);
             }
         }
     }
