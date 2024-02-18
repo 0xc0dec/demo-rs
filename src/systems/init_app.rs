@@ -2,13 +2,9 @@ use bevy_ecs::prelude::*;
 use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
-use crate::app::App;
 use crate::debug_ui::DebugUI;
-use crate::device::{Device, SurfaceSize};
-use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
-use crate::frame_time::FrameTime;
-use crate::input::Input;
-use crate::physics_world::PhysicsWorld;
+use crate::events::*;
+use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
 
 pub fn init_app(world: &mut World) {
     let event_loop = EventLoop::new();

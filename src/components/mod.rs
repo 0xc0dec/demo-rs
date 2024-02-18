@@ -10,7 +10,7 @@ pub use post_processor::PostProcessor;
 pub use render_order::RenderOrder;
 pub use render_tags::RenderTags;
 pub use skybox::Skybox;
-pub use transform::Transform;
+pub use transform::{Transform, TransformSpace};
 
 mod camera;
 mod floor_box;

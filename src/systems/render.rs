@@ -3,9 +3,9 @@ use wgpu::RenderBundle;
 
 use crate::components::{Camera, MeshRenderer, RenderOrder, RenderTags, Transform};
 use crate::debug_ui::DebugUI;
-use crate::device::Device;
 use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::render_target::RenderTarget;
+use crate::resources::Device;
 
 fn render_pass(
     device: &Device,

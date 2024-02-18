@@ -1,18 +1,7 @@
 use wgpu::util::DeviceExt;
 
-use crate::assets::load_string;
-use crate::device::Device;
-use crate::texture::Texture;
-
-// TODO Move to another place?
-pub async fn new_shader_module(device: &Device, src_file_name: &str) -> wgpu::ShaderModule {
-    let src = load_string(src_file_name).await.unwrap();
-
-    device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: None,
-        source: wgpu::ShaderSource::Wgsl(src.into()),
-    })
-}
+use crate::assets::Texture;
+use crate::resources::Device;
 
 pub fn new_uniform_bind_group(
     device: &Device,

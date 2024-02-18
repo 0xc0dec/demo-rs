@@ -1,10 +1,9 @@
+use crate::assets::MeshVertex;
 use wgpu::{BindGroup, RenderPipeline};
 
-use crate::assets::Assets;
-use crate::device::Device;
+use crate::assets::Texture;
 use crate::materials::utils::*;
-use crate::mesh::MeshVertex;
-use crate::texture::Texture;
+use crate::resources::{Assets, Device};
 
 pub struct PostProcessMaterial {
     pipeline: RenderPipeline,

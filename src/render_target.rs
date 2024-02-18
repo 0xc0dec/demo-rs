@@ -1,5 +1,5 @@
-use crate::device::Device;
-use crate::texture::{Texture, TextureSize};
+use crate::assets::{Texture, TextureSize};
+use crate::resources::Device;
 
 pub struct RenderTarget {
     color_tex: Texture,

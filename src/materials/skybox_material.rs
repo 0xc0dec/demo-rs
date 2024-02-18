@@ -1,10 +1,9 @@
-use crate::assets::Assets;
+use crate::assets::MeshVertex;
+use crate::assets::Texture;
 use crate::components::{Camera, Transform};
-use crate::device::Device;
 use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
-use crate::mesh::MeshVertex;
-use crate::texture::Texture;
+use crate::resources::{Assets, Device};
 
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,

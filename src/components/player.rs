@@ -3,17 +3,12 @@ use std::f32::consts::PI;
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 
-use crate::components::camera::Camera;
-use crate::components::transform::TransformSpace;
-use crate::components::Transform;
-use crate::device::{Device, SurfaceSize};
+use crate::components::*;
 use crate::events::WindowResizeEvent;
-use crate::frame_time::FrameTime;
-use crate::input::Input;
 use crate::math::Vec3;
-use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
+use crate::resources::{Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
 
 #[derive(Component)]
 pub struct Player {

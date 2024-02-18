@@ -2,8 +2,7 @@ use std::io::{BufReader, Cursor};
 
 use wgpu::util::DeviceExt;
 
-use crate::assets::load_string;
-use crate::device::Device;
+use crate::assets::utils::load_string;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -47,7 +46,7 @@ struct MeshPart {
 }
 
 impl MeshPart {
-    fn from_buffers(device: &Device, vertices: &[MeshVertex], indices: &[u32]) -> Self {
+    fn from_buffers(device: &wgpu::Device, vertices: &[MeshVertex], indices: &[u32]) -> Self {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(vertices),
@@ -68,7 +67,7 @@ impl MeshPart {
     }
 
     // TODO Use different vertex description and remove unused attributes
-    fn quad(device: &Device) -> MeshPart {
+    fn quad(device: &wgpu::Device) -> MeshPart {
         let vertices = vec![
             // Bottom left
             MeshVertex {
@@ -107,13 +106,13 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn quad(device: &Device) -> Self {
+    pub fn quad(device: &wgpu::Device) -> Self {
         Self {
             parts: vec![MeshPart::quad(device)],
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &Device) -> Mesh {
+    pub async fn from_file(file_name: &str, device: &wgpu::Device) -> Mesh {
         let text = load_string(file_name).await.unwrap();
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
@@ -160,7 +159,7 @@ impl Mesh {
     }
 }
 
-// TODO Extract from here
+// TODO Extract elsewhere
 pub trait DrawMesh<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh);
 }

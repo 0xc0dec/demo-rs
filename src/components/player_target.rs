@@ -1,13 +1,12 @@
+use crate::assets::Mesh;
 use bevy_ecs::prelude::*;
 
-use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
 use crate::components::{Material, MeshRenderer, Player, Transform};
-use crate::device::Device;
 use crate::materials::ColorMaterial;
 use crate::math::Vec3;
-use crate::mesh::Mesh;
 use crate::render_tags::{RENDER_TAG_HIDDEN, RENDER_TAG_SCENE};
+use crate::resources::{Assets, Device};
 
 #[derive(Component)]
 pub struct PlayerTarget;

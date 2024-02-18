@@ -1,16 +1,11 @@
 use bevy_ecs::prelude::*;
 
-use crate::assets::Assets;
-use crate::components::mesh_renderer::Material;
-use crate::components::render_tags::RenderTags;
-use crate::components::transform::Transform;
-use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
-use crate::device::Device;
+use crate::assets::*;
+use crate::components::*;
 use crate::materials::DiffuseMaterial;
 use crate::math::Vec3;
-use crate::mesh::Mesh;
-use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RENDER_TAG_SCENE;
+use crate::resources::{Assets, Device, PhysicsWorld};
 
 #[derive(Component)]
 pub struct FloorBox;

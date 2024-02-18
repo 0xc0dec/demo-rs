@@ -1,13 +1,12 @@
+use crate::assets::Mesh;
 use bevy_ecs::prelude::*;
 
-use crate::assets::Assets;
+use crate::assets::TextureSize;
 use crate::components::render_tags::RenderTags;
 use crate::components::{Camera, Material, MeshRenderer, Player, RenderOrder, Transform};
-use crate::device::Device;
 use crate::materials::PostProcessMaterial;
-use crate::mesh::Mesh;
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
-use crate::texture::TextureSize;
+use crate::resources::{Assets, Device};
 
 #[derive(Component)]
 pub struct PostProcessor {

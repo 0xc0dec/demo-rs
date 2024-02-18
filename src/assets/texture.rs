@@ -1,14 +1,12 @@
+use super::utils::load_binary;
 use anyhow::*;
-use bevy_ecs::prelude::Resource;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
 
-use crate::assets::load_binary;
-use crate::device::Device;
+use crate::resources::Device;
 
 pub type TextureSize = (u32, u32);
 
-#[derive(Resource)]
 pub struct Texture {
     texture: wgpu::Texture,
     view: wgpu::TextureView,

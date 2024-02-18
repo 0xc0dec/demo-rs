@@ -1,25 +1,9 @@
-use std::path::PathBuf;
-
-use anyhow::*;
 use bevy_ecs::prelude::{Commands, Res, Resource};
 
-use crate::device::Device;
-use crate::materials::new_shader_module;
-use crate::texture::Texture;
+use crate::assets::utils::new_shader_module;
+use crate::assets::Texture;
+use crate::resources::device::Device;
 
-fn full_path(relative_path: &str) -> PathBuf {
-    std::path::Path::new("./assets").join(relative_path)
-}
-
-pub async fn load_binary(file_path: &str) -> Result<Vec<u8>> {
-    Ok(std::fs::read(full_path(file_path))?)
-}
-
-pub async fn load_string(file_path: &str) -> Result<String> {
-    Ok(std::fs::read_to_string(full_path(file_path))?)
-}
-
-// TODO Load also shaders, meshes, etc.
 #[derive(Resource)]
 pub struct Assets {
     pub skybox_tex: Texture,
@@ -31,6 +15,7 @@ pub struct Assets {
 }
 
 impl Assets {
+    // TODO Move to the `systems` mod?
     pub fn load(device: Res<Device>, mut commands: Commands) {
         let (
             skybox_tex,

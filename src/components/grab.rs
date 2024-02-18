@@ -1,9 +1,8 @@
 use bevy_ecs::prelude::{Commands, Component, Entity, Query, Res, ResMut};
 
-use crate::components::{PhysicsBody, Player, Transform};
-use crate::input::Input;
+use crate::components::*;
 use crate::math::{to_point, Vec3};
-use crate::physics_world::PhysicsWorld;
+use crate::resources::{Input, PhysicsWorld};
 
 #[derive(Component)]
 pub struct Grab {

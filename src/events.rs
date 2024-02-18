@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::Event;
 use winit::event::{MouseButton, VirtualKeyCode};
 
-use crate::device::SurfaceSize;
+use crate::resources::SurfaceSize;
 
 #[derive(Event)]
 pub struct WindowResizeEvent {

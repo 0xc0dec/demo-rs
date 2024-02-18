@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use bevy_ecs::prelude::Resource;
 
-use crate::texture::Texture;
+use crate::assets::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 

@@ -1,13 +1,12 @@
 use bevy_ecs::prelude::*;
 
-use crate::assets::Assets;
+use crate::assets::Mesh;
 use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{Material, MeshRenderer, RenderOrder};
-use crate::device::Device;
 use crate::materials::SkyboxMaterial;
-use crate::mesh::Mesh;
 use crate::render_tags::RENDER_TAG_SCENE;
+use crate::resources::{Assets, Device};
 
 #[derive(Component)]
 pub struct Skybox;

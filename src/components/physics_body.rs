@@ -1,10 +1,9 @@
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 
-use crate::components::grab::Grab;
-use crate::components::{Player, Transform};
+use crate::components::*;
 use crate::math::{to_point, Vec3};
-use crate::physics_world::PhysicsWorld;
+use crate::resources::PhysicsWorld;
 
 #[derive(Component)]
 pub struct PhysicsBody {

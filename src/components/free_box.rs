@@ -1,16 +1,11 @@
 use bevy_ecs::prelude::*;
 
-use crate::assets::Assets;
-use crate::components::render_tags::RenderTags;
-use crate::components::transform::Transform;
-use crate::components::{Material, MeshRenderer, PhysicsBody, PhysicsBodyParams, Player};
-use crate::device::Device;
-use crate::input::Input;
+use crate::assets::*;
+use crate::components::*;
 use crate::materials::DiffuseMaterial;
 use crate::math::Vec3;
-use crate::mesh::Mesh;
-use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RENDER_TAG_SCENE;
+use crate::resources::{Assets, Device, Input, PhysicsWorld};
 
 #[derive(Component)]
 pub struct FreeBox;

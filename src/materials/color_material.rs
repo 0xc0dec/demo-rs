@@ -1,12 +1,10 @@
-use crate::assets::Assets;
 use wgpu::{BindGroup, RenderPipeline};
 
-use crate::components::Camera;
-use crate::components::Transform;
-use crate::device::Device;
+use crate::assets::MeshVertex;
+use crate::components::{Camera, Transform};
 use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
-use crate::mesh::MeshVertex;
+use crate::resources::{Assets, Device};
 
 pub struct ColorMaterial {
     matrices_uniform: MatricesUniform,

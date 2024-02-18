@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
 use bevy_ecs::schedule::ScheduleLabel;
 
-use crate::assets::Assets;
 use crate::components::{FloorBox, FreeBox, Player, PlayerTarget, PostProcessor, Skybox};
+use crate::resources::Assets;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Label;
