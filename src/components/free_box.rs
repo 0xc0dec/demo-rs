@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
+use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, ShaderVariant};
 use crate::device::Device;
@@ -8,7 +9,7 @@ use crate::input::Input;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
-use crate::render_tags::RenderTags;
+use crate::render_tags::RENDER_TAG_SCENE;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
 
 #[derive(Component)]
@@ -45,7 +46,7 @@ impl FreeBox {
         device: &Device,
         physics: &mut PhysicsWorld,
         assets: &Assets,
-    ) -> (FreeBox, PhysicsBody, MeshRenderer, Transform) {
+    ) -> (FreeBox, PhysicsBody, MeshRenderer, Transform, RenderTags) {
         let (shader, mesh) = pollster::block_on(async {
             let shader = DiffuseShader::new(
                 device,
@@ -54,12 +55,11 @@ impl FreeBox {
                     shader: &assets.diffuse_shader,
                 },
             );
+            // TODO Load in assets
             let mesh = Mesh::from_file("cube.obj", device).await;
             (shader, mesh)
         });
-
         let scale = Vec3::from_element(1.0);
-
         let body = PhysicsBody::new(
             PhysicsBodyParams {
                 pos,
@@ -70,11 +70,15 @@ impl FreeBox {
             },
             physics,
         );
-
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader), RenderTags::SCENE);
-
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader));
         let transform = Transform::new(pos, scale);
 
-        (FreeBox, body, renderer, transform)
+        (
+            FreeBox,
+            body,
+            renderer,
+            transform,
+            RenderTags(RENDER_TAG_SCENE),
+        )
     }
 }

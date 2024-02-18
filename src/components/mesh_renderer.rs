@@ -22,15 +22,14 @@ Plan:
  */
 #[derive(Component)]
 pub struct MeshRenderer {
-    pub tags: u32,
     // TODO As a component?
     mesh: Mesh,
     shader: ShaderVariant,
 }
 
 impl MeshRenderer {
-    pub fn new(mesh: Mesh, shader: ShaderVariant, tags: u32) -> MeshRenderer {
-        Self { mesh, shader, tags }
+    pub fn new(mesh: Mesh, shader: ShaderVariant) -> MeshRenderer {
+        Self { mesh, shader }
     }
 
     pub fn render<'a>(

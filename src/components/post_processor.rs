@@ -1,10 +1,11 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
+use crate::components::render_tags::RenderTags;
 use crate::components::{Camera, MeshRenderer, Player, RenderOrder, ShaderVariant, Transform};
 use crate::device::Device;
 use crate::mesh::Mesh;
-use crate::render_tags::RenderTags;
+use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
 use crate::shaders::{PostProcessShader, PostProcessShaderParams};
 use crate::texture::TextureSize;
 
@@ -33,20 +34,16 @@ impl PostProcessor {
             },
         );
 
-        let renderer = MeshRenderer::new(
-            mesh,
-            ShaderVariant::PostProcess(shader),
-            RenderTags::POST_PROCESS,
-        );
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::PostProcess(shader));
         let transform = Transform::default();
         let pp = PostProcessor {
             size: source_camera_rt.color_tex().size(),
         };
 
-        commands.spawn((renderer, transform, pp));
+        commands.spawn((renderer, transform, pp, RenderTags(RENDER_TAG_POST_PROCESS)));
 
         // Camera for rendering the quad (and debug UI for that matter)
-        let camera = Camera::new(1.0, RenderTags::POST_PROCESS | RenderTags::DEBUG_UI, None);
+        let camera = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
         let transform = Transform::default();
         commands.spawn((RenderOrder(100), camera, transform));
     }

@@ -1,11 +1,12 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
+use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, RenderOrder, ShaderVariant};
 use crate::device::Device;
 use crate::mesh::Mesh;
-use crate::render_tags::RenderTags;
+use crate::render_tags::RENDER_TAG_SCENE;
 use crate::shaders::{SkyboxShader, SkyboxShaderParams};
 
 #[derive(Component)]
@@ -21,9 +22,15 @@ impl Skybox {
             },
         );
         let mesh = Mesh::quad(&device);
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Skybox(shader), RenderTags::SCENE);
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Skybox(shader));
         let transform = Transform::default();
 
-        commands.spawn((Skybox, RenderOrder(-100), renderer, transform));
+        commands.spawn((
+            Skybox,
+            renderer,
+            transform,
+            RenderOrder(-100),
+            RenderTags(RENDER_TAG_SCENE),
+        ));
     }
 }

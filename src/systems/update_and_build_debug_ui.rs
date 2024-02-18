@@ -4,7 +4,7 @@ use winit::window::Window;
 use crate::components::Camera;
 use crate::debug_ui::DebugUI;
 use crate::frame_time::FrameTime;
-use crate::render_tags::RenderTags;
+use crate::render_tags::RENDER_TAG_DEBUG_UI;
 
 pub fn update_and_build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
@@ -12,10 +12,7 @@ pub fn update_and_build_debug_ui(
     frame_time: Res<FrameTime>,
     window: NonSend<Window>,
 ) {
-    if !cameras
-        .iter()
-        .any(|c| c.should_render(RenderTags::DEBUG_UI))
-    {
+    if !cameras.iter().any(|c| c.should_render(RENDER_TAG_DEBUG_UI)) {
         // No point. Also if we don't render the UI later (because there's no cameras)
         // imgui will fail on the next iteration when we start a new frame because the previous frame
         // will not been finished (i.e. rendered). Perhaps that could be worked around differently.

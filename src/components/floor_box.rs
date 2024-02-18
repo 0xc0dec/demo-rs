@@ -2,13 +2,14 @@ use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
 use crate::components::mesh_renderer::ShaderVariant;
+use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
 use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
-use crate::render_tags::RenderTags;
+use crate::render_tags::RENDER_TAG_SCENE;
 use crate::shaders::{DiffuseShader, DiffuseShaderParams};
 
 #[derive(Component)]
@@ -33,12 +34,10 @@ impl FloorBox {
             (shader, mesh)
         });
 
-        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader), RenderTags::SCENE);
-
+        let renderer = MeshRenderer::new(mesh, ShaderVariant::Diffuse(shader));
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         let transform = Transform::new(pos, scale);
-
         let body = PhysicsBody::new(
             PhysicsBodyParams {
                 pos,
@@ -50,6 +49,12 @@ impl FloorBox {
             &mut physics,
         );
 
-        commands.spawn((FloorBox, body, renderer, transform));
+        commands.spawn((
+            FloorBox,
+            body,
+            renderer,
+            transform,
+            RenderTags(RENDER_TAG_SCENE),
+        ));
     }
 }

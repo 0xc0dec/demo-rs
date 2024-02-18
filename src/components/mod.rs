@@ -8,6 +8,7 @@ pub use player::Player;
 pub use player_target::PlayerTarget;
 pub use post_processor::PostProcessor;
 pub use render_order::RenderOrder;
+pub use render_tags::RenderTags;
 pub use skybox::Skybox;
 pub use transform::Transform;
 
@@ -21,5 +22,6 @@ mod player;
 mod player_target;
 mod post_processor;
 mod render_order;
+mod render_tags;
 mod skybox;
 mod transform;
