@@ -1,10 +1,12 @@
+use super::utils::*;
 use crate::assets::MeshVertex;
 use crate::assets::Texture;
 use crate::components::{Camera, Transform};
-use crate::materials::utils::*;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::resources::{Assets, Device};
+use bevy_ecs::prelude::Component;
 
+#[derive(Component)]
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,

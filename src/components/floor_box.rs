@@ -1,8 +1,9 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::*;
-use crate::components::*;
-use crate::materials::DiffuseMaterial;
+use crate::components::{
+    Material, MeshRenderer, PhysicsBody, PhysicsBodyParams, RenderTags, Transform,
+};
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::resources::{Assets, Device, PhysicsWorld};
@@ -17,13 +18,14 @@ impl FloorBox {
         mut physics: ResMut<PhysicsWorld>,
         assets: Res<Assets>,
     ) {
-        let (shader, mesh) = pollster::block_on(async {
-            let shader = DiffuseMaterial::new(&device, &assets, &assets.stone_tex);
-            let mesh = Mesh::from_file("cube.obj", &device).await;
-            (shader, mesh)
+        let (material, mesh) = pollster::block_on(async {
+            (
+                Material::diffuse(&device, &assets, &assets.stone_tex),
+                Mesh::from_file("cube.obj", &device).await,
+            )
         });
 
-        let renderer = MeshRenderer::new(mesh, Material::Diffuse(shader));
+        let renderer = MeshRenderer::new(mesh);
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         let transform = Transform::new(pos, scale);
@@ -42,6 +44,7 @@ impl FloorBox {
             FloorBox,
             body,
             renderer,
+            material,
             transform,
             RenderTags(RENDER_TAG_SCENE),
         ));

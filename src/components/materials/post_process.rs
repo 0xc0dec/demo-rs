@@ -1,8 +1,7 @@
-use crate::assets::MeshVertex;
+use crate::assets::{MeshVertex, Texture};
 use wgpu::{BindGroup, RenderPipeline};
 
-use crate::assets::Texture;
-use crate::materials::utils::*;
+use super::utils::*;
 use crate::resources::{Assets, Device};
 
 pub struct PostProcessMaterial {

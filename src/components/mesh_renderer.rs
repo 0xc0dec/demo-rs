@@ -1,16 +1,6 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::{DrawMesh, Mesh};
-use crate::components::{Camera, Transform};
-use crate::materials::{ColorMaterial, DiffuseMaterial, PostProcessMaterial, SkyboxMaterial};
-use crate::resources::Device;
-
-pub enum Material {
-    Color(ColorMaterial),
-    Diffuse(DiffuseMaterial),
-    Skybox(SkyboxMaterial),
-    PostProcess(PostProcessMaterial),
-}
 
 /**
 Plan:
@@ -22,39 +12,14 @@ Plan:
 pub struct MeshRenderer {
     // TODO As a component?
     mesh: Mesh,
-    pub material: Material,
 }
 
 impl MeshRenderer {
-    pub fn new(mesh: Mesh, material: Material) -> MeshRenderer {
-        Self { mesh, material }
+    pub fn new(mesh: Mesh) -> MeshRenderer {
+        Self { mesh }
     }
 
-    pub fn render<'a>(
-        &'a mut self,
-        device: &Device,
-        camera: (&Camera, &Transform),
-        transform: &Transform,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
-    ) {
-        // TODO Generalize
-        match self.material {
-            Material::Color(ref mut color) => {
-                color.update_uniforms(device, camera, transform);
-                color.apply(encoder);
-            }
-            Material::Diffuse(ref mut diffuse) => {
-                diffuse.update_uniforms(device, camera, transform);
-                diffuse.apply(encoder);
-            }
-            Material::Skybox(ref mut skybox) => {
-                skybox.update_uniforms(device, camera);
-                skybox.apply(encoder);
-            }
-            Material::PostProcess(ref mut pp) => {
-                pp.apply(encoder);
-            }
-        }
+    pub fn render<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.draw_mesh(&self.mesh);
     }
 }

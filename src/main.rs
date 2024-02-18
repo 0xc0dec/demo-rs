@@ -6,7 +6,6 @@ use crate::systems::*;
 mod assets;
 mod components;
 mod debug_ui;
-mod materials;
 mod math;
 mod render_tags;
 mod render_target;

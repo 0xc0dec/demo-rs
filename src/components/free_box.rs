@@ -1,8 +1,9 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets::*;
-use crate::components::*;
-use crate::materials::DiffuseMaterial;
+use crate::components::{
+    Material, MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
+};
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::resources::{Assets, Device, Input, PhysicsWorld};
@@ -12,41 +13,49 @@ pub struct FreeBox;
 
 impl FreeBox {
     pub fn spawn(
-        mut commands: Commands,
         device: Res<Device>,
-        mut physics: ResMut<PhysicsWorld>,
         assets: Res<Assets>,
+        mut physics: ResMut<PhysicsWorld>,
+        mut commands: Commands,
     ) {
         let pos = Vec3::y_axis().xyz() * 5.0;
-        commands.spawn(Self::new_components(pos, &device, &mut physics, &assets));
+        commands.spawn(Self::components(pos, &device, &mut physics, &assets));
     }
 
     pub fn spawn_by_player(
-        player: Query<&Transform, With<Player>>,
-        mut commands: Commands,
         device: Res<Device>,
-        mut physics: ResMut<PhysicsWorld>,
+        player: Query<&Transform, With<Player>>,
         input: Res<Input>,
         assets: Res<Assets>,
+        mut physics: ResMut<PhysicsWorld>,
+        mut commands: Commands,
     ) {
         if input.space_just_pressed {
             let player_transform = player.single();
             let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
-            commands.spawn(Self::new_components(pos, &device, &mut physics, &assets));
+            commands.spawn(Self::components(pos, &device, &mut physics, &assets));
         }
     }
 
-    fn new_components(
+    fn components(
         pos: Vec3,
         device: &Device,
         physics: &mut PhysicsWorld,
         assets: &Assets,
-    ) -> (FreeBox, PhysicsBody, MeshRenderer, Transform, RenderTags) {
-        let (shader, mesh) = pollster::block_on(async {
-            let shader = DiffuseMaterial::new(device, &assets, &assets.stone_tex);
-            // TODO Load in assets
-            let mesh = Mesh::from_file("cube.obj", device).await;
-            (shader, mesh)
+    ) -> (
+        FreeBox,
+        PhysicsBody,
+        MeshRenderer,
+        Material,
+        Transform,
+        RenderTags,
+    ) {
+        let (material, mesh) = pollster::block_on(async {
+            (
+                Material::diffuse(device, assets, &assets.stone_tex),
+                // TODO Load in assets
+                Mesh::from_file("cube.obj", device).await,
+            )
         });
         let scale = Vec3::from_element(1.0);
         let body = PhysicsBody::new(
@@ -59,13 +68,14 @@ impl FreeBox {
             },
             physics,
         );
-        let renderer = MeshRenderer::new(mesh, Material::Diffuse(shader));
+        let renderer = MeshRenderer::new(mesh);
         let transform = Transform::new(pos, scale);
 
         (
             FreeBox,
             body,
             renderer,
+            material,
             transform,
             RenderTags(RENDER_TAG_SCENE),
         )

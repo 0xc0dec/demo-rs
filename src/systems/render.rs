@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
 
-use crate::components::{Camera, MeshRenderer, RenderOrder, RenderTags, Transform};
+use crate::components::{Camera, Material, MeshRenderer, RenderOrder, RenderTags, Transform};
 use crate::debug_ui::DebugUI;
 use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::render_target::RenderTarget;
@@ -96,7 +96,12 @@ fn new_bundle_encoder<'a>(
 }
 
 fn build_render_bundles<'a>(
-    renderers: &mut [(&'a mut MeshRenderer, &'a Transform, Option<&'a RenderTags>)],
+    renderers: &mut [(
+        &'a MeshRenderer,
+        &'a mut Material,
+        &'a Transform,
+        Option<&'a RenderTags>,
+    )],
     camera: (&Camera, &Transform),
     device: &Device,
 ) -> Vec<RenderBundle> {
@@ -104,10 +109,10 @@ fn build_render_bundles<'a>(
     renderers
         .iter_mut()
         .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
-        .map(|(ref mut r, tr, _)| {
+        .map(|(r, ref mut m, tr, _)| {
             let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-            // TODO Create render bundle inside the function?
-            r.render(device, camera, tr, &mut encoder);
+            m.apply(device, camera, tr, &mut encoder);
+            r.render(&mut encoder);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
         .collect::<Vec<_>>()
@@ -116,7 +121,8 @@ fn build_render_bundles<'a>(
 pub fn render(
     cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
     mut renderers: Query<(
-        &mut MeshRenderer,
+        &MeshRenderer,
+        &mut Material,
         &Transform,
         Option<&RenderOrder>,
         Option<&RenderTags>,
@@ -130,12 +136,12 @@ pub fn render(
 
     let mut renderers = renderers
         .iter_mut()
-        .map(|(r, t, o, tags)| (r.into_inner(), t, o, tags))
+        .map(|(r, m, t, o, tags)| (r, m.into_inner(), t, o, tags))
         .collect::<Vec<_>>();
     renderers.sort_by_key(|(.., order, _)| order.map_or(0, |o| o.0));
     let mut renderers = renderers
         .into_iter()
-        .map(|(r, t, _, tags)| (r, t, tags))
+        .map(|(r, t, m, _, tags)| (r, t, m, tags))
         .collect::<Vec<_>>();
 
     for camera in cameras {

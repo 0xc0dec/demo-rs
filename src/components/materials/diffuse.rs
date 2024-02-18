@@ -1,36 +1,46 @@
 use wgpu::{BindGroup, RenderPipeline};
 
+use super::utils::*;
 use crate::assets::MeshVertex;
-use crate::components::{Camera, Transform};
-use crate::materials::utils::*;
+use crate::assets::Texture;
+use crate::components::Camera;
+use crate::components::Transform;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::resources::{Assets, Device};
 
-pub struct ColorMaterial {
+pub struct DiffuseMaterial {
+    texture_bind_group: BindGroup,
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: BindGroup,
     pipeline: RenderPipeline,
 }
 
-impl ColorMaterial {
-    pub fn new(device: &Device, assets: &Assets) -> Self {
+impl DiffuseMaterial {
+    pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
+        let (texture_bind_group_layout, texture_bind_group) =
+            new_texture_bind_group(device, texture, wgpu::TextureViewDimension::D2);
+
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: &assets.color_shader,
+                shader_module: &assets.diffuse_shader,
                 depth_write: true,
                 depth_enabled: true,
-                bind_group_layouts: &[&matrices_uniform_bind_group_layout],
+                bind_group_layouts: &[
+                    &texture_bind_group_layout,
+                    &matrices_uniform_bind_group_layout,
+                ],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
         );
 
         Self {
+            texture_bind_group,
             matrices_uniform,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
@@ -54,7 +64,8 @@ impl ColorMaterial {
 
     pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
-        encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
+        encoder.set_bind_group(0, &self.texture_bind_group, &[]);
+        encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
     }
 }
 
@@ -73,9 +84,9 @@ impl MatricesUniform {
         }
     }
 
-    fn update(&mut self, camera: (&Camera, &Transform), mesh_transform: &Transform) {
+    fn update(&mut self, camera: (&Camera, &Transform), transform: &Transform) {
         self.view_proj =
             (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
-        self.world = mesh_transform.matrix().into();
+        self.world = transform.matrix().into();
     }
 }

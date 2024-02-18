@@ -1,9 +1,7 @@
 use crate::assets::Mesh;
 use bevy_ecs::prelude::*;
 
-use crate::components::render_tags::RenderTags;
-use crate::components::{Material, MeshRenderer, Player, Transform};
-use crate::materials::ColorMaterial;
+use crate::components::{Material, MeshRenderer, Player, RenderTags, Transform};
 use crate::math::Vec3;
 use crate::render_tags::{RENDER_TAG_HIDDEN, RENDER_TAG_SCENE};
 use crate::resources::{Assets, Device};
@@ -15,18 +13,20 @@ pub struct PlayerTarget;
 impl PlayerTarget {
     pub fn spawn(device: Res<Device>, assets: Res<Assets>, mut commands: Commands) {
         let transform = Transform::default();
-        let (shader, mesh) = pollster::block_on(async {
-            // TODO Load in assets
-            let mesh = Mesh::from_file("cube.obj", &device).await;
-            let shader = ColorMaterial::new(&device, &assets);
-            (shader, mesh)
+        let (material, mesh) = pollster::block_on(async {
+            (
+                Material::color(&device, &assets),
+                // TODO Load in assets
+                Mesh::from_file("cube.obj", &device).await,
+            )
         });
-        let renderer = MeshRenderer::new(mesh, Material::Color(shader));
+        let renderer = MeshRenderer::new(mesh);
 
         commands.spawn((
             PlayerTarget,
             transform,
             renderer,
+            material,
             RenderTags(RENDER_TAG_HIDDEN),
         ));
     }
