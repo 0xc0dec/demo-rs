@@ -3,7 +3,7 @@ use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
 use crate::debug_ui::DebugUI;
-use crate::events::*;
+use crate::resources::events::*;
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
 
 pub fn init_app(world: &mut World) {

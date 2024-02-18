@@ -4,10 +4,10 @@ use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 
 use crate::components::*;
-use crate::events::WindowResizeEvent;
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
+use crate::resources::events::WindowResizeEvent;
 use crate::resources::{Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
 
 #[derive(Component)]

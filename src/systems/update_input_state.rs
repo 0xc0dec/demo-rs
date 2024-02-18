@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::*;
 
-use crate::events::{KeyboardEvent, MouseEvent};
+use crate::resources::events::{KeyboardEvent, MouseEvent};
 use crate::resources::Input;
 
 pub fn update_input_state(

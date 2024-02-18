@@ -9,7 +9,7 @@ pub use schedules::*;
 pub use update_and_build_debug_ui::update_and_build_debug_ui;
 pub use update_input_state::update_input_state;
 
-use crate::events::{KeyboardEvent, WindowResizeEvent};
+use crate::resources::events::{KeyboardEvent, WindowResizeEvent};
 use crate::resources::{App, Device, FrameTime, PhysicsWorld};
 
 mod grab_cursor;

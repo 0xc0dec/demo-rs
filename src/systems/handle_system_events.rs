@@ -5,7 +5,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
-use crate::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
+use crate::resources::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 
 pub fn handle_system_events(
     window: NonSend<Window>,

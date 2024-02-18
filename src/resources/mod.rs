@@ -8,6 +8,7 @@ pub use physics_world::PhysicsWorld;
 mod app;
 mod assets;
 mod device;
+pub mod events;
 mod frame_time;
 mod input;
 mod physics_world;
