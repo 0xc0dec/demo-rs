@@ -7,6 +7,5 @@ pub use utils::new_shader_module;
 mod color_shader;
 mod diffuse_shader;
 mod post_process_shader;
-mod shader;
 mod skybox_shader;
 mod utils;

@@ -1,3 +1,4 @@
+use crate::assets::Assets;
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::components::Camera;
@@ -16,24 +17,19 @@ pub struct DiffuseShader {
     pipeline: RenderPipeline,
 }
 
-pub struct DiffuseShaderParams<'a> {
-    pub texture: &'a Texture,
-    pub shader: &'a wgpu::ShaderModule,
-}
-
 impl DiffuseShader {
-    pub fn new(device: &Device, params: DiffuseShaderParams<'_>) -> Self {
+    pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(device, texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: params.shader,
+                shader_module: &assets.diffuse_shader,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[

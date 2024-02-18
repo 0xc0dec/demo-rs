@@ -3,14 +3,14 @@ use bevy_ecs::prelude::*;
 use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
 use crate::components::transform::Transform;
-use crate::components::{MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, Material};
+use crate::components::{Material, MeshRenderer, PhysicsBody, PhysicsBodyParams, Player};
 use crate::device::Device;
 use crate::input::Input;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
 use crate::physics_world::PhysicsWorld;
 use crate::render_tags::RENDER_TAG_SCENE;
-use crate::shaders::{DiffuseShader, DiffuseShaderParams};
+use crate::shaders::DiffuseShader;
 
 #[derive(Component)]
 pub struct FreeBox;
@@ -48,13 +48,7 @@ impl FreeBox {
         assets: &Assets,
     ) -> (FreeBox, PhysicsBody, MeshRenderer, Transform, RenderTags) {
         let (shader, mesh) = pollster::block_on(async {
-            let shader = DiffuseShader::new(
-                device,
-                DiffuseShaderParams {
-                    texture: &assets.stone_tex,
-                    shader: &assets.diffuse_shader,
-                },
-            );
+            let shader = DiffuseShader::new(device, &assets, &assets.stone_tex);
             // TODO Load in assets
             let mesh = Mesh::from_file("cube.obj", device).await;
             (shader, mesh)

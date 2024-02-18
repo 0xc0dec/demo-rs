@@ -2,7 +2,7 @@ use bevy_ecs::prelude::*;
 
 use crate::assets::Assets;
 use crate::components::render_tags::RenderTags;
-use crate::components::{MeshRenderer, Player, Material, Transform};
+use crate::components::{Material, MeshRenderer, Player, Transform};
 use crate::device::Device;
 use crate::math::Vec3;
 use crate::mesh::Mesh;
@@ -19,7 +19,7 @@ impl PlayerTarget {
         let (shader, mesh) = pollster::block_on(async {
             // TODO Load in assets
             let mesh = Mesh::from_file("cube.obj", &device).await;
-            let shader = ColorShader::new(&device, &assets.color_shader);
+            let shader = ColorShader::new(&device, &assets);
             (shader, mesh)
         });
         let renderer = MeshRenderer::new(mesh, Material::Color(shader));

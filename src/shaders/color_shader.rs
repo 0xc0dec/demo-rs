@@ -1,3 +1,4 @@
+use crate::assets::Assets;
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::components::Camera;
@@ -15,7 +16,7 @@ pub struct ColorShader {
 }
 
 impl ColorShader {
-    pub fn new(device: &Device, shader: &wgpu::ShaderModule) -> Self {
+    pub fn new(device: &Device, assets: &Assets) -> Self {
         let matrices_uniform = MatricesUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
@@ -23,7 +24,7 @@ impl ColorShader {
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: shader,
+                shader_module: &assets.color_shader,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],

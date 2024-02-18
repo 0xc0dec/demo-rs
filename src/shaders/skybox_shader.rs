@@ -1,3 +1,4 @@
+use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::device::Device;
 use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
@@ -13,25 +14,20 @@ pub struct SkyboxShader {
     data_uniform_bind_group: wgpu::BindGroup,
 }
 
-pub struct SkyboxShaderParams<'a> {
-    pub texture: &'a Texture,
-    pub shader: &'a wgpu::ShaderModule,
-}
-
 impl SkyboxShader {
-    pub fn new(device: &Device, params: SkyboxShaderParams<'_>) -> Self {
+    pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let data_uniform = DataUniform::new();
 
         let (data_uniform_bind_group_layout, data_uniform_bind_group, data_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::Cube);
+            new_texture_bind_group(device, texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: params.shader,
+                shader_module: &assets.skybox_shader,
                 depth_write: false,
                 depth_enabled: true,
                 bind_group_layouts: &[&data_uniform_bind_group_layout, &texture_bind_group_layout],

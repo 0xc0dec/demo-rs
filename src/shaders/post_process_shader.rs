@@ -1,5 +1,6 @@
 use wgpu::{BindGroup, RenderPipeline};
 
+use crate::assets::Assets;
 use crate::device::Device;
 use crate::mesh::MeshVertex;
 use crate::shaders::utils::*;
@@ -10,20 +11,15 @@ pub struct PostProcessShader {
     texture_bind_group: BindGroup,
 }
 
-pub struct PostProcessShaderParams<'a> {
-    pub texture: &'a Texture,
-    pub shader: &'a wgpu::ShaderModule,
-}
-
 impl PostProcessShader {
-    pub fn new(device: &Device, params: PostProcessShaderParams<'_>) -> Self {
+    pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, params.texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(device, texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: params.shader,
+                shader_module: &assets.postprocess_shader,
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&texture_bind_group_layout],
