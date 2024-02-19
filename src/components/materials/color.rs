@@ -7,15 +7,18 @@ use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::resources::{Assets, Device};
 
 pub struct ColorMaterial {
+    pipeline: RenderPipeline,
     matrices_uniform: MatricesUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: BindGroup,
-    pipeline: RenderPipeline,
 }
 
 impl ColorMaterial {
     pub fn new(device: &Device, assets: &Assets) -> Self {
-        let matrices_uniform = MatricesUniform::new();
+        let matrices_uniform = MatricesUniform {
+            world: Mat4::identity().into(),
+            view_proj: Mat4::identity().into(),
+        };
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
@@ -44,7 +47,9 @@ impl ColorMaterial {
         camera: (&Camera, &Transform),
         transform: &Transform,
     ) {
-        self.matrices_uniform.update(camera, transform);
+        self.matrices_uniform.world = transform.matrix().into();
+        self.matrices_uniform.view_proj =
+            (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
         device.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
@@ -61,21 +66,6 @@ impl ColorMaterial {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct MatricesUniform {
-    view_proj: [[f32; 4]; 4],
     world: [[f32; 4]; 4],
-}
-
-impl MatricesUniform {
-    fn new() -> Self {
-        Self {
-            view_proj: Mat4::identity().into(),
-            world: Mat4::identity().into(),
-        }
-    }
-
-    fn update(&mut self, camera: (&Camera, &Transform), mesh_transform: &Transform) {
-        self.view_proj =
-            (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
-        self.world = mesh_transform.matrix().into();
-    }
+    view_proj: [[f32; 4]; 4],
 }

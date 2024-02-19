@@ -1,5 +1,13 @@
 // Vertex shader
 
+struct MatricesUniform {
+    view_mat: mat4x4<f32>,
+    proj_mat_inv: mat4x4<f32>,
+}
+
+@group(0) @binding(0)
+var<uniform> matrices: MatricesUniform;
+
 struct VertexInput {
     @location(0)
     position: vec3<f32>,
@@ -13,24 +21,16 @@ struct VertexOutput {
     uv: vec3<f32>,
 }
 
-struct Data {
-    proj_mat_inv: mat4x4<f32>,
-    view_mat: mat4x4<f32>,
-}
-
-@group(0) @binding(0)
-var<uniform> data: Data;
-
 @vertex
 fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
 
     out.clip_position =  vec4<f32>(in.position, 1.0);
 
-    var pos_unprojected = data.proj_mat_inv * out.clip_position;
+    var pos_unprojected = matrices.proj_mat_inv * out.clip_position;
     // Couldn't pass a 3x3 matrix in the uniform so transforming it into 3x3 here.
     // Also just using the raw 4x4 view matrix does not work because of its position component, apparently.
-    var view_mat_inv = transpose(mat3x3<f32>(data.view_mat.x.xyz, data.view_mat.y.xyz, data.view_mat.z.xyz));
+    var view_mat_inv = transpose(mat3x3<f32>(matrices.view_mat.x.xyz, matrices.view_mat.y.xyz, matrices.view_mat.z.xyz));
     out.uv = view_mat_inv * pos_unprojected.xyz;
 
     return out;

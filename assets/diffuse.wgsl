@@ -1,8 +1,8 @@
 // Vertex shader
 
 struct MatricesUniform {
+    world: mat4x4<f32>,
     view_proj: mat4x4<f32>,
-    world: mat4x4<f32>
 };
 
 @group(1) @binding(0)

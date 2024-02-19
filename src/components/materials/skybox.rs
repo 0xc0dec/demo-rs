@@ -10,17 +10,19 @@ use bevy_ecs::prelude::Component;
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
-    data_uniform: DataUniform,
-    data_uniform_buf: wgpu::Buffer,
-    data_uniform_bind_group: wgpu::BindGroup,
+    matrices_uniform: MatricesUniform,
+    matrices_uniform_buf: wgpu::Buffer,
+    matrices_uniform_bind_group: wgpu::BindGroup,
 }
 
 impl SkyboxMaterial {
     pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        let data_uniform = DataUniform::new();
-
-        let (data_uniform_bind_group_layout, data_uniform_bind_group, data_uniform_buf) =
-            new_uniform_bind_group(device, bytemuck::cast_slice(&[data_uniform]));
+        let matrices_uniform = MatricesUniform {
+            view_mat: Mat4::identity().into(),
+            proj_mat_inv: Mat4::identity().into(),
+        };
+        let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
+            new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
             new_texture_bind_group(device, texture, wgpu::TextureViewDimension::Cube);
@@ -31,7 +33,10 @@ impl SkyboxMaterial {
                 shader_module: &assets.skybox_shader,
                 depth_write: false,
                 depth_enabled: true,
-                bind_group_layouts: &[&data_uniform_bind_group_layout, &texture_bind_group_layout],
+                bind_group_layouts: &[
+                    &matrices_uniform_bind_group_layout,
+                    &texture_bind_group_layout,
+                ],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
         );
@@ -39,49 +44,36 @@ impl SkyboxMaterial {
         Self {
             pipeline,
             texture_bind_group,
-            data_uniform,
-            data_uniform_buf,
-            data_uniform_bind_group,
+            matrices_uniform,
+            matrices_uniform_buf,
+            matrices_uniform_bind_group,
         }
     }
 
     pub fn update_uniforms(&mut self, device: &Device, camera: (&Camera, &Transform)) {
-        self.data_uniform.update(camera);
+        self.matrices_uniform.view_mat = camera.1.view_matrix().into();
+        self.matrices_uniform.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix())
+            .try_inverse()
+            .unwrap()
+            .into();
         device.queue().write_buffer(
-            &self.data_uniform_buf,
+            &self.matrices_uniform_buf,
             0,
-            bytemuck::cast_slice(&[self.data_uniform]),
+            bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
 
     pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
-        encoder.set_bind_group(0, &self.data_uniform_bind_group, &[]);
+        encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.texture_bind_group, &[]);
     }
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-struct DataUniform {
-    proj_mat_inv: [[f32; 4]; 4],
+struct MatricesUniform {
     // Couldn't make it work with Matrix3, probably something to do with alignment and padding
     view_mat: [[f32; 4]; 4],
-}
-
-impl DataUniform {
-    fn new() -> Self {
-        Self {
-            proj_mat_inv: Mat4::identity().into(),
-            view_mat: Mat4::identity().into(),
-        }
-    }
-
-    fn update(&mut self, camera: (&Camera, &Transform)) {
-        self.view_mat = camera.1.view_matrix().into();
-        self.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix())
-            .try_inverse()
-            .unwrap()
-            .into();
-    }
+    proj_mat_inv: [[f32; 4]; 4],
 }

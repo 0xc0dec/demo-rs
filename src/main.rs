@@ -18,6 +18,7 @@ mod systems;
 // - Refactor debug UI rendering, it should be a component, the `render()` system should now render it explicitly.
 // - Load meshes within `Assets`.
 // - Transform hierarchies.
+// - Grabbing objects via mouse.
 
 fn main() {
     let mut world = World::default();
