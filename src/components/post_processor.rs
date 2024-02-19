@@ -1,6 +1,6 @@
-use crate::assets;
 use bevy_ecs::prelude::*;
 
+use crate::assets;
 use crate::components::{Camera, Material, Mesh, Player, RenderOrder, RenderTags, Transform};
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
 use crate::resources::{Assets, Device};
@@ -42,7 +42,7 @@ impl PostProcessor {
 
     pub fn update(
         device: Res<Device>,
-        mut pp: Query<(Entity, &PostProcessor, &mut Mesh, &mut Material)>,
+        mut pp: Query<(Entity, &mut PostProcessor, &mut Mesh, &mut Material)>,
         player_cam: Query<&Camera, With<Player>>,
         assets: Res<Assets>,
         mut commands: Commands,
@@ -51,7 +51,8 @@ impl PostProcessor {
             let source_camera_rt = player_cam.single().target().as_ref().unwrap();
 
             if source_camera_rt.color_tex().size() != pp.1.size {
-                // TODO Better. We should NOT be re-creating the material.
+                pp.1.size = source_camera_rt.color_tex().size();
+                // TODO We should NOT be re-creating the material.
                 commands.entity(pp.0).insert(Material::post_process(
                     &device,
                     &assets,
