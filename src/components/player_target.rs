@@ -1,7 +1,7 @@
+use crate::assets;
 use bevy_ecs::prelude::*;
 
-use crate::assets::Mesh;
-use crate::components::{Material, MeshRenderer, Player, RenderTags, Transform};
+use crate::components::{Material, Mesh, Player, RenderTags, Transform};
 use crate::math::Vec3;
 use crate::render_tags::{RENDER_TAG_HIDDEN, RENDER_TAG_SCENE};
 use crate::resources::{Assets, Device};
@@ -12,16 +12,17 @@ pub struct PlayerTarget;
 // TODO Rename to smth like "raycast target"
 impl PlayerTarget {
     pub fn spawn(device: Res<Device>, assets: Res<Assets>, mut commands: Commands) {
-        let transform = Transform::default();
         // TODO Load in assets
-        let mesh = pollster::block_on(async { Mesh::from_file("cube.obj", &device).await });
+        let mesh = Mesh(pollster::block_on(async {
+            assets::Mesh::from_file("cube.obj", &device).await
+        }));
         let material = Material::color(&device, &assets);
-        let renderer = MeshRenderer::new(mesh);
+        let transform = Transform::default();
 
         commands.spawn((
             PlayerTarget,
             transform,
-            renderer,
+            mesh,
             material,
             RenderTags(RENDER_TAG_HIDDEN),
         ));

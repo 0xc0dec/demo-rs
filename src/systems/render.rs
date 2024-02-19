@@ -1,7 +1,8 @@
+use crate::assets::DrawMesh;
 use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
 
-use crate::components::{Camera, Material, MeshRenderer, RenderOrder, RenderTags, Transform};
+use crate::components::{Camera, Material, Mesh, RenderOrder, RenderTags, Transform};
 use crate::debug_ui::DebugUI;
 use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::render_target::RenderTarget;
@@ -96,8 +97,8 @@ fn new_bundle_encoder<'a>(
 }
 
 fn build_render_bundles<'a>(
-    renderers: &mut [(
-        &'a MeshRenderer,
+    meshes: &mut [(
+        &'a Mesh,
         &'a mut Material,
         &'a Transform,
         Option<&'a RenderTags>,
@@ -106,13 +107,13 @@ fn build_render_bundles<'a>(
     device: &Device,
 ) -> Vec<RenderBundle> {
     // Couldn't make it work with a single bundler encoder due to lifetimes
-    renderers
+    meshes
         .iter_mut()
         .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
-        .map(|(r, ref mut m, tr, _)| {
+        .map(|(mesh, ref mut mat, tr, _)| {
             let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-            m.apply(device, camera, tr, &mut encoder);
-            r.render(&mut encoder);
+            mat.apply(device, camera, tr, &mut encoder);
+            encoder.draw_mesh(&mesh.0);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })
         .collect::<Vec<_>>()
@@ -120,8 +121,8 @@ fn build_render_bundles<'a>(
 
 pub fn render(
     cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
-    mut renderers: Query<(
-        &MeshRenderer,
+    mut meshes: Query<(
+        &Mesh,
         &mut Material,
         &Transform,
         Option<&RenderOrder>,
@@ -134,18 +135,18 @@ pub fn render(
     cameras.sort_by_key(|(.., order)| order.map_or(0, |o| o.0));
     let cameras = cameras.iter().map(|(c, t, ..)| (*c, *t));
 
-    let mut renderers = renderers
+    let mut meshes = meshes
         .iter_mut()
-        .map(|(r, m, t, o, tags)| (r, m.into_inner(), t, o, tags))
+        .map(|(mesh, mat, tr, order, tags)| (mesh, mat.into_inner(), tr, order, tags))
         .collect::<Vec<_>>();
-    renderers.sort_by_key(|(.., order, _)| order.map_or(0, |o| o.0));
-    let mut renderers = renderers
+    meshes.sort_by_key(|(.., order, _)| order.map_or(0, |o| o.0));
+    let mut meshes = meshes
         .into_iter()
-        .map(|(r, t, m, _, tags)| (r, t, m, tags))
+        .map(|(mesh, mat, tr, _, tags)| (mesh, mat, tr, tags))
         .collect::<Vec<_>>();
 
     for camera in cameras {
-        let bundles = build_render_bundles(&mut renderers, camera, &device);
+        let bundles = build_render_bundles(&mut meshes, camera, &device);
         render_pass(
             &device,
             &bundles,

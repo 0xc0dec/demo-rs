@@ -1,8 +1,8 @@
+use crate::assets;
 use bevy_ecs::prelude::*;
 
-use crate::assets::*;
 use crate::components::{
-    Material, MeshRenderer, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
+    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
 };
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
@@ -42,16 +42,12 @@ impl FreeBox {
         device: &Device,
         physics: &mut PhysicsWorld,
         assets: &Assets,
-    ) -> (
-        FreeBox,
-        PhysicsBody,
-        MeshRenderer,
-        Material,
-        Transform,
-        RenderTags,
-    ) {
+    ) -> (FreeBox, PhysicsBody, Mesh, Material, Transform, RenderTags) {
         // TODO Load in assets
-        let mesh = pollster::block_on(async { Mesh::from_file("cube.obj", device).await });
+        let mesh = Mesh(pollster::block_on(async {
+            assets::Mesh::from_file("cube.obj", device).await
+        }));
+        let material = Material::diffuse(device, assets, &assets.stone_tex);
         let scale = Vec3::from_element(1.0);
         let body = PhysicsBody::new(
             PhysicsBodyParams {
@@ -63,14 +59,12 @@ impl FreeBox {
             },
             physics,
         );
-        let material = Material::diffuse(device, assets, &assets.stone_tex);
-        let renderer = MeshRenderer::new(mesh);
         let transform = Transform::new(pos, scale);
 
         (
             FreeBox,
             body,
-            renderer,
+            mesh,
             material,
             transform,
             RenderTags(RENDER_TAG_SCENE),

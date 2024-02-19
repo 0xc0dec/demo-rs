@@ -1,15 +1,13 @@
+use crate::assets;
 use bevy_ecs::prelude::*;
 
-use crate::assets::{Mesh, TextureSize};
-use crate::components::{
-    Camera, Material, MeshRenderer, Player, RenderOrder, RenderTags, Transform,
-};
+use crate::components::{Camera, Material, Mesh, Player, RenderOrder, RenderTags, Transform};
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
 use crate::resources::{Assets, Device};
 
 #[derive(Component)]
 pub struct PostProcessor {
-    size: TextureSize,
+    size: assets::TextureSize,
 }
 
 impl PostProcessor {
@@ -21,9 +19,8 @@ impl PostProcessor {
     ) {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
-        let mesh = Mesh::quad(&device);
         let material = Material::post_process(&device, &assets, source_camera_rt.color_tex());
-        let renderer = MeshRenderer::new(mesh);
+        let mesh = Mesh(assets::Mesh::quad(&device));
         let transform = Transform::default();
         let pp = PostProcessor {
             size: source_camera_rt.color_tex().size(),
@@ -31,7 +28,7 @@ impl PostProcessor {
 
         commands.spawn((
             pp,
-            renderer,
+            mesh,
             material,
             transform,
             RenderTags(RENDER_TAG_POST_PROCESS),
@@ -45,7 +42,7 @@ impl PostProcessor {
 
     pub fn update(
         device: Res<Device>,
-        mut pp: Query<(Entity, &PostProcessor, &mut MeshRenderer, &mut Material)>,
+        mut pp: Query<(Entity, &PostProcessor, &mut Mesh, &mut Material)>,
         player_cam: Query<&Camera, With<Player>>,
         assets: Res<Assets>,
         mut commands: Commands,
