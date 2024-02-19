@@ -13,12 +13,13 @@ mod resources;
 mod systems;
 
 // TODO:
-// - Use wgpu types with `wgpu::` prefix.
-// - Remove `::*` imports.
+// - Remove copypasta from materials related to uniforms updating.
 // - Refactor debug UI rendering, it should be a component, the `render()` system should now render it explicitly.
 // - Load meshes within `Assets`.
 // - Transform hierarchies.
 // - Grabbing objects via mouse.
+// - Use wgpu types with `wgpu::` prefix.
+// - Remove `::*` imports.
 
 fn main() {
     let mut world = World::default();
