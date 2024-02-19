@@ -1,24 +1,20 @@
-use wgpu::{BindGroup, RenderPipeline};
-
-use super::utils::*;
+use crate::assets::shaders::WorldViewProjUniform;
 use crate::assets::MeshVertex;
 use crate::components::{Camera, Transform};
-use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
 use crate::resources::{Assets, Device};
 
+use super::utils::*;
+
 pub struct ColorMaterial {
-    pipeline: RenderPipeline,
-    matrices_uniform: MatricesUniform,
+    pipeline: wgpu::RenderPipeline,
+    matrices_uniform: WorldViewProjUniform,
     matrices_uniform_buf: wgpu::Buffer,
-    matrices_uniform_bind_group: BindGroup,
+    matrices_uniform_bind_group: wgpu::BindGroup,
 }
 
 impl ColorMaterial {
     pub fn new(device: &Device, assets: &Assets) -> Self {
-        let matrices_uniform = MatricesUniform {
-            world: Mat4::identity().into(),
-            view_proj: Mat4::identity().into(),
-        };
+        let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
 
@@ -47,9 +43,11 @@ impl ColorMaterial {
         camera: (&Camera, &Transform),
         transform: &Transform,
     ) {
-        self.matrices_uniform.world = transform.matrix().into();
-        self.matrices_uniform.view_proj =
-            (OPENGL_TO_WGPU_MATRIX * camera.0.proj_matrix() * camera.1.view_matrix()).into();
+        self.matrices_uniform.update(
+            &transform.matrix(),
+            &camera.1.view_matrix(),
+            &camera.0.proj_matrix(),
+        );
         device.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
@@ -61,11 +59,4 @@ impl ColorMaterial {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
-}
-
-#[repr(C)]
-#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-struct MatricesUniform {
-    world: [[f32; 4]; 4],
-    view_proj: [[f32; 4]; 4],
 }
