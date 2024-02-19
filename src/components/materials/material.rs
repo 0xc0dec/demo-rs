@@ -1,60 +1,44 @@
+use bevy_ecs::prelude::Component;
+
+use crate::assets::Texture;
+use crate::resources::{Assets, Device};
+
 use super::super::{Camera, Transform};
+use super::apply_material::ApplyMaterial;
 use super::color::ColorMaterial;
 use super::diffuse::DiffuseMaterial;
 use super::post_process::PostProcessMaterial;
 use super::skybox::SkyboxMaterial;
-use crate::assets::Texture;
-use crate::resources::{Assets, Device};
-use bevy_ecs::prelude::Component;
 
 #[derive(Component)]
-pub enum Material {
-    Color(ColorMaterial),
-    Diffuse(DiffuseMaterial),
-    Skybox(SkyboxMaterial),
-    PostProcess(PostProcessMaterial),
+pub struct Material(Box<dyn ApplyMaterial>);
+
+impl ApplyMaterial for Material {
+    fn apply<'a>(
+        &'a mut self,
+        encoder: &mut wgpu::RenderBundleEncoder<'a>,
+        device: &Device,
+        camera: (&Camera, &Transform),
+        transform: &Transform,
+    ) {
+        self.0.apply(encoder, device, camera, transform);
+    }
 }
 
 impl Material {
     pub fn color(device: &Device, assets: &Assets) -> Self {
-        Material::Color(ColorMaterial::new(device, assets))
+        Self(Box::new(ColorMaterial::new(device, assets)))
     }
 
     pub fn diffuse(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Material::Diffuse(DiffuseMaterial::new(device, assets, texture))
+        Self(Box::new(DiffuseMaterial::new(device, assets, texture)))
     }
 
     pub fn skybox(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Material::Skybox(SkyboxMaterial::new(device, assets, texture))
+        Self(Box::new(SkyboxMaterial::new(device, assets, texture)))
     }
 
     pub fn post_process(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Material::PostProcess(PostProcessMaterial::new(device, assets, texture))
-    }
-
-    pub fn apply<'a>(
-        &'a mut self,
-        device: &Device,
-        camera: (&Camera, &Transform),
-        transform: &Transform,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
-    ) {
-        match self {
-            Material::Color(ref mut color) => {
-                color.update_uniforms(device, camera, transform);
-                color.apply(encoder);
-            }
-            Material::Diffuse(ref mut diffuse) => {
-                diffuse.update_uniforms(device, camera, transform);
-                diffuse.apply(encoder);
-            }
-            Material::Skybox(ref mut skybox) => {
-                skybox.update_uniforms(device, camera);
-                skybox.apply(encoder);
-            }
-            Material::PostProcess(ref mut pp) => {
-                pp.apply(encoder);
-            }
-        }
+        Self(Box::new(PostProcessMaterial::new(device, assets, texture)))
     }
 }

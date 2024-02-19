@@ -2,7 +2,9 @@ use crate::assets::DrawMesh;
 use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
 
-use crate::components::{Camera, Material, Mesh, RenderOrder, RenderTags, Transform};
+use crate::components::{
+    ApplyMaterial, Camera, Material, Mesh, RenderOrder, RenderTags, Transform,
+};
 use crate::debug_ui::DebugUI;
 use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::render_target::RenderTarget;
@@ -112,7 +114,7 @@ fn build_render_bundles<'a>(
         .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
         .map(|(mesh, ref mut mat, tr, _)| {
             let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-            mat.apply(device, camera, tr, &mut encoder);
+            mat.apply(&mut encoder, device, camera, tr);
             encoder.draw_mesh(&mesh.0);
             encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
         })

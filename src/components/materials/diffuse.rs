@@ -3,6 +3,7 @@ use crate::assets::{MeshVertex, Texture};
 use crate::components::{Camera, Transform};
 use crate::resources::{Assets, Device};
 
+use super::apply_material::ApplyMaterial;
 use super::utils::*;
 
 pub struct DiffuseMaterial {
@@ -44,9 +45,12 @@ impl DiffuseMaterial {
             pipeline,
         }
     }
+}
 
-    pub fn update_uniforms(
-        &mut self,
+impl ApplyMaterial for DiffuseMaterial {
+    fn apply<'a>(
+        &'a mut self,
+        encoder: &mut wgpu::RenderBundleEncoder<'a>,
         device: &Device,
         camera: (&Camera, &Transform),
         transform: &Transform,
@@ -61,9 +65,7 @@ impl DiffuseMaterial {
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
-    }
 
-    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
         encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);

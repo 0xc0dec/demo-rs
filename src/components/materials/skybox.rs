@@ -1,3 +1,4 @@
+use super::apply_material::ApplyMaterial;
 use super::utils::*;
 use crate::assets::shaders::ViewInvProjUniform;
 use crate::assets::{MeshVertex, Texture};
@@ -45,8 +46,16 @@ impl SkyboxMaterial {
             matrices_uniform_bind_group,
         }
     }
+}
 
-    pub fn update_uniforms(&mut self, device: &Device, camera: (&Camera, &Transform)) {
+impl ApplyMaterial for SkyboxMaterial {
+    fn apply<'a>(
+        &'a mut self,
+        encoder: &mut wgpu::RenderBundleEncoder<'a>,
+        device: &Device,
+        camera: (&Camera, &Transform),
+        _transform: &Transform,
+    ) {
         self.matrices_uniform
             .update(&camera.1.view_matrix(), &camera.0.proj_matrix());
         device.queue().write_buffer(
@@ -54,9 +63,7 @@ impl SkyboxMaterial {
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
-    }
 
-    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.texture_bind_group, &[]);

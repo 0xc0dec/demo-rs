@@ -3,6 +3,7 @@ use crate::assets::MeshVertex;
 use crate::components::{Camera, Transform};
 use crate::resources::{Assets, Device};
 
+use super::apply_material::ApplyMaterial;
 use super::utils::*;
 
 pub struct ColorMaterial {
@@ -36,9 +37,12 @@ impl ColorMaterial {
             pipeline,
         }
     }
+}
 
-    pub fn update_uniforms(
-        &mut self,
+impl ApplyMaterial for ColorMaterial {
+    fn apply<'a>(
+        &'a mut self,
+        encoder: &mut wgpu::RenderBundleEncoder<'a>,
         device: &Device,
         camera: (&Camera, &Transform),
         transform: &Transform,
@@ -53,9 +57,7 @@ impl ColorMaterial {
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
-    }
 
-    pub fn apply<'a>(&'a mut self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
