@@ -12,6 +12,13 @@ mod render_target;
 mod resources;
 mod systems;
 
+// TODO:
+// - Use wgpu types with `wgpu::` prefix.
+// - Remove `::*` imports.
+// - Refactor debug UI rendering, it should be a component, the `render()` system should now render it explicitly.
+// - Load meshes within `Assets`.
+// - Transform hierarchies.
+
 fn main() {
     let mut world = World::default();
     world.init_resource::<Schedules>();
