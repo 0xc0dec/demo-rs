@@ -18,13 +18,9 @@ impl FloorBox {
         mut physics: ResMut<PhysicsWorld>,
         assets: Res<Assets>,
     ) {
-        let (material, mesh) = pollster::block_on(async {
-            (
-                Material::diffuse(&device, &assets, &assets.stone_tex),
-                Mesh::from_file("cube.obj", &device).await,
-            )
-        });
-
+        // TODO Load in assets
+        let mesh = pollster::block_on(async { Mesh::from_file("cube.obj", &device).await });
+        let material = Material::diffuse(&device, &assets, &assets.stone_tex);
         let renderer = MeshRenderer::new(mesh);
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);

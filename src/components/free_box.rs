@@ -50,13 +50,8 @@ impl FreeBox {
         Transform,
         RenderTags,
     ) {
-        let (material, mesh) = pollster::block_on(async {
-            (
-                Material::diffuse(device, assets, &assets.stone_tex),
-                // TODO Load in assets
-                Mesh::from_file("cube.obj", device).await,
-            )
-        });
+        // TODO Load in assets
+        let mesh = pollster::block_on(async { Mesh::from_file("cube.obj", device).await });
         let scale = Vec3::from_element(1.0);
         let body = PhysicsBody::new(
             PhysicsBodyParams {
@@ -68,6 +63,7 @@ impl FreeBox {
             },
             physics,
         );
+        let material = Material::diffuse(device, assets, &assets.stone_tex);
         let renderer = MeshRenderer::new(mesh);
         let transform = Transform::new(pos, scale);
 
