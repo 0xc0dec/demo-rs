@@ -19,7 +19,7 @@ pub fn update_and_build_debug_ui(
         return;
     }
 
-    ui.update_and_build(&window, frame_time.delta, |frame| {
+    ui.prepare_render(&window, frame_time.delta, |frame| {
         frame
             .window("Debug info")
             .position([10.0, 10.0], imgui::Condition::FirstUseEver)

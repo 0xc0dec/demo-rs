@@ -57,7 +57,7 @@ impl DebugUI {
             .handle_event(self.context.io_mut(), &window, &event);
     }
 
-    pub fn update_and_build(&mut self, window: &Window, dt: f32, build: impl Fn(&mut imgui::Ui)) {
+    pub fn prepare_render(&mut self, window: &Window, dt: f32, build: impl Fn(&mut imgui::Ui)) {
         self.context
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(dt));
