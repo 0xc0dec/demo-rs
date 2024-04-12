@@ -18,8 +18,6 @@ mod systems;
 // - Load meshes within `Assets`.
 // - Transform hierarchies.
 // - Grabbing objects via mouse.
-// - Use wgpu types with `wgpu::` prefix.
-// - Remove `::*` imports.
 
 fn main() {
     let mut world = World::default();
