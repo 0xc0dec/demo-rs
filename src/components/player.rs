@@ -8,8 +8,8 @@ use crate::components::*;
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
-use crate::resources::events::WindowResizeEvent;
 use crate::resources::{Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
+use crate::resources::events::WindowResizeEvent;
 
 #[derive(Component)]
 pub struct Player {
@@ -104,22 +104,22 @@ impl Player {
         physics: &mut PhysicsWorld,
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
-        if input.forward_down {
+        if input.w_down {
             translation += transform.forward();
         }
-        if input.back_down {
+        if input.s_down {
             translation -= transform.forward();
         }
-        if input.right_down {
+        if input.d_down {
             translation += transform.right();
         }
-        if input.left_down {
+        if input.a_down {
             translation -= transform.right();
         }
-        if input.up_down {
+        if input.e_down {
             translation += transform.up();
         }
-        if input.down_down {
+        if input.q_down {
             translation -= transform.up();
         }
 
