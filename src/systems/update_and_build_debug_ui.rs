@@ -32,8 +32,8 @@ pub fn update_and_build_debug_ui(
                 frame.text(
                     "\
                     Controls:\n\
-                    - Control camera: hold RMB\n\
-                    - Move (while controlling camera): WASDQE\n\
+                    - Toggle camera control: Tab\n\
+                    - Move: WASDQE\n\
                     - Grab and release objects: LMB\n\
                     - Spawn new box: Space\n\
                     - Quit: Escape",

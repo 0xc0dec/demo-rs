@@ -180,11 +180,9 @@ fn toggle_mouse_grab(grab: bool, window: &Window) {
             .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
             .unwrap();
         window.set_cursor_visible(false);
-        println!("Grabbed mouse");
     } else {
         window.set_cursor_grab(CursorGrabMode::None).unwrap();
         window.set_cursor_visible(true);
-        println!("Released mouse");
     }
 }
 

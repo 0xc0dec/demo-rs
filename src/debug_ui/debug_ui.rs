@@ -18,7 +18,7 @@ impl DebugUI {
     pub fn new(device: &Device, window: &Window) -> Self {
         let mut context = imgui::Context::create();
         let mut platform = imgui_winit::WinitPlatform::init(&mut context);
-        platform.attach_window(context.io_mut(), &window, imgui_winit::HiDpiMode::Default);
+        platform.attach_window(context.io_mut(), window, imgui_winit::HiDpiMode::Default);
         context.set_ini_filename(None);
 
         let font_size = (13.0 * window.scale_factor()) as f32;
@@ -54,7 +54,7 @@ impl DebugUI {
 
     pub fn handle_window_event(&mut self, window: &Window, event: &Event<()>) {
         self.platform
-            .handle_event(self.context.io_mut(), &window, &event);
+            .handle_event(self.context.io_mut(), window, event);
     }
 
     pub fn prepare_render(&mut self, window: &Window, dt: f32, build: impl Fn(&mut imgui::Ui)) {
@@ -62,7 +62,7 @@ impl DebugUI {
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(dt));
         self.platform
-            .prepare_frame(self.context.io_mut(), &window)
+            .prepare_frame(self.context.io_mut(), window)
             .expect("Failed to prepare debug UI frame");
 
         let frame = self.context.frame();

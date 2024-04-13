@@ -16,6 +16,9 @@ pub struct Input {
     // TODO Fix, same as above
     pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
+
+    space_last_pressed: bool,
+    tab_last_pressed: bool,
 }
 
 impl Input {
@@ -31,6 +34,8 @@ impl Input {
             q_down: false,
             space_just_pressed: false,
             tab_just_pressed: false,
+            space_last_pressed: false,
+            tab_last_pressed: false,
             mouse_delta: (0.0, 0.0),
         }
     }
@@ -62,8 +67,14 @@ impl Input {
             VirtualKeyCode::D => self.d_down = pressed,
             VirtualKeyCode::E => self.e_down = pressed,
             VirtualKeyCode::Q => self.q_down = pressed,
-            VirtualKeyCode::Space => self.space_just_pressed = pressed,
-            VirtualKeyCode::Tab => self.tab_just_pressed = pressed,
+            VirtualKeyCode::Space => {
+                self.space_just_pressed = pressed && !self.space_last_pressed;
+                self.space_last_pressed = pressed;
+            }
+            VirtualKeyCode::Tab => {
+                self.tab_just_pressed = pressed && !self.tab_last_pressed;
+                self.tab_last_pressed = pressed;
+            }
             _ => (),
         }
     }
