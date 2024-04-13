@@ -32,11 +32,11 @@ pub fn update_and_build_debug_ui(
                 frame.text(
                     "\
                     Controls:\n\
-                    * Control camera: hold RMB\n\
-                    * Move (while controlling camera): WASDQE\n\
-                    * Grab and release objects: LMB\n\
-                    * Spawn new box: Space\n\
-                    * Quit: Escape",
+                    - Control camera: hold RMB\n\
+                    - Move (while controlling camera): WASDQE\n\
+                    - Grab and release objects: LMB\n\
+                    - Spawn new box: Space\n\
+                    - Quit: Escape",
                 );
 
                 let mut mouse_pos = frame.io().mouse_pos;

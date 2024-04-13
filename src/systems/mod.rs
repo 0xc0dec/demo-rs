@@ -1,7 +1,6 @@
 use bevy_ecs::prelude::*;
 use winit::event::VirtualKeyCode;
 
-pub use grab_cursor::grab_cursor;
 pub use handle_system_events::handle_system_events;
 pub use init_app::init_app;
 pub use render::render;
@@ -12,7 +11,6 @@ pub use update_input_state::update_input_state;
 use crate::resources::events::{KeyboardEvent, WindowResizeEvent};
 use crate::resources::{App, Device, FrameTime, PhysicsWorld};
 
-mod grab_cursor;
 mod handle_system_events;
 mod init_app;
 mod render;

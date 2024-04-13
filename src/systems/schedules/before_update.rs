@@ -11,7 +11,6 @@ pub fn new_before_update_schedule() -> (Schedule, Label) {
     schedule.add_systems(handle_system_events).add_systems(
         (
             escape_on_exit,
-            grab_cursor,
             resize_device,
             update_input_state,
             update_frame_time,

@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
+use winit::window::{CursorGrabMode, Window};
 
 use crate::components::*;
 use crate::math::Vec3;
@@ -18,6 +19,7 @@ pub struct Player {
     h_rot_acc: f32,
     v_rot_acc: f32,
     translation_acc: Vec3,
+    controlled: bool,
 }
 
 impl Player {
@@ -47,6 +49,7 @@ impl Player {
                 h_rot_acc: 0.0,
                 v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
+                controlled: false,
             },
             camera,
             transform,
@@ -65,6 +68,7 @@ impl Player {
         frame_time: Res<FrameTime>,
         device: Res<Device>,
         input: Res<Input>,
+        window: NonSend<Window>,
         mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,
         mut resize_events: EventReader<WindowResizeEvent>,
@@ -79,9 +83,14 @@ impl Player {
 
         // Move and rotate
         let dt = frame_time.delta;
-        if input.rmb_down {
+        if player.controlled {
             player.rotate(&mut transform, &input, dt);
             player.translate(&mut transform, dt, &input, &mut physics);
+        }
+
+        if input.tab_just_pressed {
+            player.controlled = !player.controlled;
+            toggle_mouse_grab(player.controlled, &window);
         }
 
         update_target((&mut player, &transform), &physics);
@@ -161,6 +170,21 @@ impl Player {
 
         transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
+    }
+}
+
+fn toggle_mouse_grab(grab: bool, window: &Window) {
+    if grab {
+        window
+            .set_cursor_grab(CursorGrabMode::Confined)
+            .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
+            .unwrap();
+        window.set_cursor_visible(false);
+        println!("Grabbed mouse");
+    } else {
+        window.set_cursor_grab(CursorGrabMode::None).unwrap();
+        window.set_cursor_visible(true);
+        println!("Released mouse");
     }
 }
 

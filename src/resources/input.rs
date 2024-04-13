@@ -12,6 +12,7 @@ pub struct Input {
     pub up_down: bool,
     pub down_down: bool,
     pub space_just_pressed: bool,
+    pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
 }
 
@@ -27,6 +28,7 @@ impl Input {
             up_down: false,
             down_down: false,
             space_just_pressed: false,
+            tab_just_pressed: false,
             mouse_delta: (0.0, 0.0),
         }
     }
@@ -34,6 +36,7 @@ impl Input {
     pub fn reset(&mut self) {
         self.mouse_delta = (0.0, 0.0);
         self.space_just_pressed = false;
+        self.tab_just_pressed = false;
     }
 
     pub fn on_mouse_move(&mut self, delta: (f32, f32)) {
@@ -58,6 +61,7 @@ impl Input {
             VirtualKeyCode::E => self.up_down = pressed,
             VirtualKeyCode::Q => self.down_down = pressed,
             VirtualKeyCode::Space => self.space_just_pressed = pressed,
+            VirtualKeyCode::Tab => self.tab_just_pressed = pressed,
             _ => (),
         }
     }
