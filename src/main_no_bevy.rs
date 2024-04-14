@@ -10,6 +10,7 @@ use new::Device;
 use new::FrameTime;
 use new::Input;
 use new::RenderTarget;
+use new::SurfaceSize;
 
 mod new;
 
@@ -79,13 +80,21 @@ fn render_pass(
     }
 }
 
+struct OsEvents {
+    close_requested: bool,
+    new_surface_size: Option<SurfaceSize>,
+}
+
 fn handle_os_events(
     event_loop: &mut EventLoop<()>,
     input: &mut Input,
     window: &Window,
     debug_ui: &mut DebugUI,
-) -> bool {
-    let mut close_requested = false;
+) -> OsEvents {
+    let mut events = OsEvents {
+        new_surface_size: None,
+        close_requested: false,
+    };
 
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
@@ -104,7 +113,7 @@ fn handle_os_events(
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
-                WindowEvent::CloseRequested => close_requested = true,
+                WindowEvent::CloseRequested => events.close_requested = true,
 
                 WindowEvent::MouseInput { state, button, .. } => {
                     input.on_mouse_button(*button, *state == ElementState::Pressed)
@@ -120,17 +129,20 @@ fn handle_os_events(
                     ..
                 } => {
                     if *keycode == VirtualKeyCode::Escape && *state == ElementState::Pressed {
-                        close_requested = true;
+                        events.close_requested = true;
                     }
                     input.on_key(*keycode, *state == ElementState::Pressed);
                 }
 
                 WindowEvent::Resized(new_size) => {
-                    println!("Resized: {new_size:?}")
+                    events.new_surface_size = Some(*new_size);
                 }
 
-                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    println!("Resized (scale factor): {new_inner_size:?}")
+                WindowEvent::ScaleFactorChanged {
+                    new_inner_size: new_size,
+                    ..
+                } => {
+                    events.new_surface_size = Some(**new_size);
                 }
 
                 _ => (),
@@ -142,8 +154,7 @@ fn handle_os_events(
         debug_ui.handle_window_event(window, &event);
     });
 
-    // TODO Better, this is a hacky way
-    close_requested
+    events
 }
 
 fn main() {
@@ -156,7 +167,7 @@ fn main() {
         })
         .build(&event_loop)
         .unwrap();
-    let device = pollster::block_on(async { Device::new(&window).await });
+    let mut device = pollster::block_on(async { Device::new(&window).await });
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
     let mut debug_ui = DebugUI::new(&device, &window);
@@ -165,7 +176,15 @@ fn main() {
         frame_time.update();
         input.reset();
 
-        let close_requested = handle_os_events(&mut event_loop, &mut input, &window, &mut debug_ui);
+        let events = handle_os_events(&mut event_loop, &mut input, &window, &mut debug_ui);
+
+        if events.close_requested {
+            break;
+        }
+
+        if let Some(new_size) = events.new_surface_size {
+            device.resize(new_size);
+        }
 
         debug_ui.prepare_render(&window, frame_time.delta, |frame| {
             frame
@@ -199,9 +218,5 @@ fn main() {
                 });
         });
         render_pass(&device, &[], None, &mut debug_ui);
-
-        if close_requested {
-            break;
-        }
     }
 }
