@@ -104,6 +104,7 @@ impl Player {
         physics: &mut PhysicsWorld,
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
+
         if input.w_down {
             translation += transform.forward();
         }

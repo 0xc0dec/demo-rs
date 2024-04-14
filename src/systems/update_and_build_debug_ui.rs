@@ -30,8 +30,7 @@ pub fn update_and_build_debug_ui(
             .no_decoration()
             .build(|| {
                 frame.text(
-                    "\
-                    Controls:\n\
+                    "Controls:\n\
                     - Toggle camera control: Tab\n\
                     - Move: WASDQE\n\
                     - Grab and release objects: LMB\n\
