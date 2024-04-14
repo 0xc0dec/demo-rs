@@ -3,7 +3,7 @@ use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
-use winit::window::WindowBuilder;
+use winit::window::{Window, WindowBuilder};
 
 use new::DebugUI;
 use new::Device;
@@ -79,6 +79,73 @@ fn render_pass(
     }
 }
 
+fn handle_os_events(
+    event_loop: &mut EventLoop<()>,
+    input: &mut Input,
+    window: &Window,
+    debug_ui: &mut DebugUI,
+) -> bool {
+    let mut close_requested = false;
+
+    event_loop.run_return(|event, _, flow| {
+        *flow = ControlFlow::Poll;
+
+        match event {
+            Event::MainEventsCleared => {
+                *flow = ControlFlow::Exit;
+            }
+
+            Event::DeviceEvent {
+                event: DeviceEvent::MouseMotion { delta },
+                ..
+            } => input.on_mouse_move((delta.0 as f32, delta.1 as f32)),
+
+            Event::WindowEvent {
+                ref event,
+                window_id,
+            } if window_id == window.id() => match event {
+                WindowEvent::CloseRequested => close_requested = true,
+
+                WindowEvent::MouseInput { state, button, .. } => {
+                    input.on_mouse_button(*button, *state == ElementState::Pressed)
+                }
+
+                WindowEvent::KeyboardInput {
+                    input:
+                        KeyboardInput {
+                            state,
+                            virtual_keycode: Some(keycode),
+                            ..
+                        },
+                    ..
+                } => {
+                    if *keycode == VirtualKeyCode::Escape && *state == ElementState::Pressed {
+                        close_requested = true;
+                    }
+                    input.on_key(*keycode, *state == ElementState::Pressed);
+                }
+
+                WindowEvent::Resized(new_size) => {
+                    println!("Resized: {new_size:?}")
+                }
+
+                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                    println!("Resized (scale factor): {new_inner_size:?}")
+                }
+
+                _ => (),
+            },
+
+            _ => {}
+        }
+
+        debug_ui.handle_window_event(window, &event);
+    });
+
+    // TODO Better, this is a hacky way
+    close_requested
+}
+
 fn main() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()
@@ -94,67 +161,11 @@ fn main() {
     let mut frame_time = FrameTime::new();
     let mut debug_ui = DebugUI::new(&device, &window);
 
-    let mut run = true;
     loop {
         frame_time.update();
+        input.reset();
 
-        event_loop.run_return(|event, _, flow| {
-            *flow = ControlFlow::Poll;
-
-            match event {
-                Event::MainEventsCleared => {
-                    *flow = ControlFlow::Exit;
-                }
-
-                Event::DeviceEvent {
-                    event: DeviceEvent::MouseMotion { delta },
-                    ..
-                } => input.on_mouse_move((delta.0 as f32, delta.1 as f32)),
-
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == window.id() => match event {
-                    WindowEvent::CloseRequested => {
-                        // TODO Proper solution
-                        run = false;
-                    }
-
-                    WindowEvent::MouseInput { state, button, .. } => {
-                        input.on_mouse_button(*button, *state == ElementState::Pressed)
-                    }
-
-                    WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                state,
-                                virtual_keycode: Some(keycode),
-                                ..
-                            },
-                        ..
-                    } => {
-                        if *keycode == VirtualKeyCode::Escape && *state == ElementState::Pressed {
-                            run = false;
-                        }
-                        input.on_key(*keycode, *state == ElementState::Pressed);
-                    }
-
-                    WindowEvent::Resized(new_size) => {
-                        println!("Resized: {new_size:?}")
-                    }
-
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        println!("Resized (scale factor): {new_inner_size:?}")
-                    }
-
-                    _ => (),
-                },
-
-                _ => {}
-            }
-
-            debug_ui.handle_window_event(&window, &event);
-        });
+        let close_requested = handle_os_events(&mut event_loop, &mut input, &window, &mut debug_ui);
 
         debug_ui.prepare_render(&window, frame_time.delta, |frame| {
             frame
@@ -189,7 +200,7 @@ fn main() {
         });
         render_pass(&device, &[], None, &mut debug_ui);
 
-        if !run {
+        if close_requested {
             break;
         }
     }

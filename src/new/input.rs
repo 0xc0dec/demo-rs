@@ -11,12 +11,9 @@ pub struct Input {
     pub d_down: bool,
     pub e_down: bool,
     pub q_down: bool,
-    // TODO Fix, it triggers every frame while the key is pressed
     pub space_just_pressed: bool,
-    // TODO Fix, same as above
     pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
-
     space_last_pressed: bool,
     tab_last_pressed: bool,
 }
