@@ -3,6 +3,10 @@ name = "demo-rs"
 version = "1.0.0"
 edition = "2021"
 
+[[bin]]
+name = "main_no_bevy"
+path = "src/main_no_bevy.rs"
+
 [dependencies]
 anyhow = "1.0.69"
 bevy_ecs = "0.12.1"
