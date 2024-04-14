@@ -1,16 +1,20 @@
 use bevy_ecs::prelude::*;
+use winit::dpi::PhysicalSize;
 use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
 use crate::debug_ui::DebugUI;
+use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
 use crate::resources::events::*;
-use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
 
 pub fn init_app(world: &mut World) {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")
-        .with_inner_size(SurfaceSize::new(1900, 1200))
+        .with_inner_size(PhysicalSize {
+            width: 1900,
+            height: 1200,
+        })
         .build(&event_loop)
         .unwrap();
     let device = pollster::block_on(async { Device::new(&window).await });
