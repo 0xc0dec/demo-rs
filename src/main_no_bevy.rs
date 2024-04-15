@@ -9,6 +9,7 @@ use new::DebugUI;
 use new::Device;
 use new::FrameTime;
 use new::Input;
+use new::PhysicsWorld;
 use new::RenderTarget;
 use new::SurfaceSize;
 
@@ -168,6 +169,7 @@ fn main() {
         .build(&event_loop)
         .unwrap();
     let mut device = pollster::block_on(async { Device::new(&window).await });
+    let mut physics_world = PhysicsWorld::new();
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
     let mut debug_ui = DebugUI::new(&device, &window);
@@ -185,6 +187,9 @@ fn main() {
         if let Some(new_size) = events.new_surface_size {
             device.resize(new_size);
         }
+
+        // TODO Run at fixed steps
+        physics_world.update(frame_time.delta);
 
         debug_ui.prepare_render(&window, frame_time.delta, |frame| {
             frame
