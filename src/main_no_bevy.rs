@@ -13,6 +13,8 @@ use new::PhysicsWorld;
 use new::RenderTarget;
 use new::SurfaceSize;
 
+use crate::new::{Assets, Material, Mesh, Transform};
+
 mod new;
 
 fn render_pass(
@@ -173,6 +175,18 @@ fn main() {
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
     let mut debug_ui = DebugUI::new(&device, &window);
+    let assets = Assets::load(&device);
+
+    let mut transforms = Vec::<Transform>::new();
+    let mut meshes = Vec::<Mesh>::new();
+    let mut materials = Vec::<Material>::new();
+
+    // Create skybox
+    {
+        transforms.push(Transform::default());
+        meshes.push(Mesh::quad(&device));
+        materials.push(Material::skybox(&device, &assets, &assets.skybox_tex));
+    }
 
     loop {
         frame_time.update();
