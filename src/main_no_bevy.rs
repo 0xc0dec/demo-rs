@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
@@ -13,7 +15,7 @@ use new::PhysicsWorld;
 use new::RenderTarget;
 use new::SurfaceSize;
 
-use crate::new::{Assets, Material, Mesh, Transform};
+use crate::new::{Assets, Material, Mesh, Player, RenderOrder, RenderTags, Skybox, Transform};
 
 mod new;
 
@@ -171,22 +173,42 @@ fn main() {
         .build(&event_loop)
         .unwrap();
     let mut device = pollster::block_on(async { Device::new(&window).await });
-    let mut physics_world = PhysicsWorld::new();
+    let mut physics = PhysicsWorld::new();
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
     let mut debug_ui = DebugUI::new(&device, &window);
     let assets = Assets::load(&device);
 
-    let mut transforms = Vec::<Transform>::new();
-    let mut meshes = Vec::<Mesh>::new();
-    let mut materials = Vec::<Material>::new();
+    let mut transforms = Vec::<Option<Transform>>::new();
+    let mut meshes = Vec::<Option<Mesh>>::new();
+    let mut materials = Vec::<Option<Material>>::new();
+    let mut render_orders = Vec::<Option<RenderOrder>>::new();
+    let mut render_tags = Vec::<Option<RenderTags>>::new();
 
-    // Create skybox
+    // Skybox
     {
-        transforms.push(Transform::default());
-        meshes.push(Mesh::quad(&device));
-        materials.push(Material::skybox(&device, &assets, &assets.skybox_tex));
+        let (mesh, material, transform, order, tags) = Skybox::spawn(&device, &assets);
+        transforms.push(Some(transform));
+        meshes.push(Some(mesh));
+        materials.push(Some(material));
+        render_orders.push(Some(order));
+        render_tags.push(Some(tags));
     }
+
+    // Player
+    let (mut player, mut player_cam, player_transform) = {
+        let (player, cam, transform) = Player::spawn(&device, &mut physics);
+        transforms.push(Some(transform));
+        meshes.push(None);
+        materials.push(None);
+        render_orders.push(None);
+        render_tags.push(None);
+        (
+            player,
+            cam,
+            transforms.iter_mut().next_back().unwrap().as_mut().unwrap(),
+        )
+    };
 
     loop {
         frame_time.update();
@@ -200,10 +222,12 @@ fn main() {
 
         if let Some(new_size) = events.new_surface_size {
             device.resize(new_size);
+            // TODO Remove, this is temp
+            player.resize(new_size, &mut player_cam, &device);
         }
 
         // TODO Run at fixed steps
-        physics_world.update(frame_time.delta);
+        physics.update(frame_time.delta);
 
         debug_ui.prepare_render(&window, frame_time.delta, |frame| {
             frame
@@ -236,6 +260,9 @@ fn main() {
                     ));
                 });
         });
+
+        player.update(&frame_time, &input, &window, &mut physics, player_transform);
+
         render_pass(&device, &[], None, &mut debug_ui);
     }
 }
