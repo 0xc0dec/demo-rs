@@ -1,5 +1,3 @@
-use std::ops::DerefMut;
-
 use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
@@ -206,7 +204,7 @@ fn main() {
         (
             player,
             cam,
-            transforms.iter_mut().next_back().unwrap().as_mut().unwrap(),
+            transforms.last_mut().unwrap().as_mut().unwrap(),
         )
     };
 
