@@ -13,9 +13,45 @@ use new::PhysicsWorld;
 use new::RenderTarget;
 use new::SurfaceSize;
 
-use crate::new::{Assets, Material, Mesh, Player, RenderOrder, RenderTags, Skybox, Transform};
+use crate::new::{
+    ApplyMaterial, Assets, Camera, DrawMesh, Material, Mesh, Player, RenderOrder, RenderTags,
+    Skybox, Transform,
+};
 
 mod new;
+
+fn new_bundle_encoder<'a>(
+    device: &'a Device,
+    target: Option<&RenderTarget>,
+) -> wgpu::RenderBundleEncoder<'a> {
+    let color_format = target.map_or(device.surface_texture_format(), |t| t.color_tex().format());
+    let depth_format = target.map_or(device.depth_texture_format(), |t| t.depth_tex().format());
+
+    device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+        label: None,
+        multiview: None,
+        sample_count: 1,
+        color_formats: &[Some(color_format)],
+        depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+            format: depth_format,
+            depth_read_only: false,
+            stencil_read_only: false,
+        }),
+    })
+}
+
+fn to_render_bundle<'a>(
+    mesh: &'a Mesh,
+    mat: &'a mut Material,
+    tr: &'a Transform,
+    camera: (&Camera, &Transform),
+    device: &Device,
+) -> RenderBundle {
+    let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
+    mat.apply(&mut encoder, device, camera, tr);
+    encoder.draw_mesh(mesh);
+    encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
+}
 
 fn render_pass(
     device: &Device,
@@ -194,19 +230,7 @@ fn main() {
     }
 
     // Player
-    let (mut player, mut player_cam, player_transform) = {
-        let (player, cam, transform) = Player::spawn(&device, &mut physics);
-        transforms.push(Some(transform));
-        meshes.push(None);
-        materials.push(None);
-        render_orders.push(None);
-        render_tags.push(None);
-        (
-            player,
-            cam,
-            transforms.last_mut().unwrap().as_mut().unwrap(),
-        )
-    };
+    let (mut player, mut player_cam, mut player_transform) = Player::spawn(&device, &mut physics);
 
     loop {
         frame_time.update();
@@ -259,8 +283,35 @@ fn main() {
                 });
         });
 
-        player.update(&frame_time, &input, &window, &mut physics, player_transform);
+        player.update(
+            &frame_time,
+            &input,
+            &window,
+            &mut physics,
+            &mut player_transform,
+        );
 
-        render_pass(&device, &[], None, &mut debug_ui);
+        for (idx, mesh) in meshes.iter().enumerate() {
+            if let Some(mesh) = mesh {
+                if let Some(Some(tags)) = render_tags.get(idx) {
+                    if !player_cam.should_render(tags.0) {
+                        continue;
+                    }
+                }
+
+                if let Some(Some(mat)) = materials.get_mut(idx) {
+                    if let Some(Some(tr)) = transforms.get(idx) {
+                        let bundle = to_render_bundle(
+                            mesh,
+                            mat,
+                            tr,
+                            (&player_cam, &player_transform),
+                            &device,
+                        );
+                        render_pass(&device, &[bundle], None, &mut debug_ui);
+                    }
+                }
+            }
+        }
     }
 }

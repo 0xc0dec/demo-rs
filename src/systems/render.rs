@@ -1,7 +1,7 @@
-use crate::assets::DrawMesh;
 use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
 
+use crate::assets::DrawMesh;
 use crate::components::{
     ApplyMaterial, Camera, Material, Mesh, RenderOrder, RenderTags, Transform,
 };
