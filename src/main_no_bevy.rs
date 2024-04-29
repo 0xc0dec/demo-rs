@@ -1,3 +1,4 @@
+use hecs::World;
 use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
@@ -213,31 +214,18 @@ fn main() {
     let mut debug_ui = DebugUI::new(&device, &window);
     let assets = Assets::load(&device);
 
-    // "Components"
-    let mut transforms = Vec::<Option<Transform>>::new();
-    let mut meshes = Vec::<Option<Mesh>>::new();
-    let mut materials = Vec::<Option<Material>>::new();
-    let mut bodies = Vec::<Option<PhysicsBody>>::new();
-    let mut render_tags = Vec::<Option<RenderTags>>::new();
+    let mut world = World::new();
 
     // Skybox
     {
-        let (mesh, material, transform, _order, tags) = Skybox::spawn(&device, &assets);
-        transforms.push(Some(transform));
-        meshes.push(Some(mesh));
-        materials.push(Some(material));
-        bodies.push(None);
-        render_tags.push(Some(tags));
+        let (mesh, material, transform, order, tags) = Skybox::spawn(&device, &assets);
+        world.spawn((mesh, material, transform, order, Some(tags)));
     }
 
     // Floor box
     {
         let (body, mesh, material, transform) = FloorBox::spawn(&device, &mut physics, &assets);
-        transforms.push(Some(transform));
-        meshes.push(Some(mesh));
-        materials.push(Some(material));
-        bodies.push(Some(body));
-        render_tags.push(None);
+        world.spawn((mesh, material, transform, body, None::<RenderTags>));
     }
 
     // Player
@@ -302,40 +290,36 @@ fn main() {
             &mut player_transform,
         );
 
-        // TODO Sync physics to graphics.
         // TODO Grabbing (can test it on the floor box, no need to add spawning first).
         // TODO Spawning boxes.
-        // TODO Remove render order completely? Rely on the order in the array?
+        // TODO Render order.
 
         let mut bundles = Vec::<RenderBundle>::new();
-        for (idx, mesh) in meshes.iter().enumerate() {
-            // Sync transforms from physics bodies
-            if let Some(Some(body)) = bodies.get(idx) {
-                let (pos, rot) = body.transform(&physics);
-                if let Some(Some(tr)) = transforms.get_mut(idx) {
-                    tr.set(pos, rot);
+
+        // Sync physics to transforms
+        for (_e, (body, tr)) in world.query::<(&PhysicsBody, &mut Transform)>().iter() {
+            let (pos, rot) = body.transform(&physics);
+            tr.set(pos, rot);
+        }
+
+        // Render
+        for (_e, (mesh, mat, tr, tags)) in world
+            .query::<(&Mesh, &mut Material, &Transform, &Option<RenderTags>)>()
+            .iter()
+        {
+            if let Some(tags) = tags {
+                if !player_cam.should_render(tags.0) {
+                    continue;
                 }
             }
 
-            if let Some(mesh) = mesh {
-                if let Some(Some(tags)) = render_tags.get(idx) {
-                    if !player_cam.should_render(tags.0) {
-                        continue;
-                    }
-                }
-
-                if let Some(Some(mat)) = materials.get_mut(idx) {
-                    if let Some(Some(tr)) = transforms.get(idx) {
-                        bundles.push(to_render_bundle(
-                            mesh,
-                            mat,
-                            tr,
-                            (&player_cam, &player_transform),
-                            &device,
-                        ));
-                    }
-                }
-            }
+            bundles.push(to_render_bundle(
+                mesh,
+                mat,
+                tr,
+                (&player_cam, &player_transform),
+                &device,
+            ));
         }
 
         // TODO Per camera (if needed)

@@ -8,7 +8,12 @@ use super::diffuse::DiffuseMaterial;
 use super::post_process::PostProcessMaterial;
 use super::skybox::SkyboxMaterial;
 
-pub struct Material(Box<dyn ApplyMaterial>);
+pub enum Material {
+    Color(ColorMaterial),
+    Diffuse(DiffuseMaterial),
+    Skybox(SkyboxMaterial),
+    PostProcess(PostProcessMaterial),
+}
 
 impl ApplyMaterial for Material {
     fn apply<'a>(
@@ -18,24 +23,29 @@ impl ApplyMaterial for Material {
         camera: (&Camera, &Transform),
         transform: &Transform,
     ) {
-        self.0.apply(encoder, device, camera, transform);
+        match self {
+            Material::Color(inner) => inner.apply(encoder, device, camera, transform),
+            Material::Diffuse(inner) => inner.apply(encoder, device, camera, transform),
+            Material::Skybox(inner) => inner.apply(encoder, device, camera, transform),
+            Material::PostProcess(inner) => inner.apply(encoder, device, camera, transform),
+        }
     }
 }
 
 impl Material {
     pub fn color(device: &Device, assets: &Assets) -> Self {
-        Self(Box::new(ColorMaterial::new(device, assets)))
+        Self::Color(ColorMaterial::new(device, assets))
     }
 
     pub fn diffuse(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Self(Box::new(DiffuseMaterial::new(device, assets, texture)))
+        Self::Diffuse(DiffuseMaterial::new(device, assets, texture))
     }
 
     pub fn skybox(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Self(Box::new(SkyboxMaterial::new(device, assets, texture)))
+        Self::Skybox(SkyboxMaterial::new(device, assets, texture))
     }
 
     pub fn post_process(device: &Device, assets: &Assets, texture: &Texture) -> Self {
-        Self(Box::new(PostProcessMaterial::new(device, assets, texture)))
+        Self::PostProcess(PostProcessMaterial::new(device, assets, texture))
     }
 }

@@ -600,6 +600,7 @@ dependencies = [
  "bevy_ecs",
  "bytemuck",
  "ddsfile",
+ "hecs",
  "image",
  "imgui",
  "imgui-wgpu",
@@ -908,6 +909,16 @@ dependencies = [
  "thiserror",
  "widestring",
  "winapi",
+]
+
+[[package]]
+name = "hecs"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08c827658bc76bcffa12334eeeb575d304c5a31b71cbabd16c5f3379a9aa68c7"
+dependencies = [
+ "hashbrown 0.14.3",
+ "spin",
 ]
 
 [[package]]
@@ -1813,6 +1824,12 @@ dependencies = [
  "robust",
  "smallvec",
 ]
+
+[[package]]
+name = "spin"
+version = "0.9.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "spirv"
