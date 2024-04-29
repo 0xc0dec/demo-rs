@@ -212,6 +212,7 @@ fn main() {
     let mut debug_ui = DebugUI::new(&device, &window);
     let assets = Assets::load(&device);
 
+    // "Components"
     let mut transforms = Vec::<Option<Transform>>::new();
     let mut meshes = Vec::<Option<Mesh>>::new();
     let mut materials = Vec::<Option<Material>>::new();
@@ -287,6 +288,9 @@ fn main() {
             &mut physics,
             &mut player_transform,
         );
+
+        // TODO Render other meshes
+        // TODO Remove render order completely? Rely on the order in the array?
 
         for (idx, mesh) in meshes.iter().enumerate() {
             if let Some(mesh) = mesh {
