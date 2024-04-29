@@ -14,7 +14,8 @@ use new::RenderTarget;
 use new::SurfaceSize;
 
 use crate::new::{
-    ApplyMaterial, Assets, Camera, DrawMesh, Material, Mesh, Player, RenderTags, Skybox, Transform,
+    ApplyMaterial, Assets, Camera, DrawMesh, FloorBox, Material, Mesh, PhysicsBody, Player,
+    RenderTags, Skybox, Transform,
 };
 
 mod new;
@@ -216,6 +217,7 @@ fn main() {
     let mut transforms = Vec::<Option<Transform>>::new();
     let mut meshes = Vec::<Option<Mesh>>::new();
     let mut materials = Vec::<Option<Material>>::new();
+    let mut bodies = Vec::<Option<PhysicsBody>>::new();
     let mut render_tags = Vec::<Option<RenderTags>>::new();
 
     // Skybox
@@ -224,7 +226,18 @@ fn main() {
         transforms.push(Some(transform));
         meshes.push(Some(mesh));
         materials.push(Some(material));
+        bodies.push(None);
         render_tags.push(Some(tags));
+    }
+
+    // Floor box
+    {
+        let (body, mesh, material, transform) = FloorBox::spawn(&device, &mut physics, &assets);
+        transforms.push(Some(transform));
+        meshes.push(Some(mesh));
+        materials.push(Some(material));
+        bodies.push(Some(body));
+        render_tags.push(None);
     }
 
     // Player
@@ -261,11 +274,11 @@ fn main() {
                 .build(|| {
                     frame.text(
                         "Controls:\n\
-                             - Toggle camera control: Tab\n\
-                             - Move: WASDQE\n\
-                             - Grab and release objects: LMB\n\
-                             - Spawn new box: Space\n\
-                             - Quit: Escape",
+                         - Toggle camera control: Tab\n\
+                         - Move: WASDQE\n\
+                         - Grab and release objects: LMB\n\
+                         - Spawn new box: Space\n\
+                         - Quit: Escape",
                     );
 
                     let mut mouse_pos = frame.io().mouse_pos;
@@ -291,7 +304,9 @@ fn main() {
 
         // TODO Render other meshes
         // TODO Remove render order completely? Rely on the order in the array?
+        // TODO Sync physics to graphics
 
+        let mut bundles = Vec::<RenderBundle>::new();
         for (idx, mesh) in meshes.iter().enumerate() {
             if let Some(mesh) = mesh {
                 if let Some(Some(tags)) = render_tags.get(idx) {
@@ -302,17 +317,19 @@ fn main() {
 
                 if let Some(Some(mat)) = materials.get_mut(idx) {
                     if let Some(Some(tr)) = transforms.get(idx) {
-                        let bundle = to_render_bundle(
+                        bundles.push(to_render_bundle(
                             mesh,
                             mat,
                             tr,
                             (&player_cam, &player_transform),
                             &device,
-                        );
-                        render_pass(&device, &[bundle], None, &mut debug_ui);
+                        ));
                     }
                 }
             }
         }
+
+        // TODO Per camera (if needed)
+        render_pass(&device, &bundles[..], None, &mut debug_ui);
     }
 }
