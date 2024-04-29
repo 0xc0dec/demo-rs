@@ -14,8 +14,7 @@ use new::RenderTarget;
 use new::SurfaceSize;
 
 use crate::new::{
-    ApplyMaterial, Assets, Camera, DrawMesh, Material, Mesh, Player, RenderOrder, RenderTags,
-    Skybox, Transform,
+    ApplyMaterial, Assets, Camera, DrawMesh, Material, Mesh, Player, RenderTags, Skybox, Transform,
 };
 
 mod new;
@@ -216,16 +215,14 @@ fn main() {
     let mut transforms = Vec::<Option<Transform>>::new();
     let mut meshes = Vec::<Option<Mesh>>::new();
     let mut materials = Vec::<Option<Material>>::new();
-    let mut render_orders = Vec::<Option<RenderOrder>>::new();
     let mut render_tags = Vec::<Option<RenderTags>>::new();
 
     // Skybox
     {
-        let (mesh, material, transform, order, tags) = Skybox::spawn(&device, &assets);
+        let (mesh, material, transform, _order, tags) = Skybox::spawn(&device, &assets);
         transforms.push(Some(transform));
         meshes.push(Some(mesh));
         materials.push(Some(material));
-        render_orders.push(Some(order));
         render_tags.push(Some(tags));
     }
 
