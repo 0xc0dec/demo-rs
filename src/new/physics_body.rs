@@ -1,6 +1,6 @@
 use rapier3d::prelude::*;
 
-use crate::new::{PhysicsWorld, Vec3};
+use crate::new::{PhysicsWorld, Quat, Vec3};
 
 pub struct PhysicsBody {
     handle: RigidBodyHandle,
@@ -40,8 +40,10 @@ impl PhysicsBody {
         Self { handle, movable }
     }
 
-    pub fn body_handle(&self) -> RigidBodyHandle {
-        self.handle
+    pub fn transform(&self, physics: &PhysicsWorld) -> (Vec3, Quat) {
+        let body = physics.bodies.get(self.handle).unwrap();
+        // Not sure why inverse is needed
+        (*body.translation(), *body.rotation().inverse().quaternion())
     }
 }
 

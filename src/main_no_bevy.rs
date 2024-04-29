@@ -259,9 +259,6 @@ fn main() {
             player.resize(new_size, &mut player_cam, &device);
         }
 
-        // TODO Run at fixed steps
-        physics.update(frame_time.delta);
-
         debug_ui.prepare_render(&window, frame_time.delta, |frame| {
             frame
                 .window("Debug info")
@@ -294,6 +291,9 @@ fn main() {
                 });
         });
 
+        // TODO Run at fixed steps
+        physics.update(frame_time.delta);
+
         player.update(
             &frame_time,
             &input,
@@ -302,12 +302,21 @@ fn main() {
             &mut player_transform,
         );
 
-        // TODO Render other meshes
+        // TODO Sync physics to graphics.
+        // TODO Grabbing (can test it on the floor box, no need to add spawning first).
+        // TODO Spawning boxes.
         // TODO Remove render order completely? Rely on the order in the array?
-        // TODO Sync physics to graphics
 
         let mut bundles = Vec::<RenderBundle>::new();
         for (idx, mesh) in meshes.iter().enumerate() {
+            // Sync transforms from physics bodies
+            if let Some(Some(body)) = bodies.get(idx) {
+                let (pos, rot) = body.transform(&physics);
+                if let Some(Some(tr)) = transforms.get_mut(idx) {
+                    tr.set(pos, rot);
+                }
+            }
+
             if let Some(mesh) = mesh {
                 if let Some(Some(tags)) = render_tags.get(idx) {
                     if !player_cam.should_render(tags.0) {
