@@ -16,7 +16,7 @@ use new::SurfaceSize;
 
 use crate::new::{
     ApplyMaterial, Assets, Camera, DrawMesh, FloorBox, Material, Mesh, PhysicsBody, Player,
-    RenderTags, Skybox, Transform,
+    PlayerTarget, RENDER_TAG_SCENE, RenderTags, Skybox, Transform, Vec3,
 };
 
 mod new;
@@ -216,17 +216,25 @@ fn main() {
 
     let mut world = World::new();
 
+    // TODO Avoid Option<RenderTags>, make them always exist
+
     // Skybox
     {
-        let (mesh, material, transform, order, tags) = Skybox::spawn(&device, &assets);
-        world.spawn((mesh, material, transform, order, Some(tags)));
+        let (mesh, material, tr, order, tags) = Skybox::spawn(&device, &assets);
+        world.spawn((mesh, material, tr, order, Some(tags)));
     }
 
     // Floor box
     {
-        let (body, mesh, material, transform) = FloorBox::spawn(&device, &mut physics, &assets);
-        world.spawn((mesh, material, transform, body, None::<RenderTags>));
+        let (body, mesh, material, tr) = FloorBox::spawn(&device, &mut physics, &assets);
+        world.spawn((mesh, material, tr, body, None::<RenderTags>));
     }
+
+    // Player target
+    let player_target_ent = {
+        let (target, tr, mesh, material, tags) = PlayerTarget::spawn(&device, &assets);
+        world.spawn((target, mesh, material, tr, tags))
+    };
 
     // Player
     let (mut player, mut player_cam, mut player_transform) = Player::spawn(&device, &mut physics);
@@ -295,6 +303,26 @@ fn main() {
         // TODO Render order.
 
         let mut bundles = Vec::<RenderBundle>::new();
+
+        // Update player target
+        {
+            let mut q = world
+                .query_one::<(&PlayerTarget, &mut Transform, &mut Option<RenderTags>)>(
+                    player_target_ent,
+                )
+                .unwrap();
+            let (_, target_tr, target_tags) = q.get().unwrap();
+            if let Some(player_target_pt) = player.target_pt() {
+                let dist_to_camera = (player_transform.position() - player_target_pt).magnitude();
+                let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
+
+                target_tags.as_mut().unwrap().0 = RENDER_TAG_SCENE;
+                target_tr.set_position(player_target_pt);
+                target_tr.set_scale(Vec3::from_element(scale));
+            } else {
+                target_tags.as_mut().unwrap().0 = RENDER_TAG_SCENE;
+            }
+        }
 
         // Sync physics to transforms
         for (_e, (body, tr)) in world.query::<(&PhysicsBody, &mut Transform)>().iter() {
