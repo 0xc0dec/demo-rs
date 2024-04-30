@@ -11,6 +11,7 @@ pub struct Input {
     pub d_down: bool,
     pub e_down: bool,
     pub q_down: bool,
+    pub esc_down: bool,
     // TODO Fix, it triggers every frame while the key is pressed
     pub space_just_pressed: bool,
     // TODO Fix, same as above
@@ -32,6 +33,7 @@ impl Input {
             d_down: false,
             e_down: false,
             q_down: false,
+            esc_down: false,
             space_just_pressed: false,
             tab_just_pressed: false,
             space_last_pressed: false,
@@ -67,6 +69,7 @@ impl Input {
             VirtualKeyCode::D => self.d_down = pressed,
             VirtualKeyCode::E => self.e_down = pressed,
             VirtualKeyCode::Q => self.q_down = pressed,
+            VirtualKeyCode::Escape => self.esc_down = pressed,
             VirtualKeyCode::Space => {
                 self.space_just_pressed = pressed && !self.space_last_pressed;
                 self.space_last_pressed = pressed;

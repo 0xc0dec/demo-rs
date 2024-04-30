@@ -1,22 +1,19 @@
 use bevy_ecs::prelude::*;
-use winit::event::VirtualKeyCode;
 
 pub use consume_system_events::consume_system_events;
 pub use init_app::init_app;
 pub use render::render;
 pub use schedules::*;
 pub use update_and_build_debug_ui::update_and_build_debug_ui;
-pub use update_input_state::update_input_state;
 
-use crate::resources::{App, Device, FrameTime, PhysicsWorld};
-use crate::resources::events::{KeyboardEvent, WindowResizeEvent};
+use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
+use crate::resources::events::WindowResizeEvent;
 
 mod consume_system_events;
 mod init_app;
 mod render;
 mod schedules;
 mod update_and_build_debug_ui;
-mod update_input_state;
 
 // TODO Combine these systems?
 
@@ -26,11 +23,8 @@ pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<WindowR
     }
 }
 
-pub fn escape_on_exit(mut app: ResMut<App>, mut keyboard_events: EventReader<KeyboardEvent>) {
-    if keyboard_events
-        .read()
-        .any(|e| e.code == VirtualKeyCode::Escape && e.pressed)
-    {
+pub fn escape_on_exit(mut app: ResMut<App>, input: Res<Input>) {
+    if input.esc_down {
         app.running = false;
     }
 }

@@ -5,16 +5,18 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
-use crate::resources::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
+use crate::resources::events::WindowResizeEvent;
+use crate::resources::Input;
 
 pub fn consume_system_events(
     window: NonSend<Window>,
+    mut input: ResMut<Input>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut debug_ui: NonSendMut<DebugUI>,
     mut resize_events: EventWriter<WindowResizeEvent>,
-    mut keyboard_events: EventWriter<KeyboardEvent>,
-    mut mouse_events: EventWriter<MouseEvent>,
 ) {
+    input.reset();
+
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
 
@@ -26,17 +28,14 @@ pub fn consume_system_events(
             Event::DeviceEvent {
                 event: DeviceEvent::MouseMotion { delta },
                 ..
-            } => mouse_events.send(MouseEvent::Move(delta.0 as f32, delta.1 as f32)),
+            } => input.on_mouse_move((delta.0 as f32, delta.1 as f32)),
 
             Event::WindowEvent {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
                 WindowEvent::MouseInput { state, button, .. } => {
-                    mouse_events.send(MouseEvent::Button {
-                        button: *button,
-                        pressed: *state == ElementState::Pressed,
-                    });
+                    input.on_mouse_button(*button, *state == ElementState::Pressed)
                 }
 
                 WindowEvent::KeyboardInput {
@@ -47,12 +46,7 @@ pub fn consume_system_events(
                             ..
                         },
                     ..
-                } => {
-                    keyboard_events.send(KeyboardEvent {
-                        code: *keycode,
-                        pressed: *key_state == ElementState::Pressed,
-                    });
-                }
+                } => input.on_key(*keycode, *key_state == ElementState::Pressed),
 
                 WindowEvent::Resized(new_size) => {
                     resize_events.send(WindowResizeEvent {
