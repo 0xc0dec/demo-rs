@@ -7,7 +7,7 @@ use winit::window::Window;
 use crate::debug_ui::DebugUI;
 use crate::resources::Events;
 
-pub fn consume_system_events(
+pub fn capture_events(
     window: NonSend<Window>,
     mut events: ResMut<Events>,
     mut event_loop: NonSendMut<EventLoop<()>>,

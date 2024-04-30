@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::*;
 
-pub use consume_system_events::consume_system_events;
+pub use capture_events::capture_events;
 pub use init::init;
 pub use render::render;
 pub use schedules::*;
@@ -8,7 +8,7 @@ pub use update_and_build_debug_ui::update_and_build_debug_ui;
 
 use crate::resources::{App, Device, Events, FrameTime, PhysicsWorld};
 
-mod consume_system_events;
+mod capture_events;
 mod init;
 mod render;
 mod schedules;

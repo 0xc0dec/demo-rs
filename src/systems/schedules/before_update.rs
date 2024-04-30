@@ -8,8 +8,8 @@ pub struct Label;
 
 pub fn new_before_update_schedule() -> (Schedule, Label) {
     let mut schedule = Schedule::new(Label {});
-    schedule.add_systems(consume_system_events).add_systems(
-        (escape_on_exit, resize_device, update_frame_time).after(consume_system_events),
-    );
+    schedule
+        .add_systems(capture_events)
+        .add_systems((escape_on_exit, resize_device, update_frame_time).after(capture_events));
     (schedule, Label)
 }
