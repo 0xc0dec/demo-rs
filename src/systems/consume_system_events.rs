@@ -5,7 +5,6 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
-use crate::resources::events::WindowResizeEvent;
 use crate::resources::Input;
 
 pub fn consume_system_events(
@@ -13,7 +12,6 @@ pub fn consume_system_events(
     mut input: ResMut<Input>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut debug_ui: NonSendMut<DebugUI>,
-    mut resize_events: EventWriter<WindowResizeEvent>,
 ) {
     input.reset();
 
@@ -48,16 +46,10 @@ pub fn consume_system_events(
                     ..
                 } => input.on_key(*keycode, *key_state == ElementState::Pressed),
 
-                WindowEvent::Resized(new_size) => {
-                    resize_events.send(WindowResizeEvent {
-                        new_size: *new_size,
-                    });
-                }
+                WindowEvent::Resized(new_size) => input.new_surface_size = Some(*new_size),
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    resize_events.send(WindowResizeEvent {
-                        new_size: **new_inner_size,
-                    });
+                    input.new_surface_size = Some(**new_inner_size);
                 }
 
                 _ => (),

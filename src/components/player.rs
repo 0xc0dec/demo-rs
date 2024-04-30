@@ -9,7 +9,6 @@ use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
 use crate::resources::{Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
-use crate::resources::events::WindowResizeEvent;
 
 #[derive(Component)]
 pub struct Player {
@@ -71,14 +70,12 @@ impl Player {
         window: NonSend<Window>,
         mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,
-        mut resize_events: EventReader<WindowResizeEvent>,
     ) {
         let (mut player, mut camera, mut transform) = player.single_mut();
 
         // Update camera aspect
-        let last_resize = resize_events.read().last();
-        if let Some(last_resize) = last_resize {
-            update_cam_aspect(&mut camera, last_resize.new_size, &device);
+        if let Some(new_surface_size) = input.new_surface_size {
+            update_cam_aspect(&mut camera, new_surface_size, &device);
         }
 
         // Move and rotate

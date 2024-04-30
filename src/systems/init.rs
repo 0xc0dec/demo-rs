@@ -5,7 +5,6 @@ use winit::window::WindowBuilder;
 
 use crate::debug_ui::DebugUI;
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
-use crate::resources::events::*;
 
 pub fn init(world: &mut World) {
     let event_loop = EventLoop::new();
@@ -22,8 +21,6 @@ pub fn init(world: &mut World) {
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(DebugUI::new(&device, &window));
     world.insert_non_send_resource(window);
-
-    world.init_resource::<Events<WindowResizeEvent>>();
 
     world.insert_resource(App { running: true });
     world.insert_resource(device);

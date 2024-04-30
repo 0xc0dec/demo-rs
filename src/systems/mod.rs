@@ -7,7 +7,6 @@ pub use schedules::*;
 pub use update_and_build_debug_ui::update_and_build_debug_ui;
 
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
-use crate::resources::events::WindowResizeEvent;
 
 mod consume_system_events;
 mod init;
@@ -17,9 +16,9 @@ mod update_and_build_debug_ui;
 
 // TODO Combine these systems?
 
-pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<WindowResizeEvent>) {
-    if let Some(e) = events.read().last() {
-        device.resize(e.new_size)
+pub fn resize_device(mut device: ResMut<Device>, input: Res<Input>) {
+    if let Some(size) = input.new_surface_size {
+        device.resize(size);
     }
 }
 
