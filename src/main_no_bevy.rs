@@ -16,7 +16,7 @@ use new::SurfaceSize;
 
 use crate::new::{
     ApplyMaterial, Assets, Camera, DrawMesh, FloorBox, Material, Mesh, PhysicsBody, Player,
-    PlayerTarget, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE, RenderTags, Skybox, Transform, Vec3,
+    PlayerTarget, RenderTags, Skybox, Transform, Vec3, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
 };
 
 mod new;
@@ -216,17 +216,10 @@ fn main() {
 
     let mut world = World::new();
 
-    // Skybox
     Skybox::spawn(&device, &assets, &mut world);
-
-    // Floor box
     FloorBox::spawn(&device, &mut physics, &assets, &mut world);
-
-    // Player target
     let player_target_ent = PlayerTarget::spawn(&device, &assets, &mut world);
-
-    // Player
-    let (mut player, mut player_cam, mut player_transform) = Player::spawn(&device, &mut physics);
+    let player_ent = Player::spawn(&device, &mut physics, &mut world);
 
     loop {
         frame_time.update();
@@ -238,6 +231,24 @@ fn main() {
             break;
         }
 
+        // TODO Refactor
+        let mut player = world
+            .entity(player_ent)
+            .unwrap()
+            .get::<&mut Player>()
+            .unwrap();
+        let mut player_cam = world
+            .entity(player_ent)
+            .unwrap()
+            .get::<&mut Camera>()
+            .unwrap();
+        let mut player_tr = world
+            .entity(player_ent)
+            .unwrap()
+            .get::<&mut Transform>()
+            .unwrap();
+
+        // Resize
         if let Some(new_size) = events.new_surface_size {
             device.resize(new_size);
             // TODO Remove, this is temp
@@ -279,19 +290,11 @@ fn main() {
         // TODO Run at fixed steps
         physics.update(frame_time.delta);
 
-        player.update(
-            &frame_time,
-            &input,
-            &window,
-            &mut physics,
-            &mut player_transform,
-        );
+        player.update(&frame_time, &input, &window, &mut physics, &mut player_tr);
 
         // TODO Grabbing (can test it on the floor box, no need to add spawning first).
         // TODO Spawning boxes.
         // TODO Render order.
-
-        let mut bundles = Vec::<RenderBundle>::new();
 
         // Update player target
         {
@@ -300,7 +303,7 @@ fn main() {
                 .unwrap();
             let (_, target_tr, target_tags) = q.get().unwrap();
             if let Some(player_target_pt) = player.target_pt() {
-                let dist_to_camera = (player_transform.position() - player_target_pt).magnitude();
+                let dist_to_camera = (player_tr.position() - player_target_pt).magnitude();
                 let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
                 target_tags.0 = RENDER_TAG_SCENE;
                 target_tr.set_position(player_target_pt);
@@ -317,6 +320,8 @@ fn main() {
         }
 
         // Render
+        let mut bundles = Vec::<RenderBundle>::new();
+
         for (_, (mesh, mat, tr, tags)) in world
             .query::<(&Mesh, &mut Material, &Transform, &RenderTags)>()
             .iter()
@@ -329,7 +334,7 @@ fn main() {
                 mesh,
                 mat,
                 tr,
-                (&player_cam, &player_transform),
+                (&player_cam, &player_tr),
                 &device,
             ));
         }

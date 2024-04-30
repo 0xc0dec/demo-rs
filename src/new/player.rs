@@ -1,5 +1,6 @@
 use std::f32::consts::PI;
 
+use hecs::{Entity, World};
 use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
@@ -21,10 +22,10 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn spawn(device: &Device, physics: &mut PhysicsWorld) -> (Self, Camera, Transform) {
+    pub fn spawn(device: &Device, physics: &mut PhysicsWorld, world: &mut World) -> Entity {
         let pos = Vec3::new(7.0, 7.0, 7.0);
 
-        let rt = RenderTarget::new(&device, None);
+        let rt = RenderTarget::new(device, None);
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
             RENDER_TAG_SCENE,
@@ -39,7 +40,7 @@ impl Player {
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
-        (
+        world.spawn((
             Player {
                 collider_handle,
                 target_pt: None,
@@ -51,7 +52,7 @@ impl Player {
             },
             camera,
             transform,
-        )
+        ))
     }
 
     pub fn target_pt(&self) -> Option<Vec3> {
