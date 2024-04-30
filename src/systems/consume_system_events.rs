@@ -7,7 +7,7 @@ use winit::window::Window;
 use crate::debug_ui::DebugUI;
 use crate::resources::events::{KeyboardEvent, MouseEvent, WindowResizeEvent};
 
-pub fn handle_system_events(
+pub fn consume_system_events(
     window: NonSend<Window>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut debug_ui: NonSendMut<DebugUI>,
