@@ -3,10 +3,9 @@ use winit::event::*;
 
 use crate::resources::SurfaceSize;
 
-// TODO Rename to `Events`
 // TODO Refactor
 #[derive(Resource)]
-pub struct Input {
+pub struct Events {
     pub lmb_down: bool,
     pub rmb_down: bool,
     pub w_down: bool,
@@ -27,9 +26,9 @@ pub struct Input {
     tab_last_pressed: bool,
 }
 
-impl Input {
+impl Events {
     pub fn new() -> Self {
-        Input {
+        Events {
             lmb_down: false,
             rmb_down: false,
             w_down: false,

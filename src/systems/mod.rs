@@ -6,7 +6,7 @@ pub use render::render;
 pub use schedules::*;
 pub use update_and_build_debug_ui::update_and_build_debug_ui;
 
-use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
+use crate::resources::{App, Device, Events, FrameTime, PhysicsWorld};
 
 mod consume_system_events;
 mod init;
@@ -16,14 +16,14 @@ mod update_and_build_debug_ui;
 
 // TODO Combine these systems?
 
-pub fn resize_device(mut device: ResMut<Device>, input: Res<Input>) {
-    if let Some(size) = input.new_surface_size {
+pub fn resize_device(mut device: ResMut<Device>, events: Res<Events>) {
+    if let Some(size) = events.new_surface_size {
         device.resize(size);
     }
 }
 
-pub fn escape_on_exit(mut app: ResMut<App>, input: Res<Input>) {
-    if input.esc_down {
+pub fn escape_on_exit(mut app: ResMut<App>, events: Res<Events>) {
+    if events.esc_down {
         app.running = false;
     }
 }

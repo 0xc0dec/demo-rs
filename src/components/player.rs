@@ -8,7 +8,7 @@ use crate::components::*;
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
-use crate::resources::{Device, FrameTime, Input, PhysicsWorld, SurfaceSize};
+use crate::resources::{Device, Events, FrameTime, PhysicsWorld, SurfaceSize};
 
 #[derive(Component)]
 pub struct Player {
@@ -66,7 +66,7 @@ impl Player {
     pub fn update(
         frame_time: Res<FrameTime>,
         device: Res<Device>,
-        input: Res<Input>,
+        input: Res<Events>,
         window: NonSend<Window>,
         mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,
@@ -97,27 +97,27 @@ impl Player {
         &mut self,
         transform: &mut Transform,
         dt: f32,
-        input: &Input,
+        events: &Events,
         physics: &mut PhysicsWorld,
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
-        if input.w_down {
+        if events.w_down {
             translation += transform.forward();
         }
-        if input.s_down {
+        if events.s_down {
             translation -= transform.forward();
         }
-        if input.d_down {
+        if events.d_down {
             translation += transform.right();
         }
-        if input.a_down {
+        if events.a_down {
             translation -= transform.right();
         }
-        if input.e_down {
+        if events.e_down {
             translation += transform.up();
         }
-        if input.q_down {
+        if events.q_down {
             translation -= transform.up();
         }
 
@@ -143,7 +143,7 @@ impl Player {
             .set_translation(collider_current_pos + translation);
     }
 
-    fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
+    fn rotate(&mut self, transform: &mut Transform, input: &Events, dt: f32) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
         const SPEED: f32 = 25.0;

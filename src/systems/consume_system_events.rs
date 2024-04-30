@@ -5,15 +5,15 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
-use crate::resources::Input;
+use crate::resources::Events;
 
 pub fn consume_system_events(
     window: NonSend<Window>,
-    mut input: ResMut<Input>,
+    mut events: ResMut<Events>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut debug_ui: NonSendMut<DebugUI>,
 ) {
-    input.reset();
+    events.reset();
 
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
@@ -26,14 +26,14 @@ pub fn consume_system_events(
             Event::DeviceEvent {
                 event: DeviceEvent::MouseMotion { delta },
                 ..
-            } => input.on_mouse_move((delta.0 as f32, delta.1 as f32)),
+            } => events.on_mouse_move((delta.0 as f32, delta.1 as f32)),
 
             Event::WindowEvent {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
                 WindowEvent::MouseInput { state, button, .. } => {
-                    input.on_mouse_button(*button, *state == ElementState::Pressed)
+                    events.on_mouse_button(*button, *state == ElementState::Pressed)
                 }
 
                 WindowEvent::KeyboardInput {
@@ -44,12 +44,12 @@ pub fn consume_system_events(
                             ..
                         },
                     ..
-                } => input.on_key(*keycode, *key_state == ElementState::Pressed),
+                } => events.on_key(*keycode, *key_state == ElementState::Pressed),
 
-                WindowEvent::Resized(new_size) => input.new_surface_size = Some(*new_size),
+                WindowEvent::Resized(new_size) => events.new_surface_size = Some(*new_size),
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    input.new_surface_size = Some(**new_inner_size);
+                    events.new_surface_size = Some(**new_inner_size);
                 }
 
                 _ => (),
