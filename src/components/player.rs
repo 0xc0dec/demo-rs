@@ -7,7 +7,6 @@ use winit::window::{CursorGrabMode, Window};
 use crate::assets::RenderTarget;
 use crate::components::*;
 use crate::math::Vec3;
-use crate::render_tags::RENDER_TAG_SCENE;
 use crate::resources::{Device, Events, FrameTime, PhysicsWorld, SurfaceSize};
 
 #[derive(Component)]

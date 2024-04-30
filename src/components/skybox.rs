@@ -1,8 +1,7 @@
-use crate::assets;
 use bevy_ecs::prelude::*;
 
-use crate::components::{Material, Mesh, RenderOrder, RenderTags, Transform};
-use crate::render_tags::RENDER_TAG_SCENE;
+use crate::assets;
+use crate::components::{Material, Mesh, RENDER_TAG_SCENE, RenderOrder, RenderTags, Transform};
 use crate::resources::{Assets, Device};
 
 #[derive(Component)]

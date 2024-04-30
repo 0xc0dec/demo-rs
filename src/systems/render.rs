@@ -3,11 +3,8 @@ use wgpu::RenderBundle;
 
 use crate::assets::DrawMesh;
 use crate::assets::RenderTarget;
-use crate::components::{
-    ApplyMaterial, Camera, Material, Mesh, RenderOrder, RenderTags, Transform,
-};
+use crate::components::{ApplyMaterial, Camera, Material, Mesh, RENDER_TAG_DEBUG_UI, RenderOrder, RenderTags, Transform};
 use crate::debug_ui::DebugUI;
-use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::resources::Device;
 
 fn render_pass(

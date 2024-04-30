@@ -8,7 +8,6 @@ mod assets;
 mod components;
 mod debug_ui;
 mod math;
-mod render_tags;
 mod resources;
 mod systems;
 

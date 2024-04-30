@@ -1,11 +1,8 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets;
-use crate::components::{
-    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
-};
+use crate::components::{Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform};
 use crate::math::Vec3;
-use crate::render_tags::RENDER_TAG_SCENE;
 use crate::resources::{Assets, Device, Events, PhysicsWorld};
 
 #[derive(Component)]

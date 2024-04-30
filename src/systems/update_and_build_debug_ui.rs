@@ -1,9 +1,8 @@
 use bevy_ecs::prelude::*;
 use winit::window::Window;
 
-use crate::components::Camera;
+use crate::components::{Camera, RENDER_TAG_DEBUG_UI};
 use crate::debug_ui::DebugUI;
-use crate::render_tags::RENDER_TAG_DEBUG_UI;
 use crate::resources::FrameTime;
 
 pub fn update_and_build_debug_ui(

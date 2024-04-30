@@ -1,9 +1,10 @@
-use crate::assets;
 use bevy_ecs::prelude::*;
 
-use crate::components::{Material, Mesh, Player, RenderTags, Transform};
+use crate::assets;
+use crate::components::{
+    Material, Mesh, Player, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE, RenderTags, Transform,
+};
 use crate::math::Vec3;
-use crate::render_tags::{RENDER_TAG_HIDDEN, RENDER_TAG_SCENE};
 use crate::resources::{Assets, Device};
 
 #[derive(Component)]

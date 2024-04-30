@@ -1,8 +1,10 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets;
-use crate::components::{Camera, Material, Mesh, Player, RenderOrder, RenderTags, Transform};
-use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
+use crate::components::{
+    Camera, Material, Mesh, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RenderOrder, RenderTags,
+    Transform,
+};
 use crate::resources::{Assets, Device};
 
 #[derive(Component)]

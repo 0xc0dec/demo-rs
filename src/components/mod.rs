@@ -9,7 +9,7 @@ pub use player::Player;
 pub use player_target::PlayerTarget;
 pub use post_processor::PostProcessor;
 pub use render_order::RenderOrder;
-pub use render_tags::RenderTags;
+pub use render_tags::*;
 pub use skybox::Skybox;
 pub use transform::{Transform, TransformSpace};
 
