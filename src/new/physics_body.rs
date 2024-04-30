@@ -1,6 +1,7 @@
+use hecs::World;
 use rapier3d::prelude::*;
 
-use crate::new::{PhysicsWorld, Quat, Vec3};
+use crate::new::{PhysicsWorld, Quat, Transform, Vec3};
 
 pub struct PhysicsBody {
     handle: RigidBodyHandle,
@@ -40,7 +41,14 @@ impl PhysicsBody {
         Self { handle, movable }
     }
 
-    pub fn transform(&self, physics: &PhysicsWorld) -> (Vec3, Quat) {
+    pub fn sync_to_transforms(physics: &PhysicsWorld, world: &mut World) {
+        for (_, (body, tr)) in world.query::<(&PhysicsBody, &mut Transform)>().iter() {
+            let (pos, rot) = body.transform(physics);
+            tr.set(pos, rot);
+        }
+    }
+
+    fn transform(&self, physics: &PhysicsWorld) -> (Vec3, Quat) {
         let body = physics.bodies.get(self.handle).unwrap();
         // Not sure why inverse is needed
         (*body.translation(), *body.rotation().inverse().quaternion())

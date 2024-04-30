@@ -64,31 +64,35 @@ impl Player {
     }
 
     // TODO Refactor/remove, this is temp.
-    pub fn resize(&self, new_size: SurfaceSize, camera: &mut Camera, device: &Device) {
-        update_cam_aspect(camera, new_size, device);
+    pub fn resize(new_size: SurfaceSize, device: &Device, world: &mut World) {
+        let mut q = world.query::<(&Player, &mut Camera)>();
+        let (_, (_, player_cam)) = q.iter().next().unwrap();
+        update_cam_aspect(player_cam, new_size, device);
     }
 
     pub fn update(
-        &mut self,
         frame_time: &FrameTime,
         input: &Input,
         window: &Window,
         physics: &mut PhysicsWorld,
-        transform: &mut Transform,
+        world: &mut World,
     ) {
+        let mut q = world.query::<(&mut Player, &mut Transform)>();
+        let (_, (player, tr)) = q.iter().next().unwrap();
+
         // Move and rotate
         let dt = frame_time.delta;
-        if self.controlled {
-            self.rotate(transform, input, dt);
-            self.translate(transform, dt, input, physics);
+        if player.controlled {
+            player.rotate(tr, input, dt);
+            player.translate(tr, dt, input, physics);
         }
 
         if input.tab_just_pressed {
-            self.controlled = !self.controlled;
-            toggle_mouse_grab(self.controlled, window);
+            player.controlled = !player.controlled;
+            toggle_mouse_grab(player.controlled, window);
         }
 
-        update_target((self, transform), physics);
+        update_target((player, tr), physics);
     }
 
     fn translate(
