@@ -4,10 +4,10 @@ use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
 use crate::debug_ui::DebugUI;
-use crate::resources::events::*;
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
+use crate::resources::events::*;
 
-pub fn init_app(world: &mut World) {
+pub fn init(world: &mut World) {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("Demo")

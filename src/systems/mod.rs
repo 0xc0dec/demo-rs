@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 
 pub use consume_system_events::consume_system_events;
-pub use init_app::init_app;
+pub use init::init;
 pub use render::render;
 pub use schedules::*;
 pub use update_and_build_debug_ui::update_and_build_debug_ui;
@@ -10,7 +10,7 @@ use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
 use crate::resources::events::WindowResizeEvent;
 
 mod consume_system_events;
-mod init_app;
+mod init;
 mod render;
 mod schedules;
 mod update_and_build_debug_ui;

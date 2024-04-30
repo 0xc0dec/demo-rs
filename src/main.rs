@@ -17,7 +17,7 @@ fn main() {
     world.init_resource::<Schedules>();
 
     Schedule::default()
-        .add_systems((init_app, Assets::load.after(init_app)))
+        .add_systems((init, Assets::load.after(init)))
         .run(&mut world);
 
     let spawn_scene = new_spawn_scene_schedule();
