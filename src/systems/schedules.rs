@@ -6,11 +6,11 @@ use crate::components::{
 };
 use crate::resources::Assets;
 
+use super::build_debug_ui::build_debug_ui;
 use super::capture_events::capture_events;
 use super::escape_on_exit;
 use super::render::render;
 use super::resize_device;
-use super::update_and_build_debug_ui::update_and_build_debug_ui;
 use super::update_frame_time;
 use super::update_physics;
 
@@ -73,6 +73,6 @@ pub fn new_update_schedule() -> (Schedule, UpdateSchedule) {
         .add_systems(PhysicsBody::update_grabbed.after(PhysicsBody::grab_start_stop))
         .add_systems(FreeBox::spawn_by_player.after(Player::update))
         .add_systems(PostProcessor::update.after(Player::update))
-        .add_systems(update_and_build_debug_ui.after(update_physics));
+        .add_systems(build_debug_ui.after(update_physics));
     (schedule, UpdateSchedule)
 }

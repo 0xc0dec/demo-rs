@@ -5,11 +5,11 @@ pub use schedules::*;
 
 use crate::resources::{App, Device, Events, FrameTime, PhysicsWorld};
 
+mod build_debug_ui;
 mod capture_events;
 mod init;
 mod render;
 mod schedules;
-mod update_and_build_debug_ui;
 
 // TODO Combine these systems?
 

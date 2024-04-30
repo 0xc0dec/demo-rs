@@ -5,7 +5,7 @@ use crate::components::{Camera, RENDER_TAG_DEBUG_UI};
 use crate::debug_ui::DebugUI;
 use crate::resources::FrameTime;
 
-pub fn update_and_build_debug_ui(
+pub fn build_debug_ui(
     mut ui: NonSendMut<DebugUI>,
     cameras: Query<&Camera>,
     frame_time: Res<FrameTime>,
