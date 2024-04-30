@@ -16,7 +16,7 @@ use new::SurfaceSize;
 
 use crate::new::{
     ApplyMaterial, Assets, Camera, DrawMesh, FloorBox, Material, Mesh, PhysicsBody, Player,
-    PlayerTarget, RENDER_TAG_SCENE, RenderTags, Skybox, Transform, Vec3,
+    PlayerTarget, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE, RenderTags, Skybox, Transform, Vec3,
 };
 
 mod new;
@@ -216,25 +216,14 @@ fn main() {
 
     let mut world = World::new();
 
-    // TODO Avoid Option<RenderTags>, make them always exist
-
     // Skybox
-    {
-        let (mesh, material, tr, order, tags) = Skybox::spawn(&device, &assets);
-        world.spawn((mesh, material, tr, order, Some(tags)));
-    }
+    Skybox::spawn(&device, &assets, &mut world);
 
     // Floor box
-    {
-        let (body, mesh, material, tr) = FloorBox::spawn(&device, &mut physics, &assets);
-        world.spawn((mesh, material, tr, body, None::<RenderTags>));
-    }
+    FloorBox::spawn(&device, &mut physics, &assets, &mut world);
 
     // Player target
-    let player_target_ent = {
-        let (target, tr, mesh, material, tags) = PlayerTarget::spawn(&device, &assets);
-        world.spawn((target, mesh, material, tr, tags))
-    };
+    let player_target_ent = PlayerTarget::spawn(&device, &assets, &mut world);
 
     // Player
     let (mut player, mut player_cam, mut player_transform) = Player::spawn(&device, &mut physics);
@@ -307,20 +296,17 @@ fn main() {
         // Update player target
         {
             let mut q = world
-                .query_one::<(&PlayerTarget, &mut Transform, &mut Option<RenderTags>)>(
-                    player_target_ent,
-                )
+                .query_one::<(&PlayerTarget, &mut Transform, &mut RenderTags)>(player_target_ent)
                 .unwrap();
             let (_, target_tr, target_tags) = q.get().unwrap();
             if let Some(player_target_pt) = player.target_pt() {
                 let dist_to_camera = (player_transform.position() - player_target_pt).magnitude();
                 let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
-
-                target_tags.as_mut().unwrap().0 = RENDER_TAG_SCENE;
+                target_tags.0 = RENDER_TAG_SCENE;
                 target_tr.set_position(player_target_pt);
                 target_tr.set_scale(Vec3::from_element(scale));
             } else {
-                target_tags.as_mut().unwrap().0 = RENDER_TAG_SCENE;
+                target_tags.0 = RENDER_TAG_HIDDEN;
             }
         }
 
@@ -331,14 +317,12 @@ fn main() {
         }
 
         // Render
-        for (_e, (mesh, mat, tr, tags)) in world
-            .query::<(&Mesh, &mut Material, &Transform, &Option<RenderTags>)>()
+        for (_, (mesh, mat, tr, tags)) in world
+            .query::<(&Mesh, &mut Material, &Transform, &RenderTags)>()
             .iter()
         {
-            if let Some(tags) = tags {
-                if !player_cam.should_render(tags.0) {
-                    continue;
-                }
+            if !player_cam.should_render(tags.0) {
+                continue;
             }
 
             bundles.push(to_render_bundle(

@@ -41,7 +41,7 @@ impl Camera {
     }
 
     pub fn should_render(&self, tags: u32) -> bool {
-        self.render_tags & tags == tags
+        self.render_tags & tags > 0
     }
 
     pub fn proj_matrix(&self) -> Mat4 {

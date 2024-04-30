@@ -1,4 +1,6 @@
-use crate::new::{assets, Assets, Device, Material, Mesh, PhysicsWorld, Transform, Vec3};
+use hecs::{Entity, World};
+
+use crate::new::{assets, Assets, Device, Material, PhysicsWorld, RENDER_TAG_DEFAULT, RenderTags, Transform, Vec3};
 use crate::new::physics_body::{PhysicsBody, PhysicsBodyParams};
 
 pub struct FloorBox;
@@ -8,7 +10,8 @@ impl FloorBox {
         device: &Device,
         physics: &mut PhysicsWorld,
         assets: &Assets,
-    ) -> (PhysicsBody, Mesh, Material, Transform) {
+        world: &mut World,
+    ) -> Entity {
         // TODO Load in assets
         let mesh = pollster::block_on(async { assets::Mesh::from_file("cube.obj", device).await });
         let material = Material::diffuse(device, assets, &assets.stone_tex);
@@ -26,6 +29,12 @@ impl FloorBox {
             physics,
         );
 
-        (body, mesh, material, transform)
+        world.spawn((
+            transform,
+            mesh,
+            material,
+            body,
+            RenderTags(RENDER_TAG_DEFAULT),
+        ))
     }
 }

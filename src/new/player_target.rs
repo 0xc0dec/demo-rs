@@ -1,25 +1,24 @@
-use crate::new::{Assets, assets, Device, Material, Mesh, RENDER_TAG_HIDDEN, RenderTags, Transform};
+use hecs::{Entity, World};
+
+use crate::new::{Assets, assets, Device, Material, RENDER_TAG_HIDDEN, RenderTags, Transform};
 
 pub struct PlayerTarget;
 
 // TODO Rename to smth like "raycast target"
 impl PlayerTarget {
-    pub fn spawn(
-        device: &Device,
-        assets: &Assets,
-    ) -> (PlayerTarget, Transform, Mesh, Material, Option<RenderTags>) {
+    pub fn spawn(device: &Device, assets: &Assets, world: &mut World) -> Entity {
         // TODO Load in assets
-        let mesh = pollster::block_on(async { assets::Mesh::from_file("cube.obj", &device).await });
-        let material = Material::color(&device, &assets);
+        let mesh = pollster::block_on(async { assets::Mesh::from_file("cube.obj", device).await });
+        let material = Material::color(device, assets);
         let transform = Transform::default();
 
-        (
+        world.spawn((
             PlayerTarget,
             transform,
             mesh,
             material,
-            Some(RenderTags(RENDER_TAG_HIDDEN)),
-        )
+            RenderTags(RENDER_TAG_HIDDEN),
+        ))
     }
 
     // pub fn update(
