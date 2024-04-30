@@ -286,23 +286,17 @@ fn main() {
         // Render
         let mut bundles = Vec::<RenderBundle>::new();
 
-        let mut q = world.query::<(&Player, &Transform, &Camera)>();
-        let (_, (_, player_tr, player_cam)) = q.iter().next().unwrap();
+        let mut q = world.query::<(&Transform, &Camera)>();
+        let (_, (cam_tr, cam)) = q.iter().next().unwrap();
         for (_, (mesh, mat, tr, tags)) in world
             .query::<(&Mesh, &mut Material, &Transform, &RenderTags)>()
             .iter()
         {
-            if !player_cam.should_render(tags.0) {
+            if !cam.should_render(tags.0) {
                 continue;
             }
 
-            bundles.push(to_render_bundle(
-                mesh,
-                mat,
-                tr,
-                (&player_cam, &player_tr),
-                &device,
-            ));
+            bundles.push(to_render_bundle(mesh, mat, tr, (&cam, &cam_tr), &device));
         }
 
         // TODO Per camera (if needed)
