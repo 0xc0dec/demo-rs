@@ -1,5 +1,5 @@
-use crate::assets::shaders::WorldViewProjUniform;
 use crate::assets::MeshVertex;
+use crate::assets::shaders::WorldViewProjUniform;
 use crate::components::{Camera, Transform};
 use crate::resources::{Assets, Device};
 

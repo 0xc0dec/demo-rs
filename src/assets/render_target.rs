@@ -1,6 +1,7 @@
 use crate::assets::{Texture, TextureSize};
 use crate::resources::Device;
 
+// Perhaps not the best module for it
 pub struct RenderTarget {
     color_tex: Texture,
     depth_tex: Texture,

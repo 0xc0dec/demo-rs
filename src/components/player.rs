@@ -4,10 +4,10 @@ use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
+use crate::assets::RenderTarget;
 use crate::components::*;
 use crate::math::Vec3;
 use crate::render_tags::RENDER_TAG_SCENE;
-use crate::render_target::RenderTarget;
 use crate::resources::{Device, Events, FrameTime, PhysicsWorld, SurfaceSize};
 
 #[derive(Component)]

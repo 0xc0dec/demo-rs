@@ -9,7 +9,6 @@ mod components;
 mod debug_ui;
 mod math;
 mod render_tags;
-mod render_target;
 mod resources;
 mod systems;
 
