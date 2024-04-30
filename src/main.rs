@@ -1,4 +1,5 @@
 use bevy_ecs::prelude::*;
+use bevy_ecs::system::RunSystemOnce;
 
 use crate::resources::*;
 use crate::systems::*;
@@ -16,9 +17,8 @@ fn main() {
     let mut world = World::default();
     world.init_resource::<Schedules>();
 
-    Schedule::default()
-        .add_systems((init, Assets::load.after(init)))
-        .run(&mut world);
+    world.run_system_once(init);
+    world.run_system_once(Assets::load);
 
     let spawn_scene = new_spawn_scene_schedule();
     world.add_schedule(spawn_scene.0);
