@@ -1,7 +1,9 @@
 use bevy_ecs::prelude::*;
 
 use crate::assets;
-use crate::components::{Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform};
+use crate::components::{
+    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform,
+};
 use crate::math::Vec3;
 use crate::resources::{Assets, Device, Events, PhysicsWorld};
 
@@ -9,7 +11,7 @@ use crate::resources::{Assets, Device, Events, PhysicsWorld};
 pub struct FreeBox;
 
 impl FreeBox {
-    pub fn spawn(
+    pub fn spawn_sample(
         device: Res<Device>,
         assets: Res<Assets>,
         mut physics: ResMut<PhysicsWorld>,

@@ -34,7 +34,7 @@ pub fn new_spawn_scene_schedule() -> (Schedule, SpawnSceneSchedule) {
             (
                 Assets::load,
                 Skybox::spawn,
-                FreeBox::spawn,
+                FreeBox::spawn_sample,
                 FloorBox::spawn,
                 Player::spawn,
                 PlayerTarget::spawn,
