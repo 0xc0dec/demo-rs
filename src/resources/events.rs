@@ -57,11 +57,10 @@ impl Events {
     }
 
     pub fn on_mouse_button(&mut self, btn: MouseButton, pressed: bool) {
-        if btn == MouseButton::Left {
-            self.lmb_down = pressed;
-        }
-        if btn == MouseButton::Right {
-            self.rmb_down = pressed;
+        match btn {
+            MouseButton::Left => self.lmb_down = pressed,
+            MouseButton::Right => self.rmb_down = pressed,
+            _ => (),
         }
     }
 
