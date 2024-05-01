@@ -1,6 +1,7 @@
 use bevy_ecs::prelude::*;
 
 pub use init::init;
+pub use render::render;
 pub use schedules::*;
 
 use crate::resources::{App, Device, Events, FrameTime, PhysicsWorld};

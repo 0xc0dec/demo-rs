@@ -9,7 +9,6 @@ use crate::resources::Assets;
 use super::build_debug_ui::build_debug_ui;
 use super::capture_events::capture_events;
 use super::escape_on_exit;
-use super::render::render;
 use super::resize_device;
 use super::update_frame_time;
 use super::update_physics;
@@ -23,15 +22,6 @@ pub fn new_before_update_schedule() -> (Schedule, BeforeUpdateSchedule) {
         .add_systems(capture_events)
         .add_systems((escape_on_exit, resize_device, update_frame_time).after(capture_events));
     (schedule, BeforeUpdateSchedule)
-}
-
-#[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct RenderSchedule;
-
-pub fn new_render_schedule() -> (Schedule, RenderSchedule) {
-    let mut schedule = Schedule::new(RenderSchedule {});
-    schedule.add_systems(render);
-    (schedule, RenderSchedule)
 }
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -67,6 +57,7 @@ pub fn new_update_schedule() -> (Schedule, UpdateSchedule) {
         .add_systems(update_physics)
         .add_systems(PhysicsBody::sync.after(update_physics))
         .add_systems(Player::update.after(update_physics))
+        // TODO Merge grabbing systems into player?
         .add_systems(PlayerTarget::update.after(Player::update))
         .add_systems(Grab::grab_or_release.after(Player::update))
         .add_systems(PhysicsBody::grab_start_stop.after(Player::update))

@@ -27,14 +27,11 @@ fn main() {
     let update = new_update_schedule();
     world.add_schedule(update.0);
 
-    let render = new_render_schedule();
-    world.add_schedule(render.0);
-
     loop {
         world.run_schedule(spawn_scene.1);
         world.run_schedule(before_update.1);
         world.run_schedule(update.1);
-        world.run_schedule(render.1);
+        world.run_system_once(render);
 
         if !world.resource::<App>().running {
             break;
