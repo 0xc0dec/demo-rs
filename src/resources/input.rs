@@ -1,11 +1,9 @@
 use bevy_ecs::prelude::*;
 use winit::event::*;
 
-use crate::resources::SurfaceSize;
-
 // TODO Refactor
 #[derive(Resource)]
-pub struct Events {
+pub struct Input {
     pub lmb_down: bool,
     pub rmb_down: bool,
     pub w_down: bool,
@@ -18,15 +16,14 @@ pub struct Events {
     pub space_just_pressed: bool,
     pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
-    pub new_surface_size: Option<SurfaceSize>,
 
     space_last_pressed: bool,
     tab_last_pressed: bool,
 }
 
-impl Events {
+impl Input {
     pub fn new() -> Self {
-        Events {
+        Input {
             lmb_down: false,
             rmb_down: false,
             w_down: false,
@@ -39,7 +36,6 @@ impl Events {
             mouse_delta: (0.0, 0.0),
             space_just_pressed: false,
             tab_just_pressed: false,
-            new_surface_size: None,
             space_last_pressed: false,
             tab_last_pressed: false,
         }
@@ -49,7 +45,6 @@ impl Events {
         self.mouse_delta = (0.0, 0.0);
         self.space_just_pressed = false;
         self.tab_just_pressed = false;
-        self.new_surface_size = None;
     }
 
     pub fn on_mouse_move(&mut self, delta: (f32, f32)) {

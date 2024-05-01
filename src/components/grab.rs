@@ -2,7 +2,7 @@ use bevy_ecs::prelude::{Commands, Component, Entity, Query, Res, ResMut};
 
 use crate::components::*;
 use crate::math::{to_point, Vec3};
-use crate::resources::{Events, PhysicsWorld};
+use crate::resources::{Input, PhysicsWorld};
 
 #[derive(Component)]
 pub struct Grab {
@@ -15,13 +15,13 @@ impl Grab {
         player: Query<(&Player, &Transform)>,
         bodies: Query<(Entity, &PhysicsBody)>,
         grab: Query<(Entity, &Grab)>,
-        events: Res<Events>,
+        input: Res<Input>,
         physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
         let (player, player_transform) = player.single();
 
-        if events.lmb_down {
+        if input.lmb_down {
             if grab.is_empty() {
                 if let Some(target_body) = player.target_body() {
                     let (body_entity, ..) = bodies

@@ -5,15 +5,17 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::Window;
 
 use crate::debug_ui::DebugUI;
-use crate::resources::Events;
+use crate::events::ResizeEvent;
+use crate::resources::Input;
 
 pub fn capture_events(
     window: NonSend<Window>,
-    mut events: ResMut<Events>,
+    mut input: ResMut<Input>,
     mut event_loop: NonSendMut<EventLoop<()>>,
     mut debug_ui: NonSendMut<DebugUI>,
+    mut resize_events: EventWriter<ResizeEvent>,
 ) {
-    events.reset();
+    input.reset();
 
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
@@ -26,14 +28,14 @@ pub fn capture_events(
             Event::DeviceEvent {
                 event: DeviceEvent::MouseMotion { delta },
                 ..
-            } => events.on_mouse_move((delta.0 as f32, delta.1 as f32)),
+            } => input.on_mouse_move((delta.0 as f32, delta.1 as f32)),
 
             Event::WindowEvent {
                 ref event,
                 window_id,
             } if window_id == window.id() => match event {
                 WindowEvent::MouseInput { state, button, .. } => {
-                    events.on_mouse_button(*button, *state == ElementState::Pressed)
+                    input.on_mouse_button(*button, *state == ElementState::Pressed)
                 }
 
                 WindowEvent::KeyboardInput {
@@ -44,12 +46,14 @@ pub fn capture_events(
                             ..
                         },
                     ..
-                } => events.on_key(*keycode, *key_state == ElementState::Pressed),
+                } => input.on_key(*keycode, *key_state == ElementState::Pressed),
 
-                WindowEvent::Resized(new_size) => events.new_surface_size = Some(*new_size),
+                WindowEvent::Resized(new_size) => {
+                    resize_events.send(ResizeEvent(*new_size));
+                }
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    events.new_surface_size = Some(**new_inner_size);
+                    resize_events.send(ResizeEvent(**new_inner_size));
                 }
 
                 _ => (),

@@ -1,15 +1,17 @@
 use bevy_ecs::change_detection::{Res, ResMut};
+use bevy_ecs::event::EventReader;
 
-use crate::resources::{App, Device, Events, FrameTime, PhysicsWorld};
+use crate::events::ResizeEvent;
+use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
 
-pub fn resize_device(mut device: ResMut<Device>, events: Res<Events>) {
-    if let Some(size) = events.new_surface_size {
-        device.resize(size);
+pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<ResizeEvent>) {
+    if let Some(e) = events.read().last() {
+        device.resize(e.0);
     }
 }
 
-pub fn escape_on_exit(mut app: ResMut<App>, events: Res<Events>) {
-    if events.esc_down {
+pub fn escape_on_exit(mut app: ResMut<App>, input: Res<Input>) {
+    if input.esc_down {
         app.running = false;
     }
 }

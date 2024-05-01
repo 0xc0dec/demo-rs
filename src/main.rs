@@ -7,6 +7,7 @@ use crate::systems::*;
 mod assets;
 mod components;
 mod debug_ui;
+mod events;
 mod math;
 mod resources;
 mod systems;

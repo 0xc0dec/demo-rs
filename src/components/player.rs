@@ -6,8 +6,9 @@ use winit::window::{CursorGrabMode, Window};
 
 use crate::assets::RenderTarget;
 use crate::components::*;
+use crate::events::ResizeEvent;
 use crate::math::Vec3;
-use crate::resources::{Device, Events, FrameTime, PhysicsWorld, SurfaceSize};
+use crate::resources::{Device, FrameTime, Input, PhysicsWorld};
 
 #[derive(Component)]
 pub struct Player {
@@ -65,23 +66,27 @@ impl Player {
     pub fn update(
         frame_time: Res<FrameTime>,
         device: Res<Device>,
-        input: Res<Events>,
+        input: Res<Input>,
         window: NonSend<Window>,
         mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
         mut physics: ResMut<PhysicsWorld>,
+        mut events: EventReader<ResizeEvent>,
     ) {
-        let (mut player, mut camera, mut transform) = player.single_mut();
+        let (mut player, mut cam, mut tr) = player.single_mut();
 
-        // Update camera aspect
-        if let Some(new_surface_size) = input.new_surface_size {
-            update_cam_aspect(&mut camera, new_surface_size, &device);
+        // Update camera aspect and RT size
+        if let Some(e) = events.read().last() {
+            cam.set_aspect(e.0.width as f32 / e.0.height as f32);
+            if let Some(target) = cam.target_mut() {
+                target.resize((e.0.width, e.0.height), &device);
+            }
         }
 
         // Move and rotate
         let dt = frame_time.delta;
         if player.controlled {
-            player.rotate(&mut transform, &input, dt);
-            player.translate(&mut transform, dt, &input, &mut physics);
+            player.rotate(&mut tr, &input, dt);
+            player.translate(&mut tr, dt, &input, &mut physics);
         }
 
         if input.tab_just_pressed {
@@ -89,34 +94,34 @@ impl Player {
             toggle_mouse_grab(player.controlled, &window);
         }
 
-        update_target((&mut player, &transform), &physics);
+        update_target((&mut player, &tr), &physics);
     }
 
     fn translate(
         &mut self,
         transform: &mut Transform,
         dt: f32,
-        events: &Events,
+        input: &Input,
         physics: &mut PhysicsWorld,
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
-        if events.w_down {
+        if input.w_down {
             translation += transform.forward();
         }
-        if events.s_down {
+        if input.s_down {
             translation -= transform.forward();
         }
-        if events.d_down {
+        if input.d_down {
             translation += transform.right();
         }
-        if events.a_down {
+        if input.a_down {
             translation -= transform.right();
         }
-        if events.e_down {
+        if input.e_down {
             translation += transform.up();
         }
-        if events.q_down {
+        if input.q_down {
             translation -= transform.up();
         }
 
@@ -142,7 +147,7 @@ impl Player {
             .set_translation(collider_current_pos + translation);
     }
 
-    fn rotate(&mut self, transform: &mut Transform, input: &Events, dt: f32) {
+    fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
         const SPEED: f32 = 25.0;
@@ -201,12 +206,5 @@ fn update_target(player: (&mut Player, &Transform), physics: &PhysicsWorld) {
     } else {
         player.0.target_pt = None;
         player.0.target_body = None;
-    }
-}
-
-fn update_cam_aspect(camera: &mut Camera, new_surface_size: SurfaceSize, device: &Device) {
-    camera.set_aspect(new_surface_size.width as f32 / new_surface_size.height as f32);
-    if let Some(target) = camera.target_mut() {
-        target.resize((new_surface_size.width, new_surface_size.height), device)
     }
 }

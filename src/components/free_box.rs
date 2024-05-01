@@ -5,7 +5,7 @@ use crate::components::{
     Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform,
 };
 use crate::math::Vec3;
-use crate::resources::{Assets, Device, Events, PhysicsWorld};
+use crate::resources::{Assets, Device, Input, PhysicsWorld};
 
 #[derive(Component)]
 pub struct FreeBox;
@@ -24,12 +24,12 @@ impl FreeBox {
     pub fn spawn_by_player(
         device: Res<Device>,
         player: Query<&Transform, With<Player>>,
-        events: Res<Events>,
+        input: Res<Input>,
         assets: Res<Assets>,
         mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
-        if events.space_just_pressed {
+        if input.space_just_pressed {
             let player_transform = player.single();
             let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
             commands.spawn(Self::components(pos, &device, &mut physics, &assets));
