@@ -1,6 +1,8 @@
 use bevy_ecs::prelude::*;
 use winit::event::*;
 
+use crate::events::{KeyboardEvent, MouseEvent};
+
 // TODO Refactor
 #[derive(Resource)]
 pub struct Input {
@@ -41,42 +43,46 @@ impl Input {
         }
     }
 
-    pub fn reset(&mut self) {
-        self.mouse_delta = (0.0, 0.0);
-        self.space_just_pressed = false;
-        self.tab_just_pressed = false;
-    }
+    pub fn update(
+        mut input: ResMut<Input>,
+        mut mouse_events: EventReader<MouseEvent>,
+        mut keyboard_events: EventReader<KeyboardEvent>,
+    ) {
+        input.mouse_delta = (0.0, 0.0);
+        input.space_just_pressed = false;
+        input.tab_just_pressed = false;
 
-    pub fn on_mouse_move(&mut self, delta: (f32, f32)) {
-        self.mouse_delta = delta;
-    }
+        for e in mouse_events.read() {
+            match *e {
+                MouseEvent::Button { btn, pressed } => match btn {
+                    MouseButton::Left => input.lmb_down = pressed,
+                    MouseButton::Right => input.rmb_down = pressed,
+                    _ => (),
+                },
 
-    pub fn on_mouse_button(&mut self, btn: MouseButton, pressed: bool) {
-        match btn {
-            MouseButton::Left => self.lmb_down = pressed,
-            MouseButton::Right => self.rmb_down = pressed,
-            _ => (),
+                MouseEvent::Move { dx, dy } => input.mouse_delta = (dx, dy),
+            }
         }
-    }
 
-    pub fn on_key(&mut self, code: VirtualKeyCode, pressed: bool) {
-        match code {
-            VirtualKeyCode::W => self.w_down = pressed,
-            VirtualKeyCode::A => self.a_down = pressed,
-            VirtualKeyCode::S => self.s_down = pressed,
-            VirtualKeyCode::D => self.d_down = pressed,
-            VirtualKeyCode::E => self.e_down = pressed,
-            VirtualKeyCode::Q => self.q_down = pressed,
-            VirtualKeyCode::Escape => self.esc_down = pressed,
-            VirtualKeyCode::Space => {
-                self.space_just_pressed = pressed && !self.space_last_pressed;
-                self.space_last_pressed = pressed;
+        for &KeyboardEvent { code, pressed } in keyboard_events.read() {
+            match code {
+                VirtualKeyCode::W => input.w_down = pressed,
+                VirtualKeyCode::A => input.a_down = pressed,
+                VirtualKeyCode::S => input.s_down = pressed,
+                VirtualKeyCode::D => input.d_down = pressed,
+                VirtualKeyCode::E => input.e_down = pressed,
+                VirtualKeyCode::Q => input.q_down = pressed,
+                VirtualKeyCode::Escape => input.esc_down = pressed,
+                VirtualKeyCode::Space => {
+                    input.space_just_pressed = pressed && !input.space_last_pressed;
+                    input.space_last_pressed = pressed;
+                }
+                VirtualKeyCode::Tab => {
+                    input.tab_just_pressed = pressed && !input.tab_last_pressed;
+                    input.tab_last_pressed = pressed;
+                }
+                _ => (),
             }
-            VirtualKeyCode::Tab => {
-                self.tab_just_pressed = pressed && !self.tab_last_pressed;
-                self.tab_last_pressed = pressed;
-            }
-            _ => (),
         }
     }
 }

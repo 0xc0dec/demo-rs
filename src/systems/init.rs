@@ -4,7 +4,7 @@ use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
 use crate::debug_ui::DebugUI;
-use crate::events::ResizeEvent;
+use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
 
 pub fn init(world: &mut World) {
@@ -20,6 +20,8 @@ pub fn init(world: &mut World) {
     let device = pollster::block_on(async { Device::new(&window).await });
 
     world.init_resource::<Events<ResizeEvent>>();
+    world.init_resource::<Events<MouseEvent>>();
+    world.init_resource::<Events<KeyboardEvent>>();
 
     world.insert_non_send_resource(event_loop);
     world.insert_non_send_resource(DebugUI::new(&device, &window));
