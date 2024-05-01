@@ -3,7 +3,9 @@ use wgpu::RenderBundle;
 
 use crate::assets::DrawMesh;
 use crate::assets::RenderTarget;
-use crate::components::{ApplyMaterial, Camera, Material, Mesh, RENDER_TAG_DEBUG_UI, RenderOrder, RenderTags, Transform};
+use crate::components::{
+    ApplyMaterial, Camera, Material, Mesh, RENDER_TAG_DEBUG_UI, RenderOrder, RenderTags, Transform,
+};
 use crate::debug_ui::DebugUI;
 use crate::resources::Device;
 
@@ -11,7 +13,6 @@ fn render_pass(
     device: &Device,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
-    // TODO Render separately
     debug_ui: Option<&mut DebugUI>,
 ) {
     let surface_tex = target.is_none().then(|| {

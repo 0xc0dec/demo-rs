@@ -10,7 +10,7 @@ use crate::resources::{Assets, Device};
 #[derive(Component)]
 pub struct PlayerTarget;
 
-// TODO Rename to smth like "raycast target"
+// TODO Move to the Player module
 impl PlayerTarget {
     pub fn spawn(device: Res<Device>, assets: Res<Assets>, mut commands: Commands) {
         // TODO Load in assets
@@ -30,7 +30,6 @@ impl PlayerTarget {
     }
 
     pub fn update(
-        // Without this Without it crashes :|
         player: Query<(&Player, &Transform), Without<PlayerTarget>>,
         mut target: Query<(Entity, &mut Transform), With<PlayerTarget>>,
         mut commands: Commands,
