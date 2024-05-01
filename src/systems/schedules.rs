@@ -8,10 +8,10 @@ use crate::resources::Assets;
 
 use super::build_debug_ui::build_debug_ui;
 use super::capture_events::capture_events;
-use super::escape_on_exit;
-use super::resize_device;
-use super::update_frame_time;
-use super::update_physics;
+use super::misc::escape_on_exit;
+use super::misc::resize_device;
+use super::misc::update_frame_time;
+use super::misc::update_physics;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BeforeUpdateSchedule;
