@@ -3,7 +3,9 @@ use winit::event::*;
 
 use crate::events::{KeyboardEvent, MouseEvent};
 
-// TODO Refactor
+// TODO Refactor:
+// - Instead of keys expose actions (e.g. Exit).
+// - Make fields readonly (or expose a single func that would check an action by its ID).
 #[derive(Resource)]
 pub struct Input {
     pub lmb_down: bool,
