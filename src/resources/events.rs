@@ -15,9 +15,7 @@ pub struct Events {
     pub e_down: bool,
     pub q_down: bool,
     pub esc_down: bool,
-    // TODO Fix, it triggers every frame while the key is pressed
     pub space_just_pressed: bool,
-    // TODO Fix, same as above
     pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
     pub new_surface_size: Option<SurfaceSize>,
