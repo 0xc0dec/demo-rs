@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy_ecs::prelude::*;
 use winit::event::*;
 
@@ -10,19 +12,11 @@ use crate::events::{KeyboardEvent, MouseEvent};
 pub struct Input {
     pub lmb_down: bool,
     pub rmb_down: bool,
-    pub w_down: bool,
-    pub s_down: bool,
-    pub a_down: bool,
-    pub d_down: bool,
-    pub e_down: bool,
-    pub q_down: bool,
-    pub esc_down: bool,
-    pub space_just_pressed: bool,
-    pub tab_just_pressed: bool,
     pub mouse_delta: (f32, f32),
 
-    space_last_pressed: bool,
-    tab_last_pressed: bool,
+    key_pressed: HashMap<VirtualKeyCode, bool>,
+    // Key presses from the previous frame
+    key_prev_pressed: HashMap<VirtualKeyCode, bool>,
 }
 
 impl Input {
@@ -30,19 +24,20 @@ impl Input {
         Input {
             lmb_down: false,
             rmb_down: false,
-            w_down: false,
-            s_down: false,
-            a_down: false,
-            d_down: false,
-            e_down: false,
-            q_down: false,
-            esc_down: false,
             mouse_delta: (0.0, 0.0),
-            space_just_pressed: false,
-            tab_just_pressed: false,
-            space_last_pressed: false,
-            tab_last_pressed: false,
+            key_pressed: HashMap::new(),
+            key_prev_pressed: HashMap::new(),
         }
+    }
+
+    pub fn key_pressed_first(&self, code: VirtualKeyCode) -> bool {
+        let pressed = *self.key_pressed.get(&code).unwrap_or(&false);
+        let last_pressed = *self.key_prev_pressed.get(&code).unwrap_or(&false);
+        pressed && !last_pressed
+    }
+
+    pub fn key_pressed(&self, code: VirtualKeyCode) -> bool {
+        *self.key_pressed.get(&code).unwrap_or(&false)
     }
 
     pub fn update(
@@ -51,8 +46,7 @@ impl Input {
         mut keyboard_events: EventReader<KeyboardEvent>,
     ) {
         input.mouse_delta = (0.0, 0.0);
-        input.space_just_pressed = false;
-        input.tab_just_pressed = false;
+        input.key_prev_pressed = input.key_pressed.clone();
 
         for e in mouse_events.read() {
             match *e {
@@ -67,24 +61,7 @@ impl Input {
         }
 
         for &KeyboardEvent { code, pressed } in keyboard_events.read() {
-            match code {
-                VirtualKeyCode::W => input.w_down = pressed,
-                VirtualKeyCode::A => input.a_down = pressed,
-                VirtualKeyCode::S => input.s_down = pressed,
-                VirtualKeyCode::D => input.d_down = pressed,
-                VirtualKeyCode::E => input.e_down = pressed,
-                VirtualKeyCode::Q => input.q_down = pressed,
-                VirtualKeyCode::Escape => input.esc_down = pressed,
-                VirtualKeyCode::Space => {
-                    input.space_just_pressed = pressed && !input.space_last_pressed;
-                    input.space_last_pressed = pressed;
-                }
-                VirtualKeyCode::Tab => {
-                    input.tab_just_pressed = pressed && !input.tab_last_pressed;
-                    input.tab_last_pressed = pressed;
-                }
-                _ => (),
-            }
+            input.key_pressed.insert(code, pressed);
         }
     }
 }

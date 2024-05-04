@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
+use winit::event::VirtualKeyCode;
 use winit::window::{CursorGrabMode, Window};
 
 use crate::assets::RenderTarget;
@@ -89,7 +90,7 @@ impl Player {
             player.translate(&mut tr, dt, &input, &mut physics);
         }
 
-        if input.tab_just_pressed {
+        if input.key_pressed_first(VirtualKeyCode::Tab) {
             player.controlled = !player.controlled;
             toggle_mouse_grab(player.controlled, &window);
         }
@@ -106,22 +107,22 @@ impl Player {
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
-        if input.w_down {
+        if input.key_pressed(VirtualKeyCode::W) {
             translation += transform.forward();
         }
-        if input.s_down {
+        if input.key_pressed(VirtualKeyCode::S) {
             translation -= transform.forward();
         }
-        if input.d_down {
+        if input.key_pressed(VirtualKeyCode::D) {
             translation += transform.right();
         }
-        if input.a_down {
+        if input.key_pressed(VirtualKeyCode::A) {
             translation -= transform.right();
         }
-        if input.e_down {
+        if input.key_pressed(VirtualKeyCode::E) {
             translation += transform.up();
         }
-        if input.q_down {
+        if input.key_pressed(VirtualKeyCode::Q) {
             translation -= transform.up();
         }
 

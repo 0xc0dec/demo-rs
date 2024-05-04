@@ -1,5 +1,6 @@
 use bevy_ecs::change_detection::{Res, ResMut};
 use bevy_ecs::event::EventReader;
+use winit::event::VirtualKeyCode;
 
 use crate::events::ResizeEvent;
 use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
@@ -11,7 +12,7 @@ pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<ResizeE
 }
 
 pub fn escape_on_exit(mut app: ResMut<App>, input: Res<Input>) {
-    if input.esc_down {
+    if input.key_pressed(VirtualKeyCode::Escape) {
         app.running = false;
     }
 }
