@@ -1,9 +1,8 @@
 use bevy_ecs::change_detection::{Res, ResMut};
 use bevy_ecs::event::EventReader;
-use winit::event::VirtualKeyCode;
 
 use crate::events::ResizeEvent;
-use crate::resources::{App, Device, FrameTime, Input, PhysicsWorld};
+use crate::resources::{App, Device, FrameTime, Input, InputAction, PhysicsWorld};
 
 pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<ResizeEvent>) {
     if let Some(e) = events.read().last() {
@@ -12,7 +11,7 @@ pub fn resize_device(mut device: ResMut<Device>, mut events: EventReader<ResizeE
 }
 
 pub fn escape_on_exit(mut app: ResMut<App>, input: Res<Input>) {
-    if input.key_pressed(VirtualKeyCode::Escape) {
+    if input.action_activated(InputAction::Escape) {
         app.running = false;
     }
 }

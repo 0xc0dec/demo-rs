@@ -1,12 +1,11 @@
 use bevy_ecs::prelude::*;
-use winit::event::VirtualKeyCode;
 
 use crate::assets;
 use crate::components::{
     Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform,
 };
 use crate::math::Vec3;
-use crate::resources::{Assets, Device, Input, PhysicsWorld};
+use crate::resources::{Assets, Device, Input, InputAction, PhysicsWorld};
 
 #[derive(Component)]
 pub struct FreeBox;
@@ -30,7 +29,7 @@ impl FreeBox {
         mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
-        if input.key_pressed_first(VirtualKeyCode::Space) {
+        if input.action_activated(InputAction::Spawn) {
             let player_transform = player.single();
             let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
             commands.spawn(Self::components(pos, &device, &mut physics, &assets));

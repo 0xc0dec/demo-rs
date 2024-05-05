@@ -32,7 +32,7 @@ pub fn build_debug_ui(
                     "Controls:\n\
                     - Toggle camera control: Tab\n\
                     - Move: WASDQE\n\
-                    - Grab and release objects: LMB\n\
+                    - Grab objects: hold LMB\n\
                     - Spawn new box: Space\n\
                     - Quit: Escape",
                 );

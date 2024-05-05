@@ -2,14 +2,13 @@ use std::f32::consts::PI;
 
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
-use winit::event::VirtualKeyCode;
 use winit::window::{CursorGrabMode, Window};
 
 use crate::assets::RenderTarget;
 use crate::components::*;
 use crate::events::ResizeEvent;
 use crate::math::Vec3;
-use crate::resources::{Device, FrameTime, Input, PhysicsWorld};
+use crate::resources::{Device, FrameTime, Input, InputAction, PhysicsWorld};
 
 #[derive(Component)]
 pub struct Player {
@@ -90,7 +89,7 @@ impl Player {
             player.translate(&mut tr, dt, &input, &mut physics);
         }
 
-        if input.key_pressed_first(VirtualKeyCode::Tab) {
+        if input.action_activated(InputAction::ControlPlayer) {
             player.controlled = !player.controlled;
             toggle_mouse_grab(player.controlled, &window);
         }
@@ -107,22 +106,22 @@ impl Player {
     ) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
-        if input.key_pressed(VirtualKeyCode::W) {
+        if input.action_active(InputAction::MoveForward) {
             translation += transform.forward();
         }
-        if input.key_pressed(VirtualKeyCode::S) {
+        if input.action_active(InputAction::MoveBack) {
             translation -= transform.forward();
         }
-        if input.key_pressed(VirtualKeyCode::D) {
+        if input.action_active(InputAction::MoveRight) {
             translation += transform.right();
         }
-        if input.key_pressed(VirtualKeyCode::A) {
+        if input.action_active(InputAction::MoveLeft) {
             translation -= transform.right();
         }
-        if input.key_pressed(VirtualKeyCode::E) {
+        if input.action_active(InputAction::MoveUp) {
             translation += transform.up();
         }
-        if input.key_pressed(VirtualKeyCode::Q) {
+        if input.action_active(InputAction::MoveDown) {
             translation -= transform.up();
         }
 
