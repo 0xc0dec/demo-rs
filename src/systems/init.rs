@@ -17,7 +17,7 @@ pub fn init(world: &mut World) {
         })
         .build(&event_loop)
         .unwrap();
-    let device = pollster::block_on(async { Device::new(&window).await });
+    let device = pollster::block_on(Device::new(&window));
 
     world.init_resource::<Events<ResizeEvent>>();
     world.init_resource::<Events<MouseEvent>>();

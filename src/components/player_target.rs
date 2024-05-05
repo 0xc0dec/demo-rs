@@ -14,9 +14,9 @@ pub struct PlayerTarget;
 impl PlayerTarget {
     pub fn spawn(device: Res<Device>, assets: Res<Assets>, mut commands: Commands) {
         // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(async {
-            assets::Mesh::from_file("cube.obj", &device).await
-        }));
+        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
+            "cube.obj", &device,
+        )));
         let material = Material::color(&device, &assets);
         let transform = Transform::default();
 

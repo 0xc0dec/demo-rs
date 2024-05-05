@@ -17,9 +17,9 @@ impl FloorBox {
         assets: Res<Assets>,
     ) {
         // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(async {
-            assets::Mesh::from_file("cube.obj", &device).await
-        }));
+        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
+            "cube.obj", &device,
+        )));
         let material = Material::diffuse(&device, &assets, &assets.stone_tex);
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);

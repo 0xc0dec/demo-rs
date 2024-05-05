@@ -85,16 +85,16 @@ impl Player {
         // Move and rotate
         let dt = frame_time.delta;
         if player.controlled {
-            player.rotate(&mut tr, &input, dt);
+            player.rotate(&mut tr, dt, &input);
             player.translate(&mut tr, dt, &input, &mut physics);
         }
 
         if input.action_activated(InputAction::ControlPlayer) {
             player.controlled = !player.controlled;
-            toggle_mouse_grab(player.controlled, &window);
+            toggle_cursor(player.controlled, &window);
         }
 
-        update_target((&mut player, &tr), &physics);
+        player.update_target(&tr, &physics);
     }
 
     fn translate(
@@ -147,7 +147,7 @@ impl Player {
             .set_translation(collider_current_pos + translation);
     }
 
-    fn rotate(&mut self, transform: &mut Transform, input: &Input, dt: f32) {
+    fn rotate(&mut self, transform: &mut Transform, dt: f32, input: &Input) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
         const SPEED: f32 = 25.0;
@@ -173,9 +173,30 @@ impl Player {
         transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
+
+    fn update_target(&mut self, player_tr: &Transform, physics: &PhysicsWorld) {
+        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
+            player_tr.position(),
+            player_tr.forward(),
+            Some(self.collider_handle),
+        ) {
+            self.target_pt = Some(hit_pt);
+            self.target_body = Some(
+                physics
+                    .colliders
+                    .get(hit_collider)
+                    .unwrap()
+                    .parent()
+                    .unwrap(),
+            );
+        } else {
+            self.target_pt = None;
+            self.target_body = None;
+        }
+    }
 }
 
-fn toggle_mouse_grab(grab: bool, window: &Window) {
+fn toggle_cursor(grab: bool, window: &Window) {
     if grab {
         window
             .set_cursor_grab(CursorGrabMode::Confined)
@@ -185,26 +206,5 @@ fn toggle_mouse_grab(grab: bool, window: &Window) {
     } else {
         window.set_cursor_grab(CursorGrabMode::None).unwrap();
         window.set_cursor_visible(true);
-    }
-}
-
-fn update_target(player: (&mut Player, &Transform), physics: &PhysicsWorld) {
-    if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
-        player.1.position(),
-        player.1.forward(),
-        Some(player.0.collider_handle),
-    ) {
-        player.0.target_pt = Some(hit_pt);
-        player.0.target_body = Some(
-            physics
-                .colliders
-                .get(hit_collider)
-                .unwrap()
-                .parent()
-                .unwrap(),
-        );
-    } else {
-        player.0.target_pt = None;
-        player.0.target_body = None;
     }
 }

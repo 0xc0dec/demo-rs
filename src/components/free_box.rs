@@ -15,10 +15,10 @@ impl FreeBox {
         device: Res<Device>,
         assets: Res<Assets>,
         mut physics: ResMut<PhysicsWorld>,
-        mut commands: Commands,
+        commands: Commands,
     ) {
         let pos = Vec3::y_axis().xyz() * 5.0;
-        commands.spawn(Self::components(pos, &device, &mut physics, &assets));
+        Self::spawn_at_pos(pos, &device, &mut physics, &assets, commands);
     }
 
     pub fn spawn_by_player(
@@ -27,25 +27,26 @@ impl FreeBox {
         input: Res<Input>,
         assets: Res<Assets>,
         mut physics: ResMut<PhysicsWorld>,
-        mut commands: Commands,
+        commands: Commands,
     ) {
         if input.action_activated(InputAction::Spawn) {
             let player_transform = player.single();
             let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
-            commands.spawn(Self::components(pos, &device, &mut physics, &assets));
+            Self::spawn_at_pos(pos, &device, &mut physics, &assets, commands);
         }
     }
 
-    fn components(
+    fn spawn_at_pos(
         pos: Vec3,
         device: &Device,
         physics: &mut PhysicsWorld,
         assets: &Assets,
-    ) -> (FreeBox, PhysicsBody, Mesh, Material, Transform, RenderTags) {
+        mut commands: Commands,
+    ) {
         // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(async {
-            assets::Mesh::from_file("cube.obj", device).await
-        }));
+        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
+            "cube.obj", device,
+        )));
         let material = Material::diffuse(device, assets, &assets.stone_tex);
         let scale = Vec3::from_element(1.0);
         let body = PhysicsBody::new(
@@ -60,13 +61,13 @@ impl FreeBox {
         );
         let transform = Transform::new(pos, scale);
 
-        (
+        commands.spawn((
             FreeBox,
             body,
             mesh,
             material,
             transform,
             RenderTags(RENDER_TAG_SCENE),
-        )
+        ));
     }
 }
