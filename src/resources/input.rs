@@ -24,12 +24,11 @@ enum Key {
     MouseButton(MouseButton),
 }
 
-// TODO Use something faster (non-heap) than hashmaps
 #[derive(Resource)]
 pub struct Input {
-    // TODO Avoid public writeable field
-    pub mouse_delta: (f32, f32),
+    mouse_delta: (f32, f32),
 
+    // TODO Use something faster (non-heap) than hashmaps
     key_pressed: HashMap<Key, bool>,
     // Key presses from the previous frame
     key_prev_pressed: HashMap<Key, bool>,
@@ -42,6 +41,10 @@ impl Input {
             key_pressed: HashMap::new(),
             key_prev_pressed: HashMap::new(),
         }
+    }
+
+    pub fn mouse_delta(&self) -> (f32, f32) {
+        self.mouse_delta
     }
 
     pub fn action_active(&self, action: InputAction) -> bool {

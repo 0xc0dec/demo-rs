@@ -153,7 +153,7 @@ impl Player {
         const SPEED: f32 = 25.0;
 
         let angle_to_top = transform.forward().angle(&Vec3::y_axis());
-        self.v_rot_acc += input.mouse_delta.1 * dt;
+        self.v_rot_acc += input.mouse_delta().1 * dt;
         // Protect from overturning - prevent camera from reaching the vertical line with small
         // margin angles.
         if angle_to_top + self.v_rot_acc <= MIN_TOP_ANGLE {
@@ -166,7 +166,7 @@ impl Player {
         let v_rot = SPEED * dt * self.v_rot_acc;
         self.v_rot_acc -= v_rot;
 
-        self.h_rot_acc += input.mouse_delta.0 * dt;
+        self.h_rot_acc += input.mouse_delta().0 * dt;
         let h_rot = SPEED * dt * self.h_rot_acc;
         self.h_rot_acc -= h_rot;
 
