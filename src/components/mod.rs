@@ -1,7 +1,7 @@
 pub use camera::Camera;
 pub use floor_box::FloorBox;
 pub use free_box::FreeBox;
-pub use grab::Grab;
+pub use grabbed::Grabbed;
 pub use materials::*;
 pub use mesh::Mesh;
 pub use physics_body::{PhysicsBody, PhysicsBodyParams};
@@ -16,7 +16,7 @@ pub use transform::{Transform, TransformSpace};
 mod camera;
 mod floor_box;
 mod free_box;
-mod grab;
+mod grabbed;
 mod materials;
 mod mesh;
 mod physics_body;

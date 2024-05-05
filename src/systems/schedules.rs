@@ -1,8 +1,8 @@
-use bevy_ecs::prelude::{Condition, IntoSystemConfigs, Query, run_once, Schedule};
+use bevy_ecs::prelude::{run_once, Condition, IntoSystemConfigs, Query, Schedule};
 use bevy_ecs::schedule::ScheduleLabel;
 
 use crate::components::{
-    FloorBox, FreeBox, Grab, PhysicsBody, Player, PlayerTarget, PostProcessor, Skybox,
+    FloorBox, FreeBox, Grabbed, PhysicsBody, Player, PlayerTarget, PostProcessor, Skybox,
 };
 use crate::resources::{Assets, Input};
 
@@ -58,11 +58,8 @@ pub fn new_update_schedule() -> (Schedule, UpdateSchedule) {
         .add_systems(update_physics)
         .add_systems(PhysicsBody::sync.after(update_physics))
         .add_systems(Player::update.after(update_physics))
-        // TODO Merge grabbing systems into player?
         .add_systems(PlayerTarget::update.after(Player::update))
-        .add_systems(Grab::grab_or_release.after(Player::update))
-        .add_systems(PhysicsBody::grab_start_stop.after(Player::update))
-        .add_systems(PhysicsBody::update_grabbed.after(PhysicsBody::grab_start_stop))
+        .add_systems(Grabbed::update.after(Player::update))
         .add_systems(FreeBox::spawn_by_player.after(Player::update))
         .add_systems(PostProcessor::update.after(Player::update))
         .add_systems(build_debug_ui);
