@@ -7,7 +7,7 @@ use crate::resources::{Input, InputAction, PhysicsWorld};
 #[derive(Component)]
 pub struct Grabbed {
     // Coordinates of the body in Player's local coord. system
-    pub body_local_pos: Vec3,
+    pub player_local_pos: Vec3,
 }
 
 impl Grabbed {
@@ -21,7 +21,7 @@ impl Grabbed {
     ) {
         let (player, player_transform) = player.single();
 
-        if input.action_active(InputAction::Grab) {
+        if input.action_active(InputAction::Grab) && player.controlled() {
             if grabbed.is_empty() {
                 // Initiate grab
                 if let Some(target_body_handle) = player.target_body() {
@@ -31,18 +31,18 @@ impl Grabbed {
                         .unwrap();
 
                     body.set_kinematic(&mut physics, true);
-                    let body = physics.bodies.get_mut(target_body_handle).unwrap();
 
-                    let body_local_pos = player_transform
+                    let body = physics.bodies.get_mut(target_body_handle).unwrap();
+                    let local_pos = player_transform
                         .matrix()
                         .try_inverse()
                         .unwrap()
                         .transform_point(&to_point(*body.translation()))
                         .coords;
 
-                    commands
-                        .entity(body_entity)
-                        .insert((Grabbed { body_local_pos },));
+                    commands.entity(body_entity).insert(Grabbed {
+                        player_local_pos: local_pos,
+                    });
                 }
             } else {
                 // Update the grabbed thing
@@ -50,7 +50,7 @@ impl Grabbed {
                     let body = physics.bodies.get_mut(body.body_handle()).unwrap();
                     let new_pos = player_transform
                         .matrix()
-                        .transform_point(&to_point(grabbed.body_local_pos));
+                        .transform_point(&to_point(grabbed.player_local_pos));
                     body.set_translation(new_pos.coords, true);
                 }
             }

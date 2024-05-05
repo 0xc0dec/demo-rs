@@ -63,6 +63,10 @@ impl Player {
         self.target_body
     }
 
+    pub fn controlled(&self) -> bool {
+        self.controlled
+    }
+
     pub fn update(
         frame_time: Res<FrameTime>,
         device: Res<Device>,
