@@ -82,10 +82,8 @@ impl Player {
 
         // Update camera aspect and RT size
         if let Some(e) = events.read().last() {
-            // TODO Do this for all cameras in a separate system, detached from the player?
             cam.set_aspect(e.0.width as f32 / e.0.height as f32);
             if let Some(target) = cam.target_mut() {
-                // TODO Same as above?
                 target.resize((e.0.width, e.0.height), &device);
             }
         }

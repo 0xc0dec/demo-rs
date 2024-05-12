@@ -159,7 +159,6 @@ impl Mesh {
     }
 }
 
-// TODO Extract elsewhere
 pub trait DrawMesh<'a> {
     fn draw_mesh(&mut self, mesh: &'a Mesh);
 }
