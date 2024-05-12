@@ -12,8 +12,8 @@ use crate::resources::{Device, FrameTime, Input, InputAction, PhysicsWorld};
 
 #[derive(Component)]
 pub struct Player {
-    target_pt: Option<Vec3>,
-    target_body: Option<RigidBodyHandle>,
+    focus_pt: Option<Vec3>,
+    focus_body: Option<RigidBodyHandle>,
     collider_handle: ColliderHandle,
     h_rot_acc: f32,
     v_rot_acc: f32,
@@ -43,8 +43,8 @@ impl Player {
         commands.spawn((
             Player {
                 collider_handle,
-                target_pt: None,
-                target_body: None,
+                focus_pt: None,
+                focus_body: None,
                 h_rot_acc: 0.0,
                 v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
@@ -55,12 +55,12 @@ impl Player {
         ));
     }
 
-    pub fn target_pt(&self) -> Option<Vec3> {
-        self.target_pt
+    pub fn focus_point(&self) -> Option<Vec3> {
+        self.focus_pt
     }
 
-    pub fn target_body(&self) -> Option<RigidBodyHandle> {
-        self.target_body
+    pub fn focus_body(&self) -> Option<RigidBodyHandle> {
+        self.focus_body
     }
 
     pub fn controlled(&self) -> bool {
@@ -98,7 +98,7 @@ impl Player {
             toggle_cursor(player.controlled, &window);
         }
 
-        player.update_target(&tr, &physics);
+        player.update_focus(&tr, &physics);
     }
 
     fn translate(
@@ -178,14 +178,12 @@ impl Player {
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn update_target(&mut self, player_tr: &Transform, physics: &PhysicsWorld) {
-        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
-            player_tr.position(),
-            player_tr.forward(),
-            Some(self.collider_handle),
-        ) {
-            self.target_pt = Some(hit_pt);
-            self.target_body = Some(
+    fn update_focus(&mut self, tr: &Transform, physics: &PhysicsWorld) {
+        if let Some((hit_pt, _, hit_collider)) =
+            physics.cast_ray(tr.position(), tr.forward(), Some(self.collider_handle))
+        {
+            self.focus_pt = Some(hit_pt);
+            self.focus_body = Some(
                 physics
                     .colliders
                     .get(hit_collider)
@@ -194,8 +192,8 @@ impl Player {
                     .unwrap(),
             );
         } else {
-            self.target_pt = None;
-            self.target_body = None;
+            self.focus_pt = None;
+            self.focus_body = None;
         }
     }
 }

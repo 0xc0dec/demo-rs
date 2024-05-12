@@ -19,28 +19,28 @@ impl Grabbed {
         mut physics: ResMut<PhysicsWorld>,
         mut commands: Commands,
     ) {
-        let (player, player_transform) = player.single();
+        let (player, player_tr) = player.single();
 
         if input.action_active(InputAction::Grab) && player.controlled() {
             if grabbed.is_empty() {
                 // Initiate grab
-                if let Some(target_body_handle) = player.target_body() {
-                    let (body_entity, body) = free_bodies
+                if let Some(focus_body_handle) = player.focus_body() {
+                    let (body_ent, body) = free_bodies
                         .iter_mut()
-                        .find(|(_, b)| b.body_handle() == target_body_handle)
+                        .find(|(_, b)| b.body_handle() == focus_body_handle)
                         .unwrap();
 
                     body.set_kinematic(&mut physics, true);
 
-                    let body = physics.bodies.get_mut(target_body_handle).unwrap();
-                    let local_pos = player_transform
+                    let body = physics.bodies.get_mut(focus_body_handle).unwrap();
+                    let local_pos = player_tr
                         .matrix()
                         .try_inverse()
                         .unwrap()
                         .transform_point(&to_point(*body.translation()))
                         .coords;
 
-                    commands.entity(body_entity).insert(Grabbed {
+                    commands.entity(body_ent).insert(Grabbed {
                         player_local_pos: local_pos,
                     });
                 }
@@ -48,7 +48,7 @@ impl Grabbed {
                 // Update the grabbed thing
                 if let Ok((_, body, grabbed)) = grabbed.get_single() {
                     let body = physics.bodies.get_mut(body.body_handle()).unwrap();
-                    let new_pos = player_transform
+                    let new_pos = player_tr
                         .matrix()
                         .transform_point(&to_point(grabbed.player_local_pos));
                     body.set_translation(new_pos.coords, true);
