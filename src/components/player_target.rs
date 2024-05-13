@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::*;
+use std::sync::Arc;
 
-use crate::assets;
 use crate::components::{
     Material, Mesh, Player, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
 };
@@ -12,10 +12,7 @@ pub struct PlayerTarget;
 
 impl PlayerTarget {
     pub fn spawn(device: Res<Device>, assets: Res<Assets>, mut commands: Commands) {
-        // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
-            "cube.obj", &device,
-        )));
+        let mesh = Mesh(Arc::clone(&assets.box_mesh));
         let material = Material::color(&device, &assets);
         let transform = Transform::default();
 

@@ -1,23 +1,26 @@
 use bevy_ecs::prelude::{Commands, Res, Resource};
+use std::sync::Arc;
 
 use crate::assets::utils::new_shader_module;
-use crate::assets::Texture;
+use crate::assets::{Mesh, Texture};
 use crate::resources::device::Device;
 
 #[derive(Resource)]
 pub struct Assets {
+    // TODO Public readonly
     pub skybox_tex: Texture,
     pub stone_tex: Texture,
     pub color_shader: wgpu::ShaderModule,
     pub diffuse_shader: wgpu::ShaderModule,
     pub postprocess_shader: wgpu::ShaderModule,
     pub skybox_shader: wgpu::ShaderModule,
+    pub box_mesh: Arc<Mesh>,
 }
 
 impl Assets {
-    // TODO Move to the `systems` mod?
     pub fn load(device: Res<Device>, mut commands: Commands) {
         let (
+            box_mesh,
             skybox_tex,
             stone_tex,
             color_shader,
@@ -26,6 +29,7 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
+                Arc::new(Mesh::from_file("cube.obj", &device).await),
                 Texture::new_cube_from_file("skybox_bgra.dds", &device)
                     .await
                     .unwrap(),
@@ -40,6 +44,7 @@ impl Assets {
         });
 
         commands.insert_resource(Self {
+            box_mesh,
             skybox_tex,
             stone_tex,
             color_shader,

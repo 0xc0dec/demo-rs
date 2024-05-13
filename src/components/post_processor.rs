@@ -1,9 +1,10 @@
 use bevy_ecs::prelude::*;
+use std::sync::Arc;
 
 use crate::assets;
 use crate::components::{
-    Camera, Material, Mesh, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RenderOrder, RenderTags,
-    Transform,
+    Camera, Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_DEBUG_UI,
+    RENDER_TAG_POST_PROCESS,
 };
 use crate::resources::{Assets, Device};
 
@@ -22,7 +23,7 @@ impl PostProcessor {
         // We know we need the player camera
         let source_camera_rt = player.single().target().as_ref().unwrap();
         let material = Material::post_process(&device, &assets, source_camera_rt.color_tex());
-        let mesh = Mesh(assets::Mesh::quad(&device));
+        let mesh = Mesh(Arc::new(assets::Mesh::quad(&device)));
         let transform = Transform::default();
         let pp = PostProcessor {
             size: source_camera_rt.color_tex().size(),

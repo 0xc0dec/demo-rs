@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
+use std::sync::Arc;
 
-use crate::assets;
 use crate::components::{
-    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_SCENE, RenderTags, Transform,
+    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform, RENDER_TAG_SCENE,
 };
 use crate::math::Vec3;
 use crate::resources::{Assets, Device, Input, InputAction, PhysicsWorld};
@@ -43,10 +43,7 @@ impl FreeBox {
         assets: &Assets,
         mut commands: Commands,
     ) {
-        // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
-            "cube.obj", device,
-        )));
+        let mesh = Mesh(Arc::clone(&assets.box_mesh));
         let material = Material::diffuse(device, assets, &assets.stone_tex);
         let scale = Vec3::from_element(1.0);
         let body = PhysicsBody::new(

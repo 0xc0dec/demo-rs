@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
+use std::sync::Arc;
 
-use crate::assets;
-use crate::components::{Material, Mesh, PhysicsBody, PhysicsBodyParams, RenderTags, Transform};
 use crate::components::render_tags::RENDER_TAG_SCENE;
+use crate::components::{Material, Mesh, PhysicsBody, PhysicsBodyParams, RenderTags, Transform};
 use crate::math::Vec3;
 use crate::resources::{Assets, Device, PhysicsWorld};
 
@@ -16,10 +16,7 @@ impl FloorBox {
         mut physics: ResMut<PhysicsWorld>,
         assets: Res<Assets>,
     ) {
-        // TODO Load in assets
-        let mesh = Mesh(pollster::block_on(assets::Mesh::from_file(
-            "cube.obj", &device,
-        )));
+        let mesh = Mesh(Arc::clone(&assets.box_mesh));
         let material = Material::diffuse(&device, &assets, &assets.stone_tex);
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
