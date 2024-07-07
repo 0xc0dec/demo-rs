@@ -27,15 +27,15 @@ impl FrameTime {
     pub fn update(&mut self) {
         // Stolen from Kajiya
         let now = Instant::now();
-        let dt_duration = now - self.last_frame_instant;
+        let dt = now - self.last_frame_instant;
         self.last_frame_instant = now;
 
-        let raw = dt_duration.as_secs_f32();
+        let dt = dt.as_secs_f32();
 
         if self.queue.len() >= FrameTime::DT_FILTER_WIDTH {
             self.queue.pop_front();
         }
-        self.queue.push_back(raw);
+        self.queue.push_back(dt);
 
         self.delta = self.queue.iter().copied().sum::<f32>() / self.queue.len() as f32;
     }

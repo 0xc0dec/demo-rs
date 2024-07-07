@@ -27,7 +27,7 @@ pub fn init(world: &mut World) {
     world.insert_non_send_resource(DebugUI::new(&device, &window));
     world.insert_non_send_resource(window);
 
-    world.insert_resource(App { running: true });
+    world.insert_resource(App::new());
     world.insert_resource(device);
     world.insert_resource(FrameTime::new());
     world.insert_resource(Input::new());
