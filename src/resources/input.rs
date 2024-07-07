@@ -27,7 +27,6 @@ enum Key {
 #[derive(Resource)]
 pub struct Input {
     mouse_delta: (f32, f32),
-
     // TODO Use something faster than hashmaps (non-heap)
     key_pressed: HashMap<Key, bool>,
     // Key presses from the previous frame

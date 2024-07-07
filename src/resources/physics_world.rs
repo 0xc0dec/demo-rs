@@ -11,7 +11,7 @@ pub struct PhysicsWorld {
     pub query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
-    broad_phase: BroadPhase,
+    broad_phase: Box<dyn BroadPhase>,
     narrow_phase: NarrowPhase,
     impulse_joints: ImpulseJointSet,
     multibody_joints: MultibodyJointSet,
@@ -27,7 +27,7 @@ impl PhysicsWorld {
             physics_pipeline: PhysicsPipeline::new(),
             query_pipeline: QueryPipeline::new(),
             island_manager: IslandManager::new(),
-            broad_phase: BroadPhase::new(),
+            broad_phase: Box::new(BroadPhaseMultiSap::new()),
             narrow_phase: NarrowPhase::new(),
             impulse_joints: ImpulseJointSet::new(),
             multibody_joints: MultibodyJointSet::new(),
@@ -102,7 +102,7 @@ impl PhysicsWorld {
             true,
             filter,
         ) {
-            let hit_pt = ray.point_at(intersection.toi);
+            let hit_pt = ray.point_at(intersection.time_of_impact);
             return Some((hit_pt.coords, intersection.normal, handle));
         }
 
@@ -111,16 +111,16 @@ impl PhysicsWorld {
 
     pub fn update(&mut self, dt: f32) {
         let gravity = vector![0.0, -9.81, 0.0];
-        let integration_parameters = IntegrationParameters {
+        let params = IntegrationParameters {
             dt,
             ..IntegrationParameters::default()
         };
 
         self.physics_pipeline.step(
             &gravity,
-            &integration_parameters,
+            &params,
             &mut self.island_manager,
-            &mut self.broad_phase,
+            self.broad_phase.as_mut(),
             &mut self.narrow_phase,
             &mut self.bodies,
             &mut self.colliders,
@@ -132,6 +132,6 @@ impl PhysicsWorld {
             &(),
         );
 
-        self.query_pipeline.update(&self.bodies, &self.colliders);
+        self.query_pipeline.update(&self.colliders);
     }
 }
