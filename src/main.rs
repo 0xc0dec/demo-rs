@@ -1,4 +1,6 @@
-use crate::components::{Material, Mesh, RenderOrder, Transform};
+use crate::components::{
+    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_SCENE,
+};
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use std::sync::Arc;
@@ -9,7 +11,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use crate::resources::*;
-use crate::systems::render_pass;
+use crate::systems::{build_render_bundles, render_pass};
 
 mod assets;
 mod components;
@@ -131,6 +133,7 @@ struct Components {
     meshes: Vec<Option<Mesh>>,
     materials: Vec<Option<Material>>,
     render_orders: Vec<Option<RenderOrder>>,
+    render_tags: Vec<Option<RenderTags>>,
 }
 
 impl Components {
@@ -140,6 +143,7 @@ impl Components {
             meshes: Vec::new(),
             materials: Vec::new(),
             render_orders: Vec::new(),
+            render_tags: Vec::new(),
         }
     }
 
@@ -149,11 +153,13 @@ impl Components {
         mesh: Mesh,
         material: Material,
         render_order: Option<RenderOrder>,
+        render_tags: Option<RenderTags>,
     ) -> usize {
         self.transforms.push(Some(transform));
         self.meshes.push(Some(mesh));
         self.materials.push(Some(material));
         self.render_orders.push(render_order);
+        self.render_tags.push(render_tags);
         self.transforms.len() - 1
     }
 }
@@ -184,12 +190,18 @@ fn main() {
     // TODO Replace with a proper ECS or restructure in some other better way
     let mut components = Components::new();
 
-    let _skybox_id = components.spawn_mesh(
+    let skybox_id = components.spawn_mesh(
         Transform::default(),
         Mesh(Arc::new(assets::Mesh::quad(&device))),
         Material::skybox(&device, &assets, &assets.skybox_tex),
         Some(RenderOrder(-100)),
+        Some(RenderTags(RENDER_TAG_SCENE)),
     );
+
+    // Player is outside the normal components set for convenience because it's a singleton.
+    // Ideally it should be unified with the rest of the objects once we have a proper ECS
+    // or an alternative.
+    let mut player = Player::new(&device, &mut physics);
 
     while !input.action_active(InputAction::Escape) {
         consume_system_events(
@@ -201,7 +213,9 @@ fn main() {
             &mut resize_events,
         );
 
-        if let Some(e) = resize_events.last() {
+        let last_resize_event = resize_events.last();
+
+        if let Some(e) = last_resize_event {
             device.resize(e.0);
         }
 
@@ -209,12 +223,41 @@ fn main() {
         frame_time.update();
         physics.update(frame_time.delta);
 
-        mouse_events.clear();
-        keyboard_events.clear();
-        resize_events.clear();
+        player.update(
+            &device,
+            &frame_time,
+            &input,
+            &window,
+            &mut physics,
+            last_resize_event,
+        );
 
         build_debug_ui(&mut debug_ui, &frame_time, &window);
 
-        render_pass(&device, &[], None, Some(&mut debug_ui));
+        let bundles = build_render_bundles(
+            &mut [(
+                components.meshes.get(skybox_id).unwrap().as_ref().unwrap(),
+                components
+                    .materials
+                    .get_mut(skybox_id)
+                    .unwrap()
+                    .as_mut()
+                    .unwrap(),
+                components
+                    .transforms
+                    .get(skybox_id)
+                    .unwrap()
+                    .as_ref()
+                    .unwrap(),
+                components.render_tags.get(skybox_id).unwrap().as_ref(),
+            )],
+            (&player.camera, &player.transform),
+            &device,
+        );
+        render_pass(&device, &bundles, None, Some(&mut debug_ui));
+
+        mouse_events.clear();
+        keyboard_events.clear();
+        resize_events.clear();
     }
 }

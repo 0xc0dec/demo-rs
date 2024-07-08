@@ -17,7 +17,7 @@ pub fn new_spawn_scene_schedule() -> (Schedule, SpawnSceneSchedule) {
                 // Skybox::spawn,
                 FreeBox::spawn_sample,
                 FloorBox::spawn,
-                Player::spawn,
+                // Player::spawn,
                 PlayerTarget::spawn,
             )
                 .run_if(run_once()),
@@ -37,11 +37,11 @@ pub fn new_update_schedule() -> (Schedule, UpdateSchedule) {
     schedule
         // .add_systems(update_physics)
         .add_systems(PhysicsBody::sync) //.after(update_physics))
-        .add_systems(Player::update) //.after(update_physics))
-        .add_systems(PlayerTarget::update.after(Player::update))
-        .add_systems(Grabbed::update.after(Player::update))
-        .add_systems(FreeBox::spawn_by_player.after(Player::update))
-        .add_systems(PostProcessor::update.after(Player::update));
-    // .add_systems(build_debug_ui);
+        // .add_systems(Player::update).after(update_physics))
+        .add_systems(PlayerTarget::update) //.after(Player::update))
+        .add_systems(Grabbed::update) //.after(Player::update))
+        .add_systems(FreeBox::spawn_by_player) // .after(Player::update))
+        .add_systems(PostProcessor::update); // .after(Player::update));
+                                             // .add_systems(build_debug_ui);
     (schedule, UpdateSchedule)
 }

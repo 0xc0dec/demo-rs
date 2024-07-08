@@ -21,13 +21,16 @@ pub struct Player {
     v_rot_acc: f32,
     translation_acc: Vec3,
     controlled: bool,
+    // TODO Public readonly
+    pub camera: Camera,
+    pub transform: Transform,
 }
 
 impl Player {
-    pub fn spawn(device: Res<Device>, mut physics: ResMut<PhysicsWorld>, mut commands: Commands) {
+    pub fn new(device: &Device, physics: &mut PhysicsWorld) -> Self {
         let pos = Vec3::new(7.0, 7.0, 7.0);
 
-        let rt = RenderTarget::new(&device, None);
+        let rt = RenderTarget::new(device, None);
         let camera = Camera::new(
             device.surface_size().width as f32 / device.surface_size().height as f32,
             RENDER_TAG_SCENE,
@@ -42,19 +45,17 @@ impl Player {
             .build();
         let collider_handle = physics.colliders.insert(collider);
 
-        commands.spawn((
-            Player {
-                collider_handle,
-                focus_pt: None,
-                focus_body: None,
-                h_rot_acc: 0.0,
-                v_rot_acc: 0.0,
-                translation_acc: Vec3::zeros(),
-                controlled: false,
-            },
+        Self {
+            collider_handle,
+            focus_pt: None,
+            focus_body: None,
+            h_rot_acc: 0.0,
+            v_rot_acc: 0.0,
+            translation_acc: Vec3::zeros(),
+            controlled: false,
             camera,
             transform,
-        ));
+        }
     }
 
     pub fn focus_point(&self) -> Option<Vec3> {
@@ -70,67 +71,59 @@ impl Player {
     }
 
     pub fn update(
-        frame_time: Res<FrameTime>,
-        device: Res<Device>,
-        input: Res<Input>,
-        window: NonSend<Window>,
-        mut player: Query<(&mut Self, &mut Camera, &mut Transform)>,
-        mut physics: ResMut<PhysicsWorld>,
-        mut events: EventReader<ResizeEvent>,
+        &mut self,
+        device: &Device,
+        frame_time: &FrameTime,
+        input: &Input,
+        window: &Window,
+        physics: &mut PhysicsWorld,
+        resize_event: Option<&ResizeEvent>,
     ) {
-        let (mut player, mut cam, mut tr) = player.single_mut();
-
         // Update camera aspect and RT size
-        if let Some(e) = events.read().last() {
-            cam.set_aspect(e.0.width as f32 / e.0.height as f32);
-            if let Some(target) = cam.target_mut() {
+        if let Some(e) = resize_event {
+            self.camera.set_aspect(e.0.width as f32 / e.0.height as f32);
+            if let Some(target) = self.camera.target_mut() {
                 target.resize((e.0.width, e.0.height), &device);
             }
         }
 
         // Move and rotate
         let dt = frame_time.delta;
-        if player.controlled {
-            player.rotate(&mut tr, dt, &input);
-            player.translate(&mut tr, dt, &input, &mut physics);
+        if self.controlled {
+            self.rotate(dt, &input);
+            self.translate(dt, &input, physics);
         } else {
-            player.translation_acc = Vec3::zeros();
+            self.translation_acc = Vec3::zeros();
         }
 
         if input.action_activated(InputAction::ControlPlayer) {
-            player.controlled = !player.controlled;
-            toggle_cursor(player.controlled, &window);
+            self.controlled = !self.controlled;
+            toggle_cursor(self.controlled, &window);
         }
 
-        player.update_focus(&tr, &physics);
+        self.update_focus(&physics);
     }
 
-    fn translate(
-        &mut self,
-        transform: &mut Transform,
-        dt: f32,
-        input: &Input,
-        physics: &mut PhysicsWorld,
-    ) {
+    fn translate(&mut self, dt: f32, input: &Input, physics: &mut PhysicsWorld) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
         if input.action_active(InputAction::MoveForward) {
-            translation += transform.forward();
+            translation += self.transform.forward();
         }
         if input.action_active(InputAction::MoveBack) {
-            translation -= transform.forward();
+            translation -= self.transform.forward();
         }
         if input.action_active(InputAction::MoveRight) {
-            translation += transform.right();
+            translation += self.transform.right();
         }
         if input.action_active(InputAction::MoveLeft) {
-            translation -= transform.right();
+            translation -= self.transform.right();
         }
         if input.action_active(InputAction::MoveUp) {
-            translation += transform.up();
+            translation += self.transform.up();
         }
         if input.action_active(InputAction::MoveDown) {
-            translation -= transform.up();
+            translation -= self.transform.up();
         }
 
         const SPEED: f32 = 10.0;
@@ -147,7 +140,7 @@ impl Player {
         let translation = SPEED * dt * self.translation_acc;
         self.translation_acc -= translation;
 
-        transform.translate(translation);
+        self.transform.translate(translation);
         physics
             .colliders
             .get_mut(self.collider_handle)
@@ -155,12 +148,12 @@ impl Player {
             .set_translation(collider_current_pos + translation);
     }
 
-    fn rotate(&mut self, transform: &mut Transform, dt: f32, input: &Input) {
+    fn rotate(&mut self, dt: f32, input: &Input) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
         const SPEED: f32 = 25.0;
 
-        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
+        let angle_to_top = self.transform.forward().angle(&Vec3::y_axis());
         self.v_rot_acc += input.mouse_delta().1 * dt;
         // Protect from overturning - prevent camera from reaching the vertical line with small
         // margin angles.
@@ -178,14 +171,18 @@ impl Player {
         let h_rot = SPEED * dt * self.h_rot_acc;
         self.h_rot_acc -= h_rot;
 
-        transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
-        transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
+        self.transform
+            .rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
+        self.transform
+            .rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn update_focus(&mut self, tr: &Transform, physics: &PhysicsWorld) {
-        if let Some((hit_pt, _, hit_collider)) =
-            physics.cast_ray(tr.position(), tr.forward(), Some(self.collider_handle))
-        {
+    fn update_focus(&mut self, physics: &PhysicsWorld) {
+        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
+            self.transform.position(),
+            self.transform.forward(),
+            Some(self.collider_handle),
+        ) {
             self.focus_pt = Some(hit_pt);
             self.focus_body = Some(
                 physics

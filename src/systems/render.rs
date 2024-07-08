@@ -97,7 +97,7 @@ fn new_bundle_encoder<'a>(
     })
 }
 
-fn build_render_bundles<'a>(
+pub fn build_render_bundles<'a>(
     meshes: &mut [(
         &'a Mesh,
         &'a mut Material,
