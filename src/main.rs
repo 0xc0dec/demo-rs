@@ -22,6 +22,7 @@ mod systems;
 fn consume_system_events(
     event_loop: &mut EventLoop<()>,
     window: &Window,
+    debug_ui: &mut DebugUI,
     mouse_events: &mut Vec<MouseEvent>,
     keyboard_events: &mut Vec<KeyboardEvent>,
     resize_events: &mut Vec<ResizeEvent>,
@@ -83,6 +84,9 @@ fn consume_system_events(
 
             _ => {}
         }
+
+        // TODO Make DebugUI consume events from the event vectors we're filling in this function.
+        debug_ui.handle_window_event(window, &event);
     });
 }
 
@@ -147,6 +151,7 @@ fn main() {
         consume_system_events(
             &mut event_loop,
             &window,
+            &mut debug_ui,
             &mut mouse_events,
             &mut keyboard_events,
             &mut resize_events,
