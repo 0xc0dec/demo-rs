@@ -4,7 +4,6 @@ use bevy_ecs::schedule::ScheduleLabel;
 use crate::components::{
     FloorBox, FreeBox, Grabbed, PhysicsBody, Player, PlayerTarget, PostProcessor, Skybox,
 };
-use crate::resources::Assets;
 
 use super::build_debug_ui::build_debug_ui;
 use super::misc::update_physics;
@@ -17,7 +16,7 @@ pub fn new_spawn_scene_schedule() -> (Schedule, SpawnSceneSchedule) {
     schedule
         .add_systems(
             (
-                Assets::load,
+                // Assets::load,
                 Skybox::spawn,
                 FreeBox::spawn_sample,
                 FloorBox::spawn,

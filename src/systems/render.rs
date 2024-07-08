@@ -4,7 +4,7 @@ use wgpu::RenderBundle;
 use crate::assets::DrawMesh;
 use crate::assets::RenderTarget;
 use crate::components::{
-    ApplyMaterial, Camera, Material, Mesh, RENDER_TAG_DEBUG_UI, RenderOrder, RenderTags, Transform,
+    ApplyMaterial, Camera, Material, Mesh, RenderOrder, RenderTags, Transform, RENDER_TAG_DEBUG_UI,
 };
 use crate::debug_ui::DebugUI;
 use crate::resources::Device;

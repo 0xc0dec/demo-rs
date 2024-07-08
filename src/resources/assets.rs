@@ -18,7 +18,7 @@ pub struct Assets {
 }
 
 impl Assets {
-    pub fn load(device: Res<Device>, mut commands: Commands) {
+    pub fn load2(device: &Device) -> Self {
         let (
             box_mesh,
             skybox_tex,
@@ -29,21 +29,21 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Arc::new(Mesh::from_file("cube.obj", &device).await),
-                Texture::new_cube_from_file("skybox_bgra.dds", &device)
+                Arc::new(Mesh::from_file("cube.obj", device).await),
+                Texture::new_cube_from_file("skybox_bgra.dds", device)
                     .await
                     .unwrap(),
-                Texture::new_2d_from_file("stonewall.jpg", &device)
+                Texture::new_2d_from_file("stonewall.jpg", device)
                     .await
                     .unwrap(),
-                new_shader_module(&device, "color.wgsl").await,
-                new_shader_module(&device, "diffuse.wgsl").await,
-                new_shader_module(&device, "post-process.wgsl").await,
-                new_shader_module(&device, "skybox.wgsl").await,
+                new_shader_module(device, "color.wgsl").await,
+                new_shader_module(device, "diffuse.wgsl").await,
+                new_shader_module(device, "post-process.wgsl").await,
+                new_shader_module(device, "skybox.wgsl").await,
             )
         });
 
-        commands.insert_resource(Self {
+        Self {
             box_mesh,
             skybox_tex,
             stone_tex,
@@ -51,6 +51,6 @@ impl Assets {
             diffuse_shader,
             postprocess_shader,
             skybox_shader,
-        })
+        }
     }
 }

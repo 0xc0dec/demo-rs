@@ -99,6 +99,8 @@ fn main() {
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
 
+    let _assets = Assets::load2(&device);
+
     // TODO More optimal, avoid vec cleanup on each iteration
     let mut mouse_events = Vec::new();
     let mut keyboard_events = Vec::new();
