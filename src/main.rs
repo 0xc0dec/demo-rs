@@ -120,7 +120,7 @@ fn main() {
             device.resize(e.0);
         }
 
-        input.update2(&mouse_events, &keyboard_events);
+        input.update(&mouse_events, &keyboard_events);
         frame_time.update();
         physics.update(frame_time.delta);
 

@@ -54,8 +54,7 @@ impl Input {
         self.key_pressed_first(action_key(action))
     }
 
-    // TODO Rename
-    pub fn update2(&mut self, mouse_events: &[MouseEvent], keyboard_events: &[KeyboardEvent]) {
+    pub fn update(&mut self, mouse_events: &[MouseEvent], keyboard_events: &[KeyboardEvent]) {
         self.mouse_delta = (0.0, 0.0);
         self.key_prev_pressed = self.key_pressed.clone();
 
