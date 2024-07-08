@@ -9,7 +9,7 @@ use crate::components::{
 use crate::debug_ui::DebugUI;
 use crate::resources::Device;
 
-fn render_pass(
+pub fn render_pass(
     device: &Device,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,

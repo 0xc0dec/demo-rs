@@ -14,6 +14,7 @@ pub struct Assets {
     pub diffuse_shader: wgpu::ShaderModule,
     pub postprocess_shader: wgpu::ShaderModule,
     pub skybox_shader: wgpu::ShaderModule,
+    // TODO Review the usage of `Arc`, it was introduced due to Bevy requirements.
     pub box_mesh: Arc<Mesh>,
 }
 

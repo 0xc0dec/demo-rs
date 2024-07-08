@@ -6,6 +6,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use crate::resources::*;
+use crate::systems::render_pass;
 
 mod assets;
 mod components;
@@ -126,5 +127,7 @@ fn main() {
         mouse_events.clear();
         keyboard_events.clear();
         resize_events.clear();
+
+        render_pass(&device, &[], None, None);
     }
 }
