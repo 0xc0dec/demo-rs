@@ -111,11 +111,11 @@ fn build_render_bundles<'a>(
     meshes
         .iter_mut()
         .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
-        .map(|(mesh, ref mut mat, tr, _)| mesh_to_render_bundle(mesh, mat, tr, camera, device))
+        .map(|(mesh, ref mut mat, tr, _)| build_render_bundle(mesh, mat, tr, camera, device))
         .collect::<Vec<_>>()
 }
 
-pub fn mesh_to_render_bundle(
+pub fn build_render_bundle(
     mesh: &Mesh,
     material: &mut Material,
     transform: &Transform,

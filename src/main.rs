@@ -1,10 +1,12 @@
 use crate::components::{
-    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform, RENDER_TAG_SCENE,
+    Camera, Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
+    RENDER_TAG_SCENE,
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use crate::math::Vec3;
 use std::sync::Arc;
+use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -12,7 +14,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use crate::resources::*;
-use crate::systems::{mesh_to_render_bundle, render_pass};
+use crate::systems::{build_render_bundle, render_pass};
 
 mod assets;
 mod components;
@@ -167,6 +169,34 @@ impl Components {
         self.render_tags.push(render_tags);
         self.transforms.len() - 1
     }
+
+    fn build_render_bundles(
+        &mut self,
+        camera: &Camera,
+        camera_transform: &Transform,
+        device: &Device,
+    ) -> Vec<RenderBundle> {
+        let mut sorted_indices: Vec<(usize, i32)> = (0..self.meshes.len())
+            .map(|idx| (idx, *self.render_orders.get(idx).unwrap()))
+            .collect();
+        sorted_indices
+            .sort_by(|(_, ref order1), (_, ref order2)| order1.partial_cmp(order2).unwrap());
+        let sorted_indices: Vec<usize> = sorted_indices.into_iter().map(|(idx, _)| idx).collect();
+
+        // TODO Group meshes into bundles?
+        sorted_indices
+            .into_iter()
+            .map(|idx| {
+                build_render_bundle(
+                    self.meshes.get(idx).unwrap().as_ref().unwrap(),
+                    self.materials.get_mut(idx).unwrap().as_mut().unwrap(),
+                    self.transforms.get(idx).unwrap().as_ref().unwrap(),
+                    (&camera, &camera_transform),
+                    device,
+                )
+            })
+            .collect::<Vec<_>>()
+    }
 }
 
 fn main() {
@@ -262,28 +292,11 @@ fn main() {
             last_resize_event,
         );
 
+        // TODO Sync physics
+
+        let bundles = components.build_render_bundles(&player.camera, &player.transform, &device);
+
         build_debug_ui(&mut debug_ui, &frame_time, &window);
-
-        let mut sorted_indices: Vec<(usize, i32)> = (0..components.meshes.len())
-            .map(|idx| (idx, *components.render_orders.get(idx).unwrap()))
-            .collect();
-        sorted_indices
-            .sort_by(|(_, ref order1), (_, ref order2)| order1.partial_cmp(&order2).unwrap());
-        let sorted_indices: Vec<usize> = sorted_indices.into_iter().map(|(idx, _)| idx).collect();
-
-        // TODO Group meshes into bundles?
-        let bundles = sorted_indices
-            .into_iter()
-            .map(|idx| {
-                mesh_to_render_bundle(
-                    components.meshes.get(idx).unwrap().as_ref().unwrap(),
-                    components.materials.get_mut(idx).unwrap().as_mut().unwrap(),
-                    components.transforms.get(idx).unwrap().as_ref().unwrap(),
-                    (&player.camera, &player.transform),
-                    &device,
-                )
-            })
-            .collect::<Vec<_>>();
 
         render_pass(&device, &bundles, None, Some(&mut debug_ui));
 
