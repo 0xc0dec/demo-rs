@@ -54,6 +54,7 @@ impl Input {
         self.key_pressed_first(action_key(action))
     }
 
+    // TODO Rename
     pub fn update2(&mut self, mouse_events: &[MouseEvent], keyboard_events: &[KeyboardEvent]) {
         self.mouse_delta = (0.0, 0.0);
         self.key_prev_pressed = self.key_pressed.clone();
@@ -71,31 +72,6 @@ impl Input {
 
         for &KeyboardEvent { code, pressed } in keyboard_events {
             self.key_pressed.insert(Key::Keyboard(code), pressed);
-        }
-    }
-
-    // TODO Remove
-    pub fn update(
-        mut input: ResMut<Input>,
-        mut mouse_events: EventReader<MouseEvent>,
-        mut keyboard_events: EventReader<KeyboardEvent>,
-    ) {
-        input.mouse_delta = (0.0, 0.0);
-        input.key_prev_pressed = input.key_pressed.clone();
-
-        for e in mouse_events.read() {
-            match *e {
-                MouseEvent::Button { btn, pressed } => {
-                    input.key_pressed.insert(Key::MouseButton(btn), pressed);
-                }
-                MouseEvent::Move { dx, dy } => {
-                    input.mouse_delta = (dx, dy);
-                }
-            }
-        }
-
-        for &KeyboardEvent { code, pressed } in keyboard_events.read() {
-            input.key_pressed.insert(Key::Keyboard(code), pressed);
         }
     }
 

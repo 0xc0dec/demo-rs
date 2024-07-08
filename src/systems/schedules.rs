@@ -7,23 +7,10 @@ use crate::components::{
 use crate::resources::{Assets, Input};
 
 use super::build_debug_ui::build_debug_ui;
-use super::capture_events::capture_events;
-use super::misc::escape_on_exit;
-use super::misc::resize_device;
-use super::misc::update_frame_time;
 use super::misc::update_physics;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct BeforeUpdateSchedule;
-
-pub fn new_before_update_schedule() -> (Schedule, BeforeUpdateSchedule) {
-    let mut schedule = Schedule::new(BeforeUpdateSchedule {});
-    schedule
-        .add_systems(capture_events)
-        .add_systems(Input::update.after(capture_events))
-        .add_systems((escape_on_exit, resize_device, update_frame_time).after(Input::update));
-    (schedule, BeforeUpdateSchedule)
-}
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct SpawnSceneSchedule;
