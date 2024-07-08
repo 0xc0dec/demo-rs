@@ -1,4 +1,4 @@
-pub use render::build_render_bundles;
+pub use render::mesh_to_render_bundle;
 pub use render::render_pass;
 
 mod init;

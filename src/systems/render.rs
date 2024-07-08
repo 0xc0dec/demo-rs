@@ -97,7 +97,7 @@ fn new_bundle_encoder<'a>(
     })
 }
 
-pub fn build_render_bundles<'a>(
+fn build_render_bundles<'a>(
     meshes: &mut [(
         &'a Mesh,
         &'a mut Material,
@@ -111,13 +111,21 @@ pub fn build_render_bundles<'a>(
     meshes
         .iter_mut()
         .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
-        .map(|(mesh, ref mut mat, tr, _)| {
-            let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-            mat.apply(&mut encoder, device, camera, tr);
-            encoder.draw_mesh(&mesh.0);
-            encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
-        })
+        .map(|(mesh, ref mut mat, tr, _)| mesh_to_render_bundle(mesh, mat, tr, camera, device))
         .collect::<Vec<_>>()
+}
+
+pub fn mesh_to_render_bundle(
+    mesh: &Mesh,
+    material: &mut Material,
+    transform: &Transform,
+    camera: (&Camera, &Transform),
+    device: &Device,
+) -> RenderBundle {
+    let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
+    material.apply(&mut encoder, device, camera, transform);
+    encoder.draw_mesh(&mesh.0);
+    encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
 }
 
 pub fn render(

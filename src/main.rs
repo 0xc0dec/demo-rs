@@ -1,8 +1,10 @@
 use crate::components::{
-    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_SCENE,
+    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderOrder, RenderTags, Transform,
+    RENDER_TAG_SCENE,
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
+use crate::math::Vec3;
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
@@ -11,7 +13,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use crate::resources::*;
-use crate::systems::{build_render_bundles, render_pass};
+use crate::systems::{mesh_to_render_bundle, render_pass};
 
 mod assets;
 mod components;
@@ -132,6 +134,7 @@ struct Components {
     transforms: Vec<Option<Transform>>,
     meshes: Vec<Option<Mesh>>,
     materials: Vec<Option<Material>>,
+    bodies: Vec<Option<PhysicsBody>>,
     render_orders: Vec<Option<RenderOrder>>,
     render_tags: Vec<Option<RenderTags>>,
 }
@@ -142,6 +145,7 @@ impl Components {
             transforms: Vec::new(),
             meshes: Vec::new(),
             materials: Vec::new(),
+            bodies: Vec::new(),
             render_orders: Vec::new(),
             render_tags: Vec::new(),
         }
@@ -152,12 +156,14 @@ impl Components {
         transform: Transform,
         mesh: Mesh,
         material: Material,
+        body: Option<PhysicsBody>,
         render_order: Option<RenderOrder>,
         render_tags: Option<RenderTags>,
     ) -> usize {
         self.transforms.push(Some(transform));
         self.meshes.push(Some(mesh));
         self.materials.push(Some(material));
+        self.bodies.push(body);
         self.render_orders.push(render_order);
         self.render_tags.push(render_tags);
         self.transforms.len() - 1
@@ -190,18 +196,41 @@ fn main() {
     // TODO Replace with a proper ECS or restructure in some other better way
     let mut components = Components::new();
 
-    let skybox_id = components.spawn_mesh(
-        Transform::default(),
-        Mesh(Arc::new(assets::Mesh::quad(&device))),
-        Material::skybox(&device, &assets, &assets.skybox_tex),
-        Some(RenderOrder(-100)),
-        Some(RenderTags(RENDER_TAG_SCENE)),
-    );
-
     // Player is outside the normal components set for convenience because it's a singleton.
     // Ideally it should be unified with the rest of the objects once we have a proper ECS
     // or an alternative.
     let mut player = Player::new(&device, &mut physics);
+
+    let _skybox_id = components.spawn_mesh(
+        Transform::default(),
+        Mesh(Arc::new(assets::Mesh::quad(&device))),
+        Material::skybox(&device, &assets, &assets.skybox_tex),
+        None,
+        Some(RenderOrder(-100)),
+        Some(RenderTags(RENDER_TAG_SCENE)),
+    );
+
+    let _floor_id = {
+        let pos = Vec3::from_element(0.0);
+        let scale = Vec3::new(10.0, 0.5, 10.0);
+        components.spawn_mesh(
+            Transform::new(pos, scale),
+            Mesh(Arc::clone(&assets.box_mesh)),
+            Material::diffuse(&device, &assets, &assets.stone_tex),
+            Some(PhysicsBody::new(
+                PhysicsBodyParams {
+                    pos,
+                    scale,
+                    rotation_axis: Vec3::from_element(0.0),
+                    rotation_angle: 0.0,
+                    movable: false,
+                },
+                &mut physics,
+            )),
+            None,
+            Some(RenderTags(RENDER_TAG_SCENE)),
+        )
+    };
 
     while !input.action_active(InputAction::Escape) {
         consume_system_events(
@@ -234,26 +263,20 @@ fn main() {
 
         build_debug_ui(&mut debug_ui, &frame_time, &window);
 
-        let bundles = build_render_bundles(
-            &mut [(
-                components.meshes.get(skybox_id).unwrap().as_ref().unwrap(),
-                components
-                    .materials
-                    .get_mut(skybox_id)
-                    .unwrap()
-                    .as_mut()
-                    .unwrap(),
-                components
-                    .transforms
-                    .get(skybox_id)
-                    .unwrap()
-                    .as_ref()
-                    .unwrap(),
-                components.render_tags.get(skybox_id).unwrap().as_ref(),
-            )],
-            (&player.camera, &player.transform),
-            &device,
-        );
+        // TODO Sort by render order
+        // TODO Group meshes into bundles?
+        let bundles = (0..components.meshes.len())
+            .map(|idx| {
+                mesh_to_render_bundle(
+                    components.meshes.get(idx).unwrap().as_ref().unwrap(),
+                    components.materials.get_mut(idx).unwrap().as_mut().unwrap(),
+                    components.transforms.get(idx).unwrap().as_ref().unwrap(),
+                    (&player.camera, &player.transform),
+                    &device,
+                )
+            })
+            .collect::<Vec<_>>();
+
         render_pass(&device, &bundles, None, Some(&mut debug_ui));
 
         mouse_events.clear();
