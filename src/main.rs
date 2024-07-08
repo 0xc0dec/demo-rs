@@ -1,6 +1,5 @@
 use crate::components::{
-    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderOrder, RenderTags, Transform,
-    RENDER_TAG_SCENE,
+    Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform, RENDER_TAG_SCENE,
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
@@ -135,7 +134,7 @@ struct Components {
     meshes: Vec<Option<Mesh>>,
     materials: Vec<Option<Material>>,
     bodies: Vec<Option<PhysicsBody>>,
-    render_orders: Vec<Option<RenderOrder>>,
+    render_orders: Vec<i32>,
     render_tags: Vec<Option<RenderTags>>,
 }
 
@@ -157,14 +156,14 @@ impl Components {
         mesh: Mesh,
         material: Material,
         body: Option<PhysicsBody>,
-        render_order: Option<RenderOrder>,
+        render_order: Option<i32>,
         render_tags: Option<RenderTags>,
     ) -> usize {
         self.transforms.push(Some(transform));
         self.meshes.push(Some(mesh));
         self.materials.push(Some(material));
         self.bodies.push(body);
-        self.render_orders.push(render_order);
+        self.render_orders.push(render_order.unwrap_or(0));
         self.render_tags.push(render_tags);
         self.transforms.len() - 1
     }
@@ -201,15 +200,6 @@ fn main() {
     // or an alternative.
     let mut player = Player::new(&device, &mut physics);
 
-    let _skybox_id = components.spawn_mesh(
-        Transform::default(),
-        Mesh(Arc::new(assets::Mesh::quad(&device))),
-        Material::skybox(&device, &assets, &assets.skybox_tex),
-        None,
-        Some(RenderOrder(-100)),
-        Some(RenderTags(RENDER_TAG_SCENE)),
-    );
-
     let _floor_id = {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
@@ -231,6 +221,17 @@ fn main() {
             Some(RenderTags(RENDER_TAG_SCENE)),
         )
     };
+
+    // Spawning skybox last to ensure the sorting by render order works and it still shows up
+    // in the background.
+    let _skybox_id = components.spawn_mesh(
+        Transform::default(),
+        Mesh(Arc::new(assets::Mesh::quad(&device))),
+        Material::skybox(&device, &assets, &assets.skybox_tex),
+        None,
+        Some(-100),
+        Some(RenderTags(RENDER_TAG_SCENE)),
+    );
 
     while !input.action_active(InputAction::Escape) {
         consume_system_events(
@@ -263,9 +264,16 @@ fn main() {
 
         build_debug_ui(&mut debug_ui, &frame_time, &window);
 
-        // TODO Sort by render order
+        let mut sorted_indices: Vec<(usize, i32)> = (0..components.meshes.len())
+            .map(|idx| (idx, *components.render_orders.get(idx).unwrap()))
+            .collect();
+        sorted_indices
+            .sort_by(|(_, ref order1), (_, ref order2)| order1.partial_cmp(&order2).unwrap());
+        let sorted_indices: Vec<usize> = sorted_indices.into_iter().map(|(idx, _)| idx).collect();
+
         // TODO Group meshes into bundles?
-        let bundles = (0..components.meshes.len())
+        let bundles = sorted_indices
+            .into_iter()
             .map(|idx| {
                 mesh_to_render_bundle(
                     components.meshes.get(idx).unwrap().as_ref().unwrap(),
