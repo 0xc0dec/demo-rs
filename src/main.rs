@@ -28,7 +28,9 @@ fn main() {
         .build(&event_loop)
         .unwrap();
     let mut device = pollster::block_on(Device::new(&window));
+    let mut physics = PhysicsWorld::new();
     let mut input = Input::new();
+    let mut frame_time = FrameTime::new();
 
     // TODO More optimal, this is an MVP
     let mut mouse_events = Vec::new();
@@ -97,11 +99,13 @@ fn main() {
             // debug_ui.handle_window_event(&window, &event);
         });
 
-        input.update2(&mouse_events, &keyboard_events);
-
         if let Some(e) = resize_events.last() {
             device.resize(e.0);
         }
+
+        input.update2(&mouse_events, &keyboard_events);
+        frame_time.update();
+        physics.update(frame_time.delta);
 
         mouse_events.clear();
         keyboard_events.clear();
