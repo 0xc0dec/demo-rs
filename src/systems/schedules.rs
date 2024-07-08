@@ -4,13 +4,10 @@ use bevy_ecs::schedule::ScheduleLabel;
 use crate::components::{
     FloorBox, FreeBox, Grabbed, PhysicsBody, Player, PlayerTarget, PostProcessor, Skybox,
 };
-use crate::resources::{Assets, Input};
+use crate::resources::Assets;
 
 use super::build_debug_ui::build_debug_ui;
 use super::misc::update_physics;
-
-#[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct BeforeUpdateSchedule;
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct SpawnSceneSchedule;
