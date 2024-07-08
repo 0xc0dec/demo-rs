@@ -27,7 +27,7 @@ fn main() {
         })
         .build(&event_loop)
         .unwrap();
-    let device = pollster::block_on(Device::new(&window));
+    let mut device = pollster::block_on(Device::new(&window));
     let mut input = Input::new();
 
     // TODO More optimal, this is an MVP
@@ -35,8 +35,7 @@ fn main() {
     let mut keyboard_events = Vec::new();
     let mut resize_events = Vec::new();
 
-    let mut run = true;
-    while run {
+    while !input.action_active(InputAction::Escape) {
         event_loop.run_return(|event, _, flow| {
             *flow = ControlFlow::Poll;
 
@@ -99,10 +98,13 @@ fn main() {
         });
 
         input.update2(&mouse_events, &keyboard_events);
+
+        if let Some(e) = resize_events.last() {
+            device.resize(e.0);
+        }
+
         mouse_events.clear();
         keyboard_events.clear();
         resize_events.clear();
-
-        run = !input.action_active(InputAction::Escape);
     }
 }
