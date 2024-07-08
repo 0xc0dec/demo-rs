@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::{Commands, Res, Resource};
+use bevy_ecs::prelude::Resource;
 use std::sync::Arc;
 
 use crate::assets::utils::new_shader_module;
@@ -18,7 +18,7 @@ pub struct Assets {
 }
 
 impl Assets {
-    pub fn load2(device: &Device) -> Self {
+    pub fn load(device: &Device) -> Self {
         let (
             box_mesh,
             skybox_tex,
