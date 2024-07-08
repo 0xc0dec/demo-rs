@@ -91,7 +91,7 @@ fn consume_system_events(
 }
 
 fn build_debug_ui(ui: &mut DebugUI, frame_time: &FrameTime, window: &Window) {
-    ui.prepare_render(&window, frame_time.delta, |frame| {
+    ui.prepare_render(window, frame_time.delta, |frame| {
         frame
             .window("Debug info")
             .position([10.0, 10.0], imgui::Condition::FirstUseEver)
