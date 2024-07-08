@@ -2,7 +2,7 @@ use bevy_ecs::prelude::{run_once, Condition, IntoSystemConfigs, Query, Schedule}
 use bevy_ecs::schedule::ScheduleLabel;
 
 use crate::components::{
-    FloorBox, FreeBox, Grabbed, PhysicsBody, Player, PlayerTarget, PostProcessor, Skybox,
+    FloorBox, FreeBox, Grabbed, PhysicsBody, Player, PlayerTarget, PostProcessor,
 };
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -14,7 +14,7 @@ pub fn new_spawn_scene_schedule() -> (Schedule, SpawnSceneSchedule) {
         .add_systems(
             (
                 // Assets::load,
-                Skybox::spawn,
+                // Skybox::spawn,
                 FreeBox::spawn_sample,
                 FloorBox::spawn,
                 Player::spawn,

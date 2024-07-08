@@ -1,5 +1,7 @@
+use crate::components::{Material, Mesh, RenderOrder, Transform};
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
+use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -124,6 +126,38 @@ fn build_debug_ui(ui: &mut DebugUI, frame_time: &FrameTime, window: &Window) {
     });
 }
 
+struct Components {
+    transforms: Vec<Option<Transform>>,
+    meshes: Vec<Option<Mesh>>,
+    materials: Vec<Option<Material>>,
+    render_orders: Vec<Option<RenderOrder>>,
+}
+
+impl Components {
+    fn new() -> Self {
+        Self {
+            transforms: Vec::new(),
+            meshes: Vec::new(),
+            materials: Vec::new(),
+            render_orders: Vec::new(),
+        }
+    }
+
+    fn spawn_mesh(
+        &mut self,
+        transform: Transform,
+        mesh: Mesh,
+        material: Material,
+        render_order: Option<RenderOrder>,
+    ) -> usize {
+        self.transforms.push(Some(transform));
+        self.meshes.push(Some(mesh));
+        self.materials.push(Some(material));
+        self.render_orders.push(render_order);
+        self.transforms.len() - 1
+    }
+}
+
 fn main() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()
@@ -139,13 +173,23 @@ fn main() {
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
 
-    let _assets = Assets::load(&device);
+    let assets = Assets::load(&device);
     let mut debug_ui = DebugUI::new(&device, &window);
 
     // TODO More optimal, avoid vec cleanup on each iteration
     let mut mouse_events = Vec::new();
     let mut keyboard_events = Vec::new();
     let mut resize_events = Vec::new();
+
+    // TODO Replace with a proper ECS or restructure in some other better way
+    let mut components = Components::new();
+
+    let _skybox_id = components.spawn_mesh(
+        Transform::default(),
+        Mesh(Arc::new(assets::Mesh::quad(&device))),
+        Material::skybox(&device, &assets, &assets.skybox_tex),
+        Some(RenderOrder(-100)),
+    );
 
     while !input.action_active(InputAction::Escape) {
         consume_system_events(
