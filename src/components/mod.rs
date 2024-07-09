@@ -1,6 +1,4 @@
 pub use camera::Camera;
-pub use floor_box::FloorBox;
-pub use free_box::FreeBox;
 pub use grabbed::Grabbed;
 pub use materials::*;
 pub use mesh::Mesh;
@@ -13,8 +11,6 @@ pub use render_tags::*;
 pub use transform::{Transform, TransformSpace};
 
 mod camera;
-mod floor_box;
-mod free_box;
 mod grabbed;
 mod materials;
 mod mesh;

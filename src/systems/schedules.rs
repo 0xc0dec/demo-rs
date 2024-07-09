@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::{run_once, Condition, IntoSystemConfigs, Query, Schedule};
 use bevy_ecs::schedule::ScheduleLabel;
 
-use crate::components::{FloorBox, FreeBox, Grabbed, Player, PlayerTarget, PostProcessor};
+use crate::components::{Grabbed, Player, PlayerTarget, PostProcessor};
 
 #[derive(ScheduleLabel, Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct SpawnSceneSchedule;
@@ -13,8 +13,8 @@ pub fn new_spawn_scene_schedule() -> (Schedule, SpawnSceneSchedule) {
             (
                 // Assets::load,
                 // Skybox::spawn,
-                FreeBox::spawn_sample,
-                FloorBox::spawn,
+                // FreeBox::spawn_sample,
+                // FloorBox::spawn,
                 // Player::spawn,
                 PlayerTarget::spawn,
             )
@@ -38,7 +38,7 @@ pub fn new_update_schedule() -> (Schedule, UpdateSchedule) {
         // .add_systems(Player::update).after(update_physics))
         .add_systems(PlayerTarget::update) //.after(Player::update))
         .add_systems(Grabbed::update) //.after(Player::update))
-        .add_systems(FreeBox::spawn_by_player) // .after(Player::update))
+        // .add_systems(FreeBox::spawn_by_player) // .after(Player::update))
         .add_systems(PostProcessor::update); // .after(Player::update));
                                              // .add_systems(build_debug_ui);
     (schedule, UpdateSchedule)
