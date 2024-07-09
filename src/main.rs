@@ -1,6 +1,7 @@
+use crate::assets::Texture;
 use crate::components::{
     Camera, Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
-    RENDER_TAG_SCENE,
+    RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
@@ -231,6 +232,32 @@ impl Scene {
         );
     }
 
+    fn spawn_post_process_overlay(
+        &mut self,
+        source_color_tex: &Texture,
+        device: &Device,
+        assets: &Assets,
+    ) -> usize {
+        self.spawn_mesh(
+            Transform::default(),
+            Mesh(Arc::new(assets::Mesh::quad(device))),
+            Material::post_process(device, assets, source_color_tex),
+            None,
+            Some(100),
+            Some(RenderTags(RENDER_TAG_POST_PROCESS)),
+        )
+    }
+
+    fn update_post_process_overlay(
+        &mut self,
+        idx: usize,
+        source_color_tex: &Texture,
+        device: &Device,
+        assets: &Assets,
+    ) {
+        self.materials[idx] = Some(Material::post_process(device, assets, source_color_tex));
+    }
+
     // TODO Move elsewhere, it should not be a method on Scene
     fn build_render_bundles(
         &mut self,
@@ -247,8 +274,17 @@ impl Scene {
 
         // TODO Group meshes into bundles?
         sorted_indices
-            .into_iter()
-            .map(|idx| {
+            .iter()
+            .filter(|&&idx| {
+                camera.should_render(
+                    self.render_tags
+                        .get(idx)
+                        .unwrap()
+                        .as_ref()
+                        .map_or(0u32, |t| t.0),
+                )
+            })
+            .map(|&idx| {
                 build_render_bundle(
                     self.meshes.get(idx).unwrap().as_ref().unwrap(),
                     self.materials.get_mut(idx).unwrap().as_mut().unwrap(),
@@ -260,7 +296,6 @@ impl Scene {
             .collect::<Vec<_>>()
     }
 
-    // TODO Move elsewhere, it should not be at method on Scene
     fn sync_physics(&mut self, physics: &PhysicsWorld) {
         for idx in 0..self.bodies.len() {
             if let Some(body) = self.bodies.get(idx).unwrap() {
@@ -305,11 +340,17 @@ fn main() {
     // or an alternative.
     let mut player = Player::new(&device, &mut physics);
 
-    scene.spawn_floor(&device, &assets, &mut physics);
+    let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
 
+    scene.spawn_floor(&device, &assets, &mut physics);
     // Spawning skybox last to ensure the sorting by render order works and it still shows up
     // in the background.
     scene.spawn_skybox(&device, &assets);
+    let pp_idx = scene.spawn_post_process_overlay(
+        player.camera.target().as_ref().unwrap().color_tex(),
+        &device,
+        &assets,
+    );
 
     let mut spawned_demo_box = false;
 
@@ -342,6 +383,15 @@ fn main() {
             last_resize_event,
         );
 
+        if last_resize_event.is_some() {
+            scene.update_post_process_overlay(
+                pp_idx,
+                player.camera.target().as_ref().unwrap().color_tex(),
+                &device,
+                &assets,
+            );
+        }
+
         scene.sync_physics(&physics);
 
         if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
@@ -355,10 +405,22 @@ fn main() {
             scene.spawn_cube(pos, Vec3::from_element(1.0), &device, &assets, &mut physics);
         }
 
-        let bundles = scene.build_render_bundles(&player.camera, &player.transform, &device);
+        // Render main scene into a texture
+        render_pass(
+            &device,
+            &scene.build_render_bundles(&player.camera, &player.transform, &device),
+            player.camera.target().as_ref(),
+            None,
+        );
+
+        // Render post-process overlay + debug UI
         build_debug_ui(&mut debug_ui, &frame_time, &window);
-        render_pass(&device, &bundles, None, Some(&mut debug_ui));
-        // TODO Render post-process with a different camera
+        render_pass(
+            &device,
+            &scene.build_render_bundles(&pp_cam, &Transform::default(), &device),
+            None,
+            Some(&mut debug_ui),
+        );
 
         mouse_events.clear();
         keyboard_events.clear();
