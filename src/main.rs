@@ -198,21 +198,16 @@ impl Components {
             })
             .collect::<Vec<_>>()
     }
-}
 
-fn sync_physics(components: &mut Components, physics: &PhysicsWorld) {
-    for idx in 0..components.bodies.len() {
-        if let Some(body) = components.bodies.get(idx).unwrap() {
-            let transform = components
-                .transforms
-                .get_mut(idx)
-                .unwrap()
-                .as_mut()
-                .unwrap();
-            let body = physics.bodies.get(body.body_handle()).unwrap();
-            let phys_pos = body.translation();
-            let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
-            transform.set(*phys_pos, *phys_rot.quaternion());
+    fn sync_physics(&mut self, physics: &PhysicsWorld) {
+        for idx in 0..self.bodies.len() {
+            if let Some(body) = self.bodies.get(idx).unwrap() {
+                let transform = self.transforms.get_mut(idx).unwrap().as_mut().unwrap();
+                let body = physics.bodies.get(body.body_handle()).unwrap();
+                let phys_pos = body.translation();
+                let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
+                transform.set(*phys_pos, *phys_rot.quaternion());
+            }
         }
     }
 }
@@ -310,7 +305,7 @@ fn main() {
             last_resize_event,
         );
 
-        sync_physics(&mut components, &physics);
+        components.sync_physics(&physics);
 
         // Spawn box
         if input.action_activated(InputAction::Spawn) {
