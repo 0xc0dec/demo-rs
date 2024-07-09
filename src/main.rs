@@ -276,6 +276,8 @@ fn main() {
         Some(RenderTags(RENDER_TAG_SCENE)),
     );
 
+    let mut spawned_demo_box = false;
+
     while !input.action_active(InputAction::Escape) {
         consume_system_events(
             &mut event_loop,
@@ -308,8 +310,13 @@ fn main() {
         components.sync_physics(&physics);
 
         // Spawn box
-        if input.action_activated(InputAction::Spawn) {
-            let pos = player.transform.position() + player.transform.forward().xyz() * 5.0;
+        if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
+            let pos = if spawned_demo_box {
+                player.transform.position() + player.transform.forward().xyz() * 5.0
+            } else {
+                spawned_demo_box = true;
+                Vec3::y_axis().xyz() * 5.0
+            };
 
             let scale = Vec3::from_element(1.0);
             components.spawn_mesh(
