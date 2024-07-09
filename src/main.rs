@@ -132,7 +132,7 @@ fn build_debug_ui(ui: &mut DebugUI, frame_time: &FrameTime, window: &Window) {
 }
 
 // TODO A proper ECS or some other solution. This is a very basic solution for now.
-struct Components {
+struct Scene {
     transforms: Vec<Option<Transform>>,
     meshes: Vec<Option<Mesh>>,
     materials: Vec<Option<Material>>,
@@ -141,7 +141,7 @@ struct Components {
     render_tags: Vec<Option<RenderTags>>,
 }
 
-impl Components {
+impl Scene {
     fn new() -> Self {
         Self {
             transforms: Vec::new(),
@@ -171,6 +171,67 @@ impl Components {
         self.transforms.len() - 1
     }
 
+    fn spawn_floor(&mut self, device: &Device, assets: &Assets, physics: &mut PhysicsWorld) {
+        let pos = Vec3::from_element(0.0);
+        let scale = Vec3::new(10.0, 0.5, 10.0);
+        self.spawn_mesh(
+            Transform::new(pos, scale),
+            Mesh(Arc::clone(&assets.box_mesh)),
+            Material::diffuse(device, assets, &assets.stone_tex),
+            Some(PhysicsBody::new(
+                PhysicsBodyParams {
+                    pos,
+                    scale,
+                    rotation_axis: Vec3::from_element(0.0),
+                    rotation_angle: 0.0,
+                    movable: false,
+                },
+                physics,
+            )),
+            None,
+            Some(RenderTags(RENDER_TAG_SCENE)),
+        );
+    }
+
+    fn spawn_cube(
+        &mut self,
+        pos: Vec3,
+        scale: Vec3,
+        device: &Device,
+        assets: &Assets,
+        physics: &mut PhysicsWorld,
+    ) {
+        self.spawn_mesh(
+            Transform::new(pos, scale),
+            Mesh(Arc::clone(&assets.box_mesh)),
+            Material::diffuse(device, assets, &assets.stone_tex),
+            Some(PhysicsBody::new(
+                PhysicsBodyParams {
+                    pos,
+                    scale,
+                    rotation_axis: Vec3::identity(),
+                    rotation_angle: 0.0,
+                    movable: true,
+                },
+                physics,
+            )),
+            None,
+            Some(RenderTags(RENDER_TAG_SCENE)),
+        );
+    }
+
+    fn spawn_skybox(&mut self, device: &Device, assets: &Assets) {
+        self.spawn_mesh(
+            Transform::default(),
+            Mesh(Arc::new(assets::Mesh::quad(device))),
+            Material::skybox(device, assets, &assets.skybox_tex),
+            None,
+            Some(-100),
+            Some(RenderTags(RENDER_TAG_SCENE)),
+        );
+    }
+
+    // TODO Move elsewhere, it should not be a method on Scene
     fn build_render_bundles(
         &mut self,
         camera: &Camera,
@@ -199,6 +260,7 @@ impl Components {
             .collect::<Vec<_>>()
     }
 
+    // TODO Move elsewhere, it should not be at method on Scene
     fn sync_physics(&mut self, physics: &PhysicsWorld) {
         for idx in 0..self.bodies.len() {
             if let Some(body) = self.bodies.get(idx).unwrap() {
@@ -236,45 +298,18 @@ fn main() {
     let mut resize_events = Vec::new();
 
     // TODO Replace with a proper ECS or restructure in some other better way
-    let mut components = Components::new();
+    let mut scene = Scene::new();
 
     // Player is outside the normal components set for convenience because it's a singleton.
     // Ideally it should be unified with the rest of the objects once we have a proper ECS
     // or an alternative.
     let mut player = Player::new(&device, &mut physics);
 
-    let _floor_id = {
-        let pos = Vec3::from_element(0.0);
-        let scale = Vec3::new(10.0, 0.5, 10.0);
-        components.spawn_mesh(
-            Transform::new(pos, scale),
-            Mesh(Arc::clone(&assets.box_mesh)),
-            Material::diffuse(&device, &assets, &assets.stone_tex),
-            Some(PhysicsBody::new(
-                PhysicsBodyParams {
-                    pos,
-                    scale,
-                    rotation_axis: Vec3::from_element(0.0),
-                    rotation_angle: 0.0,
-                    movable: false,
-                },
-                &mut physics,
-            )),
-            None,
-            Some(RenderTags(RENDER_TAG_SCENE)),
-        )
-    };
+    scene.spawn_floor(&device, &assets, &mut physics);
 
     // Spawning skybox last to ensure the sorting by render order works and it still shows up
     // in the background.
-    let _skybox_id = components.spawn_mesh(
-        Transform::default(),
-        Mesh(Arc::new(assets::Mesh::quad(&device))),
-        Material::skybox(&device, &assets, &assets.skybox_tex),
-        None,
-        Some(-100),
-        Some(RenderTags(RENDER_TAG_SCENE)),
-    );
+    scene.spawn_skybox(&device, &assets);
 
     let mut spawned_demo_box = false;
 
@@ -307,9 +342,8 @@ fn main() {
             last_resize_event,
         );
 
-        components.sync_physics(&physics);
+        scene.sync_physics(&physics);
 
-        // Spawn box
         if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
             let pos = if spawned_demo_box {
                 player.transform.position() + player.transform.forward().xyz() * 5.0
@@ -318,27 +352,10 @@ fn main() {
                 Vec3::y_axis().xyz() * 5.0
             };
 
-            let scale = Vec3::from_element(1.0);
-            components.spawn_mesh(
-                Transform::new(pos, scale),
-                Mesh(Arc::clone(&assets.box_mesh)),
-                Material::diffuse(&device, &assets, &assets.stone_tex),
-                Some(PhysicsBody::new(
-                    PhysicsBodyParams {
-                        pos,
-                        scale,
-                        rotation_axis: Vec3::identity(),
-                        rotation_angle: 0.0,
-                        movable: true,
-                    },
-                    &mut physics,
-                )),
-                None,
-                Some(RenderTags(RENDER_TAG_SCENE)),
-            );
+            scene.spawn_cube(pos, Vec3::from_element(1.0), &device, &assets, &mut physics);
         }
 
-        let bundles = components.build_render_bundles(&player.camera, &player.transform, &device);
+        let bundles = scene.build_render_bundles(&player.camera, &player.transform, &device);
         build_debug_ui(&mut debug_ui, &frame_time, &window);
         render_pass(&device, &bundles, None, Some(&mut debug_ui));
         // TODO Render post-process with a different camera
