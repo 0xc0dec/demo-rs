@@ -5,7 +5,6 @@ pub use mesh::Mesh;
 pub use physics_body::{PhysicsBody, PhysicsBodyParams};
 pub use player::Player;
 pub use player_target::PlayerTarget;
-pub use render_order::RenderOrder;
 pub use render_tags::*;
 pub use transform::{Transform, TransformSpace};
 
@@ -16,6 +15,5 @@ mod mesh;
 mod physics_body;
 mod player;
 mod player_target;
-mod render_order;
 mod render_tags;
 mod transform;

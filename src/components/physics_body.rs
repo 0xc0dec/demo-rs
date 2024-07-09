@@ -1,7 +1,6 @@
 use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 
-use crate::components::*;
 use crate::math::Vec3;
 use crate::resources::PhysicsWorld;
 
@@ -43,15 +42,6 @@ impl PhysicsBody {
 
         Self { handle, movable }
     }
-
-    // pub fn sync(mut q: Query<(&mut Transform, &PhysicsBody)>, physics: Res<PhysicsWorld>) {
-    //     for (mut transform, body) in q.iter_mut() {
-    //         let body = physics.bodies.get(body.handle).unwrap();
-    //         let phys_pos = body.translation();
-    //         let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
-    //         transform.set(*phys_pos, *phys_rot.quaternion());
-    //     }
-    // }
 
     pub fn body_handle(&self) -> RigidBodyHandle {
         self.handle
