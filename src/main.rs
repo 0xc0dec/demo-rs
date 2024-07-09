@@ -131,6 +131,7 @@ fn build_debug_ui(ui: &mut DebugUI, frame_time: &FrameTime, window: &Window) {
     });
 }
 
+// TODO A proper ECS or some other solution. This is a very basic solution for now.
 struct Components {
     transforms: Vec<Option<Transform>>,
     meshes: Vec<Option<Mesh>>,
@@ -311,11 +312,34 @@ fn main() {
 
         sync_physics(&mut components, &physics);
 
+        // Spawn box
+        if input.action_activated(InputAction::Spawn) {
+            let pos = player.transform.position() + player.transform.forward().xyz() * 5.0;
+
+            let scale = Vec3::from_element(1.0);
+            components.spawn_mesh(
+                Transform::new(pos, scale),
+                Mesh(Arc::clone(&assets.box_mesh)),
+                Material::diffuse(&device, &assets, &assets.stone_tex),
+                Some(PhysicsBody::new(
+                    PhysicsBodyParams {
+                        pos,
+                        scale,
+                        rotation_axis: Vec3::identity(),
+                        rotation_angle: 0.0,
+                        movable: true,
+                    },
+                    &mut physics,
+                )),
+                None,
+                Some(RenderTags(RENDER_TAG_SCENE)),
+            );
+        }
+
         let bundles = components.build_render_bundles(&player.camera, &player.transform, &device);
-
         build_debug_ui(&mut debug_ui, &frame_time, &window);
-
         render_pass(&device, &bundles, None, Some(&mut debug_ui));
+        // TODO Render post-process with a different camera
 
         mouse_events.clear();
         keyboard_events.clear();
