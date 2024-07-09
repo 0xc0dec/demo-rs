@@ -199,6 +199,23 @@ impl Components {
     }
 }
 
+fn sync_physics(components: &mut Components, physics: &PhysicsWorld) {
+    for idx in 0..components.bodies.len() {
+        if let Some(body) = components.bodies.get(idx).unwrap() {
+            let transform = components
+                .transforms
+                .get_mut(idx)
+                .unwrap()
+                .as_mut()
+                .unwrap();
+            let body = physics.bodies.get(body.body_handle()).unwrap();
+            let phys_pos = body.translation();
+            let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
+            transform.set(*phys_pos, *phys_rot.quaternion());
+        }
+    }
+}
+
 fn main() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()
@@ -292,7 +309,7 @@ fn main() {
             last_resize_event,
         );
 
-        // TODO Sync physics
+        sync_physics(&mut components, &physics);
 
         let bundles = components.build_render_bundles(&player.camera, &player.transform, &device);
 
