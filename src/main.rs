@@ -1,7 +1,7 @@
 use crate::assets::Texture;
 use crate::components::{
     Camera, Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
-    RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
+    RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
@@ -232,6 +232,17 @@ impl Scene {
         );
     }
 
+    fn spawn_player_target(&mut self, device: &Device, assets: &Assets) -> usize {
+        self.spawn_mesh(
+            Transform::default(),
+            Mesh(Arc::clone(&assets.box_mesh)),
+            Material::color(device, assets),
+            None,
+            None,
+            Some(RenderTags(RENDER_TAG_HIDDEN)),
+        )
+    }
+
     fn spawn_post_process_overlay(
         &mut self,
         source_color_tex: &Texture,
@@ -256,6 +267,36 @@ impl Scene {
         assets: &Assets,
     ) {
         self.materials[idx] = Some(Material::post_process(device, assets, source_color_tex));
+    }
+
+    fn update_player_target(&mut self, player: &Player, target_idx: usize) {
+        if let Some(player_focus_pt) = player.focus_point() {
+            let dist_to_camera = (player.transform.position() - player_focus_pt).magnitude();
+            let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
+
+            let target_transform = self
+                .transforms
+                .get_mut(target_idx)
+                .unwrap()
+                .as_mut()
+                .unwrap();
+            target_transform.set_position(player_focus_pt);
+            target_transform.set_scale(Vec3::from_element(scale));
+
+            self.render_tags
+                .get_mut(target_idx)
+                .unwrap()
+                .as_mut()
+                .unwrap()
+                .0 = RENDER_TAG_SCENE;
+        } else {
+            self.render_tags
+                .get_mut(target_idx)
+                .unwrap()
+                .as_mut()
+                .unwrap()
+                .0 = RENDER_TAG_HIDDEN;
+        }
     }
 
     // TODO Move elsewhere, it should not be a method on Scene
@@ -319,6 +360,7 @@ fn main() {
         })
         .build(&event_loop)
         .unwrap();
+    // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
     let mut device = pollster::block_on(Device::new(&window));
     let mut physics = PhysicsWorld::new();
     let mut input = Input::new();
@@ -339,6 +381,7 @@ fn main() {
     // Ideally it should be unified with the rest of the objects once we have a proper ECS
     // or an alternative.
     let mut player = Player::new(&device, &mut physics);
+    let player_target_idx = scene.spawn_player_target(&device, &assets);
 
     let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
 
@@ -393,6 +436,8 @@ fn main() {
         }
 
         scene.sync_physics(&physics);
+
+        scene.update_player_target(&player, player_target_idx);
 
         if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
             let pos = if spawned_demo_box {
