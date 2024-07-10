@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::assets::utils::new_shader_module;
 use crate::assets::{Mesh, Texture};
-use crate::resources::device::Device;
+use crate::device::Device;
 
 pub struct Assets {
     // TODO Public readonly

@@ -4,7 +4,7 @@ use crate::assets::DrawMesh;
 use crate::assets::RenderTarget;
 use crate::components::{ApplyMaterial, Camera, Material, Mesh, Transform};
 use crate::debug_ui::DebugUI;
-use crate::resources::Device;
+use crate::device::Device;
 
 pub fn render_pass(
     device: &Device,

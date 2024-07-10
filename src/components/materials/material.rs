@@ -1,5 +1,6 @@
 use crate::assets::Texture;
-use crate::resources::{Assets, Device};
+use crate::device::Device;
+use crate::resources::Assets;
 
 use super::super::{Camera, Transform};
 use super::apply_material::ApplyMaterial;

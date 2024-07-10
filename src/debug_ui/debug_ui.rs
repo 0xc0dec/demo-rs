@@ -5,7 +5,7 @@ use winit::event::Event;
 use winit::window::Window;
 
 use crate::debug_ui::imgui_winit;
-use crate::resources::Device;
+use crate::device::Device;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,

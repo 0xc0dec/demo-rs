@@ -1,7 +1,7 @@
 use rapier3d::prelude::*;
 
 use crate::math::Vec3;
-use crate::resources::PhysicsWorld;
+use crate::physics_world::PhysicsWorld;
 
 pub struct PhysicsBody {
     handle: RigidBodyHandle,

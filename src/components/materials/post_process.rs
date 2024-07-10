@@ -2,7 +2,8 @@ use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::{MeshVertex, Texture};
 use crate::components::{Camera, Transform};
-use crate::resources::{Assets, Device};
+use crate::device::Device;
+use crate::resources::Assets;
 
 use super::apply_material::ApplyMaterial;
 use super::utils::*;
