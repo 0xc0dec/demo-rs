@@ -1,10 +1,8 @@
-use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 
 use crate::math::Vec3;
 use crate::resources::PhysicsWorld;
 
-#[derive(Component)]
 pub struct PhysicsBody {
     handle: RigidBodyHandle,
     movable: bool,

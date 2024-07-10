@@ -1,5 +1,3 @@
-use bevy_ecs::prelude::Component;
-
 use crate::assets::Texture;
 use crate::resources::{Assets, Device};
 
@@ -10,7 +8,6 @@ use super::diffuse::DiffuseMaterial;
 use super::post_process::PostProcessMaterial;
 use super::skybox::SkyboxMaterial;
 
-#[derive(Component)]
 pub struct Material(Box<dyn ApplyMaterial>);
 
 impl ApplyMaterial for Material {

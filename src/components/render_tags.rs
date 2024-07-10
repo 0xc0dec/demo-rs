@@ -1,6 +1,3 @@
-use bevy_ecs::prelude::Component;
-
-#[derive(Component)]
 pub struct RenderTags(pub u32);
 
 pub const RENDER_TAG_SCENE: u32 = 0b00000001;

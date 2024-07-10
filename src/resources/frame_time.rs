@@ -1,9 +1,6 @@
 use std::collections::VecDeque;
 use std::time::Instant;
 
-use bevy_ecs::prelude::*;
-
-#[derive(Resource)]
 pub struct FrameTime {
     pub delta: f32,
     queue: VecDeque<f32>,

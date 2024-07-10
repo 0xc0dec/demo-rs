@@ -1,6 +1,5 @@
 use std::f32::consts::PI;
 
-use bevy_ecs::prelude::*;
 use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
@@ -10,7 +9,6 @@ use crate::events::ResizeEvent;
 use crate::math::Vec3;
 use crate::resources::{Device, FrameTime, Input, InputAction, PhysicsWorld};
 
-#[derive(Component)]
 pub struct Player {
     // Point and physics body at which the player is currently looking at
     // (ray cast from the screen center).

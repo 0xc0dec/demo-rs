@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use bevy_ecs::prelude::*;
 use winit::event::*;
 
 use crate::events::{KeyboardEvent, MouseEvent};
@@ -24,7 +23,6 @@ enum Key {
     MouseButton(MouseButton),
 }
 
-#[derive(Resource)]
 pub struct Input {
     mouse_delta: (f32, f32),
     // TODO Use something faster than hashmaps (non-heap)

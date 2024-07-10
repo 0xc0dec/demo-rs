@@ -1,10 +1,8 @@
-use bevy_ecs::prelude::*;
 use rapier3d::na;
 
 use crate::assets::RenderTarget;
 use crate::math::Mat4;
 
-#[derive(Component)]
 pub struct Camera {
     aspect: f32,
     znear: f32,
