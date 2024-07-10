@@ -83,25 +83,25 @@ impl Player {
         if let Some(e) = resize_event {
             self.camera.set_aspect(e.0.width as f32 / e.0.height as f32);
             if let Some(target) = self.camera.target_mut() {
-                target.resize((e.0.width, e.0.height), &device);
+                target.resize((e.0.width, e.0.height), device);
             }
         }
 
         // Move and rotate
         let dt = frame_time.delta;
         if self.controlled {
-            self.rotate(dt, &input);
-            self.translate(dt, &input, physics);
+            self.rotate(dt, input);
+            self.translate(dt, input, physics);
         } else {
             self.translation_acc = Vec3::zeros();
         }
 
         if input.action_activated(InputAction::ControlPlayer) {
             self.controlled = !self.controlled;
-            toggle_cursor(self.controlled, &window);
+            toggle_cursor(self.controlled, window);
         }
 
-        self.update_focus(&physics);
+        self.update_focus(physics);
     }
 
     fn translate(&mut self, dt: f32, input: &Input, physics: &mut PhysicsWorld) {
