@@ -5,7 +5,7 @@ use crate::components::{
 };
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
-use crate::math::Vec3;
+use crate::math::{to_point, Vec3};
 use std::sync::Arc;
 use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
@@ -140,6 +140,8 @@ struct Scene {
     bodies: Vec<Option<PhysicsBody>>,
     render_orders: Vec<i32>,
     render_tags: Vec<Option<RenderTags>>,
+    grabbed_body_idx: Option<usize>,
+    grabbed_body_player_local_pos: Option<Vec3>,
 }
 
 impl Scene {
@@ -151,6 +153,8 @@ impl Scene {
             bodies: Vec::new(),
             render_orders: Vec::new(),
             render_tags: Vec::new(),
+            grabbed_body_idx: None,
+            grabbed_body_player_local_pos: None,
         }
     }
 
@@ -257,6 +261,55 @@ impl Scene {
             Some(100),
             Some(RenderTags(RENDER_TAG_POST_PROCESS)),
         )
+    }
+
+    fn update_grabbed(&mut self, player: &Player, input: &Input, physics: &mut PhysicsWorld) {
+        if input.action_active(InputAction::Grab) && player.controlled() {
+            if self.grabbed_body_player_local_pos.is_none() {
+                // Initiate grab
+                if let Some(focus_body_handle) = player.focus_body() {
+                    let body_idx = self
+                        .bodies
+                        .iter()
+                        .position(|b| {
+                            b.as_ref()
+                                .is_some_and(|b| b.body_handle() == focus_body_handle)
+                        })
+                        .unwrap();
+                    let body = self.bodies.get_mut(body_idx).unwrap().as_mut().unwrap();
+                    body.set_kinematic(physics, true);
+                    let body = physics.bodies.get_mut(focus_body_handle).unwrap();
+                    let local_pos = player
+                        .transform
+                        .matrix()
+                        .try_inverse()
+                        .unwrap()
+                        .transform_point(&to_point(*body.translation()))
+                        .coords;
+                    self.grabbed_body_idx = Some(body_idx);
+                    self.grabbed_body_player_local_pos = Some(local_pos);
+                }
+            } else {
+                // Update the grabbed object
+                if let Some(grabbed_idx) = self.grabbed_body_idx {
+                    let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
+                    let body = physics.bodies.get_mut(body.body_handle()).unwrap();
+                    let new_pos = player
+                        .transform
+                        .matrix()
+                        .transform_point(&to_point(self.grabbed_body_player_local_pos.unwrap()));
+                    body.set_translation(new_pos.coords, true);
+                }
+            }
+        } else {
+            // Release grab
+            if let Some(grabbed_idx) = self.grabbed_body_idx.take() {
+                let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
+                body.set_kinematic(physics, false);
+                self.grabbed_body_idx = None;
+                self.grabbed_body_player_local_pos = None;
+            }
+        }
     }
 
     fn update_post_process_overlay(
@@ -435,9 +488,10 @@ fn main() {
             );
         }
 
-        scene.sync_physics(&physics);
-
+        scene.update_grabbed(&player, &input, &mut physics);
         scene.update_player_target(&player, player_target_idx);
+
+        scene.sync_physics(&physics);
 
         if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
             let pos = if spawned_demo_box {
