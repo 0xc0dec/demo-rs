@@ -6,6 +6,8 @@ use crate::components::{
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use crate::math::{to_point, Vec3};
+use render::build_render_bundle;
+use render::render_pass;
 use std::sync::Arc;
 use wgpu::RenderBundle;
 use winit::dpi::PhysicalSize;
@@ -15,15 +17,14 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use crate::resources::*;
-use crate::systems::{build_render_bundle, render_pass};
 
 mod assets;
 mod components;
 mod debug_ui;
 mod events;
 mod math;
+mod render;
 mod resources;
-mod systems;
 
 // TODO After removing Bevy, refactor file structure, remove the notion of components/resources/systems.
 
