@@ -2,10 +2,9 @@ use std::rc::Rc;
 
 use wgpu::RenderBundle;
 
-use crate::assets;
-use crate::assets::{Assets, Texture};
+use crate::assets::{Assets, Mesh, Texture};
 use crate::components::{
-    Camera, Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
+    Camera, Material, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE, RenderTags, Transform,
 };
 use crate::device::Device;
@@ -17,7 +16,7 @@ use crate::render::build_render_bundle;
 // TODO A proper ECS or some other solution. This is a very basic solution for now.
 pub struct Scene {
     transforms: Vec<Option<Transform>>,
-    meshes: Vec<Option<Mesh>>,
+    meshes: Vec<Option<Rc<Mesh>>>,
     materials: Vec<Option<Material>>,
     bodies: Vec<Option<PhysicsBody>>,
     render_orders: Vec<i32>,
@@ -43,7 +42,7 @@ impl Scene {
     fn spawn_mesh(
         &mut self,
         transform: Transform,
-        mesh: Mesh,
+        mesh: Rc<Mesh>,
         material: Material,
         body: Option<PhysicsBody>,
         render_order: Option<i32>,
@@ -63,7 +62,7 @@ impl Scene {
         let scale = Vec3::new(10.0, 0.5, 10.0);
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Mesh(Rc::clone(&assets.box_mesh)),
+            Rc::clone(&assets.box_mesh),
             Material::diffuse(device, assets, &assets.stone_tex),
             Some(PhysicsBody::new(
                 PhysicsBodyParams {
@@ -90,7 +89,7 @@ impl Scene {
     ) {
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Mesh(Rc::clone(&assets.box_mesh)),
+            Rc::clone(&assets.box_mesh),
             Material::diffuse(device, assets, &assets.stone_tex),
             Some(PhysicsBody::new(
                 PhysicsBodyParams {
@@ -110,7 +109,7 @@ impl Scene {
     pub fn spawn_skybox(&mut self, device: &Device, assets: &Assets) {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Rc::new(assets::Mesh::quad(device))),
+            Rc::new(Mesh::quad(device)),
             Material::skybox(device, assets, &assets.skybox_tex),
             None,
             Some(-100),
@@ -121,7 +120,7 @@ impl Scene {
     pub fn spawn_player_target(&mut self, device: &Device, assets: &Assets) -> usize {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Rc::clone(&assets.box_mesh)),
+            Rc::clone(&assets.box_mesh),
             Material::color(device, assets),
             None,
             None,
@@ -137,7 +136,7 @@ impl Scene {
     ) -> usize {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Rc::new(assets::Mesh::quad(device))),
+            Rc::new(Mesh::quad(device)),
             Material::post_process(device, assets, source_color_tex),
             None,
             Some(100),

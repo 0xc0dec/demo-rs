@@ -1,8 +1,8 @@
 use wgpu::RenderBundle;
 
-use crate::assets::DrawMesh;
+use crate::assets::{DrawMesh, Mesh};
 use crate::assets::RenderTarget;
-use crate::components::{ApplyMaterial, Camera, Material, Mesh, Transform};
+use crate::components::{ApplyMaterial, Camera, Material, Transform};
 use crate::debug_ui::DebugUI;
 use crate::device::Device;
 
@@ -103,6 +103,6 @@ pub fn build_render_bundle(
 ) -> RenderBundle {
     let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
     material.apply(&mut encoder, device, camera, transform);
-    encoder.draw_mesh(&mesh.0);
+    encoder.draw_mesh(&mesh);
     encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
 }
