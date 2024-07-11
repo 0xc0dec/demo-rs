@@ -1,8 +1,9 @@
-use super::apply_material::ApplyMaterial;
-use super::utils::*;
 use crate::assets::{Assets, MeshVertex, Texture, ViewInvProjUniform};
 use crate::components::{Camera, Transform};
 use crate::device::Device;
+
+use super::apply_material::ApplyMaterial;
+use super::utils::*;
 
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,
@@ -24,7 +25,7 @@ impl SkyboxMaterial {
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: &assets.skybox_shader,
+                shader_module: assets.skybox_shader(),
                 depth_write: false,
                 depth_enabled: true,
                 bind_group_layouts: &[

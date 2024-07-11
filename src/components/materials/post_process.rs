@@ -20,7 +20,7 @@ impl PostProcessMaterial {
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: &assets.postprocess_shader,
+                shader_module: assets.postprocess_shader(),
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&texture_bind_group_layout],

@@ -21,7 +21,7 @@ impl ColorMaterial {
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: &assets.color_shader,
+                shader_module: assets.color_shader(),
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[&matrices_uniform_bind_group_layout],

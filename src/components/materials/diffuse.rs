@@ -25,7 +25,7 @@ impl DiffuseMaterial {
         let pipeline = new_render_pipeline(
             device,
             RenderPipelineParams {
-                shader_module: &assets.diffuse_shader,
+                shader_module: assets.diffuse_shader(),
                 depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[

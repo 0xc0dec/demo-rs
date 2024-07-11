@@ -62,8 +62,8 @@ impl Scene {
         let scale = Vec3::new(10.0, 0.5, 10.0);
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Rc::clone(&assets.box_mesh),
-            Material::diffuse(device, assets, &assets.stone_tex),
+            assets.box_mesh(),
+            Material::diffuse(device, assets, assets.stone_texture()),
             Some(PhysicalBody::new(
                 PhysicalBodyParams {
                     pos,
@@ -89,8 +89,8 @@ impl Scene {
     ) {
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Rc::clone(&assets.box_mesh),
-            Material::diffuse(device, assets, &assets.stone_tex),
+            assets.box_mesh(),
+            Material::diffuse(device, assets, assets.stone_texture()),
             Some(PhysicalBody::new(
                 PhysicalBodyParams {
                     pos,
@@ -110,7 +110,7 @@ impl Scene {
         self.spawn_mesh(
             Transform::default(),
             Rc::new(Mesh::quad(device)),
-            Material::skybox(device, assets, &assets.skybox_tex),
+            Material::skybox(device, assets, assets.skybox_texture()),
             None,
             Some(-100),
             Some(RENDER_TAG_SCENE),
@@ -120,7 +120,7 @@ impl Scene {
     pub fn spawn_player_target(&mut self, device: &Device, assets: &Assets) -> usize {
         self.spawn_mesh(
             Transform::default(),
-            Rc::clone(&assets.box_mesh),
+            assets.box_mesh(),
             Material::color(device, assets),
             None,
             None,
