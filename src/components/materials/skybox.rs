@@ -1,10 +1,8 @@
 use super::apply_material::ApplyMaterial;
 use super::utils::*;
-use crate::assets::shaders::ViewInvProjUniform;
-use crate::assets::{MeshVertex, Texture};
+use crate::assets::{Assets, MeshVertex, Texture, ViewInvProjUniform};
 use crate::components::{Camera, Transform};
 use crate::device::Device;
-use crate::resources::Assets;
 
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,

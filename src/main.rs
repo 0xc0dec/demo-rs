@@ -1,4 +1,4 @@
-use crate::assets::Texture;
+use crate::assets::{Assets, Texture};
 use crate::components::{
     Camera, Material, Mesh, PhysicsBody, PhysicsBodyParams, Player, RenderTags, Transform,
     RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
@@ -20,8 +20,6 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
-use crate::resources::*;
-
 mod assets;
 mod components;
 mod debug_ui;
@@ -32,7 +30,6 @@ mod input;
 mod math;
 mod physics_world;
 mod render;
-mod resources;
 
 // TODO After removing Bevy, refactor file structure, remove the notion of components/resources/systems.
 
