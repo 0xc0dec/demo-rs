@@ -409,6 +409,9 @@ impl Scene {
     }
 }
 
+// TODO Update deps
+// TODO Grabbing objects with a cursor (when camera is not controlled)
+
 fn main() {
     let mut event_loop = EventLoop::new();
     let window = WindowBuilder::new()

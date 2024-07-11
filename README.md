@@ -1,17 +1,19 @@
 # About
 
-A simple graphics demo I made to learn Rust and try it in game development.
-
-There is no attempt to create an "engine", everything is pretty low level and abstractions are built
-along the way when needed.
+A simple graphics demo where you can fly around, spawn boxes with physics and grab them.
 
 ![Demo](/demo.gif?raw=true)
+
+I made this project to learn Rust and try it in game development. There is no attempt to create an "engine", everything
+is pretty low level and abstractions are built along the way when needed.
 
 ## Building and running
 
 ```
 cargo run
 ```
+
+Check the on-screen tip for controls.
 
 ## Features
 

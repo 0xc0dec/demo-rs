@@ -14,7 +14,7 @@ pub struct Transform {
     rot: UnitQuat,
 }
 
-// TODO Parent-child relationships
+// TODO Transform hierarchies
 impl Transform {
     pub fn new(pos: Vec3, scale: Vec3) -> Self {
         let m = Mat4::identity();
