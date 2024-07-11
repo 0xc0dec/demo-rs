@@ -1,14 +1,14 @@
 use rapier3d::prelude::*;
 
 use crate::math::Vec3;
-use crate::physics::PhysicsWorld;
+use crate::physics::Physics;
 
-pub struct PhysicsBody {
+pub struct PhysicalBody {
     handle: RigidBodyHandle,
     movable: bool,
 }
 
-pub struct PhysicsBodyParams {
+pub struct PhysicalBodyParams {
     pub pos: Vec3,
     pub scale: Vec3,
     pub rotation_angle: f32,
@@ -16,9 +16,9 @@ pub struct PhysicsBodyParams {
     pub movable: bool,
 }
 
-impl PhysicsBody {
-    pub fn new(params: PhysicsBodyParams, physics: &mut PhysicsWorld) -> Self {
-        let PhysicsBodyParams {
+impl PhysicalBody {
+    pub fn new(params: PhysicalBodyParams, physics: &mut Physics) -> Self {
+        let PhysicalBodyParams {
             pos,
             scale,
             rotation_axis,
@@ -45,7 +45,7 @@ impl PhysicsBody {
         self.handle
     }
 
-    pub fn set_kinematic(&self, physics: &mut PhysicsWorld, kinematic: bool) {
+    pub fn set_kinematic(&self, physics: &mut Physics, kinematic: bool) {
         let body = physics.bodies.get_mut(self.handle).unwrap();
         let new_type = if kinematic {
             RigidBodyType::KinematicPositionBased

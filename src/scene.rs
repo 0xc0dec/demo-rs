@@ -4,13 +4,13 @@ use wgpu::RenderBundle;
 
 use crate::assets::{Assets, Mesh, Texture};
 use crate::components::{
-    Camera, Material, PhysicsBody, PhysicsBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
+    Camera, Material, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE, RenderTags, Transform,
 };
 use crate::device::Device;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point, Vec3};
-use crate::physics::PhysicsWorld;
+use crate::physics::Physics;
 use crate::render::build_render_bundle;
 
 // TODO A proper ECS or some other solution. This is a very basic solution for now.
@@ -18,7 +18,7 @@ pub struct Scene {
     transforms: Vec<Option<Transform>>,
     meshes: Vec<Option<Rc<Mesh>>>,
     materials: Vec<Option<Material>>,
-    bodies: Vec<Option<PhysicsBody>>,
+    bodies: Vec<Option<PhysicalBody>>,
     render_orders: Vec<i32>,
     render_tags: Vec<Option<RenderTags>>,
     grabbed_body_idx: Option<usize>,
@@ -44,7 +44,7 @@ impl Scene {
         transform: Transform,
         mesh: Rc<Mesh>,
         material: Material,
-        body: Option<PhysicsBody>,
+        body: Option<PhysicalBody>,
         render_order: Option<i32>,
         render_tags: Option<RenderTags>,
     ) -> usize {
@@ -57,15 +57,15 @@ impl Scene {
         self.transforms.len() - 1
     }
 
-    pub fn spawn_floor(&mut self, device: &Device, assets: &Assets, physics: &mut PhysicsWorld) {
+    pub fn spawn_floor(&mut self, device: &Device, assets: &Assets, physics: &mut Physics) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         self.spawn_mesh(
             Transform::new(pos, scale),
             Rc::clone(&assets.box_mesh),
             Material::diffuse(device, assets, &assets.stone_tex),
-            Some(PhysicsBody::new(
-                PhysicsBodyParams {
+            Some(PhysicalBody::new(
+                PhysicalBodyParams {
                     pos,
                     scale,
                     rotation_axis: Vec3::from_element(0.0),
@@ -85,14 +85,14 @@ impl Scene {
         scale: Vec3,
         device: &Device,
         assets: &Assets,
-        physics: &mut PhysicsWorld,
+        physics: &mut Physics,
     ) {
         self.spawn_mesh(
             Transform::new(pos, scale),
             Rc::clone(&assets.box_mesh),
             Material::diffuse(device, assets, &assets.stone_tex),
-            Some(PhysicsBody::new(
-                PhysicsBodyParams {
+            Some(PhysicalBody::new(
+                PhysicalBodyParams {
                     pos,
                     scale,
                     rotation_axis: Vec3::identity(),
@@ -144,7 +144,7 @@ impl Scene {
         )
     }
 
-    pub fn update_grabbed(&mut self, player: &Player, input: &Input, physics: &mut PhysicsWorld) {
+    pub fn update_grabbed(&mut self, player: &Player, input: &Input, physics: &mut Physics) {
         if input.action_active(InputAction::Grab) && player.controlled() {
             if self.grabbed_body_player_local_pos.is_none() {
                 // Initiate grab
@@ -271,7 +271,7 @@ impl Scene {
             .collect::<Vec<_>>()
     }
 
-    pub fn sync_physics(&mut self, physics: &PhysicsWorld) {
+    pub fn sync_physics(&mut self, physics: &Physics) {
         for idx in 0..self.bodies.len() {
             if let Some(body) = self.bodies.get(idx).unwrap() {
                 let transform = self.transforms.get_mut(idx).unwrap().as_mut().unwrap();

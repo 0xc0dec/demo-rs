@@ -10,7 +10,7 @@ use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
-use crate::physics::PhysicsWorld;
+use crate::physics::Physics;
 
 pub struct Player {
     // Point and physics body at which the player is currently looking at
@@ -28,7 +28,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(device: &Device, physics: &mut PhysicsWorld) -> Self {
+    pub fn new(device: &Device, physics: &mut Physics) -> Self {
         let pos = Vec3::new(7.0, 7.0, 7.0);
 
         let rt = RenderTarget::new(device, None);
@@ -77,7 +77,7 @@ impl Player {
         frame_time: &FrameTime,
         input: &Input,
         window: &Window,
-        physics: &mut PhysicsWorld,
+        physics: &mut Physics,
         resize_event: Option<&ResizeEvent>,
     ) {
         // Update camera aspect and RT size
@@ -105,7 +105,7 @@ impl Player {
         self.update_focus(physics);
     }
 
-    fn translate(&mut self, dt: f32, input: &Input, physics: &mut PhysicsWorld) {
+    fn translate(&mut self, dt: f32, input: &Input, physics: &mut Physics) {
         let mut translation: Vec3 = Vec3::from_element(0.0);
 
         if input.action_active(InputAction::MoveForward) {
@@ -178,7 +178,7 @@ impl Player {
             .rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn update_focus(&mut self, physics: &PhysicsWorld) {
+    fn update_focus(&mut self, physics: &Physics) {
         if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
             self.transform.position(),
             self.transform.forward(),

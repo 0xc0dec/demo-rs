@@ -5,7 +5,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use frame_time::FrameTime;
-use physics::PhysicsWorld;
+use physics::Physics;
 use render::render_pass;
 
 use crate::assets::Assets;
@@ -151,7 +151,7 @@ fn main() {
         .unwrap();
     // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
     let mut device = pollster::block_on(Device::new(&window));
-    let mut physics = PhysicsWorld::new();
+    let mut physics = Physics::new();
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
 

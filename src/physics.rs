@@ -4,7 +4,7 @@ use rapier3d::prelude::*;
 use crate::math::Vec3;
 
 // TODO Try to fully encapsulate Rapier types
-pub struct PhysicsWorld {
+pub struct Physics {
     pub bodies: RigidBodySet,
     pub colliders: ColliderSet,
     query_pipeline: QueryPipeline,
@@ -18,7 +18,7 @@ pub struct PhysicsWorld {
     char_controller: KinematicCharacterController,
 }
 
-impl PhysicsWorld {
+impl Physics {
     pub fn new() -> Self {
         Self {
             bodies: RigidBodySet::new(),
