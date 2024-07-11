@@ -5,7 +5,7 @@ use wgpu::RenderBundle;
 use crate::assets::{Assets, Mesh, Texture};
 use crate::components::{
     Camera, Material, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
-    RENDER_TAG_SCENE, RenderTags, Transform,
+    RENDER_TAG_SCENE, Transform,
 };
 use crate::device::Device;
 use crate::input::{Input, InputAction};
@@ -20,7 +20,7 @@ pub struct Scene {
     materials: Vec<Option<Material>>,
     bodies: Vec<Option<PhysicalBody>>,
     render_orders: Vec<i32>,
-    render_tags: Vec<Option<RenderTags>>,
+    render_tags: Vec<Option<u32>>,
     grabbed_body_idx: Option<usize>,
     grabbed_body_player_local_pos: Option<Vec3>,
 }
@@ -46,7 +46,7 @@ impl Scene {
         material: Material,
         body: Option<PhysicalBody>,
         render_order: Option<i32>,
-        render_tags: Option<RenderTags>,
+        render_tags: Option<u32>,
     ) -> usize {
         self.transforms.push(Some(transform));
         self.meshes.push(Some(mesh));
@@ -75,7 +75,7 @@ impl Scene {
                 physics,
             )),
             None,
-            Some(RenderTags(RENDER_TAG_SCENE)),
+            Some(RENDER_TAG_SCENE),
         );
     }
 
@@ -102,7 +102,7 @@ impl Scene {
                 physics,
             )),
             None,
-            Some(RenderTags(RENDER_TAG_SCENE)),
+            Some(RENDER_TAG_SCENE),
         );
     }
 
@@ -113,7 +113,7 @@ impl Scene {
             Material::skybox(device, assets, &assets.skybox_tex),
             None,
             Some(-100),
-            Some(RenderTags(RENDER_TAG_SCENE)),
+            Some(RENDER_TAG_SCENE),
         );
     }
 
@@ -124,7 +124,7 @@ impl Scene {
             Material::color(device, assets),
             None,
             None,
-            Some(RenderTags(RENDER_TAG_HIDDEN)),
+            Some(RENDER_TAG_HIDDEN),
         )
     }
 
@@ -140,7 +140,7 @@ impl Scene {
             Material::post_process(device, assets, source_color_tex),
             None,
             Some(100),
-            Some(RenderTags(RENDER_TAG_POST_PROCESS)),
+            Some(RENDER_TAG_POST_PROCESS),
         )
     }
 
@@ -204,7 +204,7 @@ impl Scene {
     }
 
     pub fn update_player_target(&mut self, player: &Player, target_idx: usize) {
-        if let Some(player_focus_pt) = player.focus_point() {
+        let new_tag = if let Some(player_focus_pt) = player.focus_point() {
             let dist_to_camera = (player.transform.position() - player_focus_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
@@ -217,20 +217,17 @@ impl Scene {
             target_transform.set_position(player_focus_pt);
             target_transform.set_scale(Vec3::from_element(scale));
 
-            self.render_tags
-                .get_mut(target_idx)
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .0 = RENDER_TAG_SCENE;
+            RENDER_TAG_SCENE
         } else {
-            self.render_tags
-                .get_mut(target_idx)
-                .unwrap()
-                .as_mut()
-                .unwrap()
-                .0 = RENDER_TAG_HIDDEN;
-        }
+            RENDER_TAG_HIDDEN
+        };
+
+        *self
+            .render_tags
+            .get_mut(target_idx)
+            .unwrap()
+            .as_mut()
+            .unwrap() = new_tag;
     }
 
     // TODO Move elsewhere, it should not be a method on Scene
@@ -251,13 +248,7 @@ impl Scene {
         sorted_indices
             .iter()
             .filter(|&&idx| {
-                camera.should_render(
-                    self.render_tags
-                        .get(idx)
-                        .unwrap()
-                        .as_ref()
-                        .map_or(0u32, |t| t.0),
-                )
+                camera.should_render(self.render_tags.get(idx).unwrap().unwrap_or(0u32))
             })
             .map(|&idx| {
                 build_render_bundle(
