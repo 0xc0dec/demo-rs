@@ -148,13 +148,13 @@ fn main() {
         .build(&event_loop)
         .unwrap();
     // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
-    let mut device = pollster::block_on(Graphics::new(&window));
+    let mut gfx = pollster::block_on(Graphics::new(&window));
     let mut physics = Physics::new();
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();
 
-    let assets = Assets::load(&device);
-    let mut debug_ui = DebugUI::new(&device, &window);
+    let assets = Assets::load(&gfx);
+    let mut debug_ui = DebugUI::new(&gfx, &window);
 
     // TODO More optimal, avoid vec cleanup on each iteration
     let mut mouse_events = Vec::new();
@@ -167,18 +167,18 @@ fn main() {
     // Player is outside the normal components set for convenience because it's a singleton.
     // Ideally it should be unified with the rest of the objects once we have a proper ECS
     // or an alternative.
-    let mut player = Player::new(&device, &mut physics);
-    let player_target_idx = scene.spawn_player_target(&device, &assets);
+    let mut player = Player::new(&gfx, &mut physics);
+    let player_target_idx = scene.spawn_player_target(&gfx, &assets);
 
     let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
 
-    scene.spawn_floor(&device, &assets, &mut physics);
+    scene.spawn_floor(&gfx, &assets, &mut physics);
     // Spawning skybox last to ensure the sorting by render order works and it still shows up
     // in the background.
-    scene.spawn_skybox(&device, &assets);
+    scene.spawn_skybox(&gfx, &assets);
     let pp_idx = scene.spawn_post_process_overlay(
         player.camera().target().as_ref().unwrap().color_tex(),
-        &device,
+        &gfx,
         &assets,
     );
 
@@ -195,7 +195,7 @@ fn main() {
         );
 
         if let Some(e) = resize_event.as_ref() {
-            device.resize(e.0);
+            gfx.resize(e.0);
         }
 
         input.update(&mouse_events, &keyboard_events);
@@ -203,7 +203,7 @@ fn main() {
         physics.update(frame_time.delta);
 
         player.update(
-            &device,
+            &gfx,
             &frame_time,
             &input,
             &window,
@@ -215,7 +215,7 @@ fn main() {
             scene.update_post_process_overlay(
                 pp_idx,
                 player.camera().target().as_ref().unwrap().color_tex(),
-                &device,
+                &gfx,
                 &assets,
             );
         }
@@ -234,14 +234,14 @@ fn main() {
                     spawned_demo_box = true;
                     Vec3::y_axis().xyz() * 5.0
                 };
-                scene.spawn_cube(pos, Vec3::from_element(1.0), &device, &assets, &mut physics);
+                scene.spawn_cube(pos, Vec3::from_element(1.0), &gfx, &assets, &mut physics);
             }
         }
 
         // Render main scene into a texture
         render_pass(
-            &device,
-            &scene.build_render_bundles(player.camera(), player.transform(), &device),
+            &gfx,
+            &scene.build_render_bundles(player.camera(), player.transform(), &gfx),
             player.camera().target().as_ref(),
             None,
         );
@@ -249,8 +249,8 @@ fn main() {
         // Render post-process overlay + debug UI
         build_debug_ui(&mut debug_ui, &frame_time, &window);
         render_pass(
-            &device,
-            &scene.build_render_bundles(&pp_cam, &Transform::default(), &device),
+            &gfx,
+            &scene.build_render_bundles(&pp_cam, &Transform::default(), &gfx),
             None,
             Some(&mut debug_ui),
         );
