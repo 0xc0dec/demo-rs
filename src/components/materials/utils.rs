@@ -1,19 +1,19 @@
 use wgpu::util::DeviceExt;
 
 use crate::assets::Texture;
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 pub fn new_uniform_bind_group(
-    device: &Device,
+    gfx: &Graphics,
     data: &[u8],
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup, wgpu::Buffer) {
-    let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+    let buffer = gfx.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         label: None,
         contents: data,
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
     });
 
-    let group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+    let group_layout = gfx.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         entries: &[wgpu::BindGroupLayoutEntry {
             binding: 0,
             visibility: wgpu::ShaderStages::VERTEX,
@@ -27,7 +27,7 @@ pub fn new_uniform_bind_group(
         label: None,
     });
 
-    let group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+    let group = gfx.create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &group_layout,
         entries: &[wgpu::BindGroupEntry {
             binding: 0,
@@ -40,11 +40,11 @@ pub fn new_uniform_bind_group(
 }
 
 pub fn new_texture_bind_group(
-    device: &Device,
+    gfx: &Graphics,
     texture: &Texture,
     view_dimension: wgpu::TextureViewDimension,
 ) -> (wgpu::BindGroupLayout, wgpu::BindGroup) {
-    let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+    let layout = gfx.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         entries: &[
             wgpu::BindGroupLayoutEntry {
                 binding: 0,
@@ -66,7 +66,7 @@ pub fn new_texture_bind_group(
         label: None,
     });
 
-    let group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+    let group = gfx.create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &layout,
         entries: &[
             wgpu::BindGroupEntry {
@@ -93,16 +93,16 @@ pub struct RenderPipelineParams<'a> {
 }
 
 pub fn new_render_pipeline(
-    device: &Device,
+    gfx: &Graphics,
     params: RenderPipelineParams<'_>,
 ) -> wgpu::RenderPipeline {
-    let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+    let layout = gfx.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: None,
         bind_group_layouts: params.bind_group_layouts,
         push_constant_ranges: &[],
     });
 
-    let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+    let pipeline = gfx.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&layout),
         vertex: wgpu::VertexState {
@@ -114,7 +114,7 @@ pub fn new_render_pipeline(
             module: params.shader_module,
             entry_point: "fs_main",
             targets: &[Some(wgpu::ColorTargetState {
-                format: device.surface_texture_format(),
+                format: gfx.surface_texture_format(),
                 blend: Some(wgpu::BlendState::REPLACE),
                 write_mask: wgpu::ColorWrites::ALL,
             })],
@@ -130,7 +130,7 @@ pub fn new_render_pipeline(
         },
         depth_stencil: if params.depth_enabled {
             Some(wgpu::DepthStencilState {
-                format: device.depth_texture_format(), // TODO Configurable
+                format: gfx.depth_texture_format(), // TODO Configurable
                 depth_write_enabled: params.depth_write,
                 depth_compare: wgpu::CompareFunction::Less,
                 stencil: wgpu::StencilState::default(),

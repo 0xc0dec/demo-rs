@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::assets::{Mesh, Texture};
 use crate::assets::utils::new_shader_module;
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 // TODO Store groups of assets in hash maps
 pub struct Assets {
@@ -16,7 +16,7 @@ pub struct Assets {
 }
 
 impl Assets {
-    pub fn load(device: &Device) -> Self {
+    pub fn load(gfx: &Graphics) -> Self {
         let (
             box_mesh,
             skybox_tex,
@@ -27,17 +27,17 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Rc::new(Mesh::from_file("cube.obj", device).await),
-                Texture::new_cube_from_file("skybox_bgra.dds", device)
+                Rc::new(Mesh::from_file("cube.obj", gfx).await),
+                Texture::new_cube_from_file("skybox_bgra.dds", gfx)
                     .await
                     .unwrap(),
-                Texture::new_2d_from_file("stonewall.jpg", device)
+                Texture::new_2d_from_file("stonewall.jpg", gfx)
                     .await
                     .unwrap(),
-                new_shader_module(device, "color.wgsl").await,
-                new_shader_module(device, "diffuse.wgsl").await,
-                new_shader_module(device, "post-process.wgsl").await,
-                new_shader_module(device, "skybox.wgsl").await,
+                new_shader_module(gfx, "color.wgsl").await,
+                new_shader_module(gfx, "diffuse.wgsl").await,
+                new_shader_module(gfx, "post-process.wgsl").await,
+                new_shader_module(gfx, "skybox.wgsl").await,
             )
         });
 

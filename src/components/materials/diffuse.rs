@@ -1,6 +1,6 @@
 use crate::assets::{Assets, MeshVertex, Texture, WorldViewProjUniform};
 use crate::components::{Camera, Transform};
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 use super::apply_material::ApplyMaterial;
 use super::utils::*;
@@ -14,16 +14,16 @@ pub struct DiffuseMaterial {
 }
 
 impl DiffuseMaterial {
-    pub fn new(device: &Device, assets: &Assets, texture: &Texture) -> Self {
+    pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
-            new_uniform_bind_group(device, bytemuck::cast_slice(&[matrices_uniform]));
+            new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(device, texture, wgpu::TextureViewDimension::D2);
+            new_texture_bind_group(gfx, texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
-            device,
+            gfx,
             RenderPipelineParams {
                 shader_module: assets.diffuse_shader(),
                 depth_write: true,
@@ -50,7 +50,7 @@ impl ApplyMaterial for DiffuseMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
-        device: &Device,
+        gfx: &Graphics,
         camera: (&Camera, &Transform),
         transform: &Transform,
     ) {
@@ -59,7 +59,7 @@ impl ApplyMaterial for DiffuseMaterial {
             &camera.1.view_matrix(),
             &camera.0.proj_matrix(),
         );
-        device.queue().write_buffer(
+        gfx.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),

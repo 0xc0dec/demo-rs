@@ -11,8 +11,8 @@ use render::render_pass;
 use crate::assets::Assets;
 use crate::components::{Camera, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, Transform};
 use crate::debug_ui::DebugUI;
-use crate::device::Device;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
+use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::scene::Scene;
@@ -20,9 +20,9 @@ use crate::scene::Scene;
 mod assets;
 mod components;
 mod debug_ui;
-mod device;
 mod events;
 mod frame_time;
+mod graphics;
 mod input;
 mod math;
 mod physics;
@@ -148,7 +148,7 @@ fn main() {
         .build(&event_loop)
         .unwrap();
     // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
-    let mut device = pollster::block_on(Device::new(&window));
+    let mut device = pollster::block_on(Graphics::new(&window));
     let mut physics = Physics::new();
     let mut input = Input::new();
     let mut frame_time = FrameTime::new();

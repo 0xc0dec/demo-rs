@@ -5,9 +5,9 @@ use winit::window::{CursorGrabMode, Window};
 
 use crate::assets::RenderTarget;
 use crate::components::*;
-use crate::device::Device;
 use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
+use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
@@ -27,12 +27,12 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(device: &Device, physics: &mut Physics) -> Self {
+    pub fn new(gfx: &Graphics, physics: &mut Physics) -> Self {
         let pos = Vec3::new(7.0, 7.0, 7.0);
 
-        let rt = RenderTarget::new(device, None);
+        let rt = RenderTarget::new(gfx, None);
         let camera = Camera::new(
-            device.surface_size().width as f32 / device.surface_size().height as f32,
+            gfx.surface_size().width as f32 / gfx.surface_size().height as f32,
             RENDER_TAG_SCENE,
             Some(rt),
         );
@@ -80,7 +80,7 @@ impl Player {
 
     pub fn update(
         &mut self,
-        device: &Device,
+        gfx: &Graphics,
         frame_time: &FrameTime,
         input: &Input,
         window: &Window,
@@ -91,7 +91,7 @@ impl Player {
         if let Some(e) = resize_event {
             self.camera.set_aspect(e.0.width as f32 / e.0.height as f32);
             if let Some(target) = self.camera.target_mut() {
-                target.resize((e.0.width, e.0.height), device);
+                target.resize((e.0.width, e.0.height), gfx);
             }
         }
 

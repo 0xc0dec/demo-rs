@@ -7,7 +7,7 @@ use crate::components::{
     Camera, Material, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE, Transform,
 };
-use crate::device::Device;
+use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point, Vec3};
 use crate::physics::Physics;
@@ -57,7 +57,7 @@ impl Scene {
         self.transforms.len() - 1
     }
 
-    pub fn spawn_floor(&mut self, device: &Device, assets: &Assets, physics: &mut Physics) {
+    pub fn spawn_floor(&mut self, device: &Graphics, assets: &Assets, physics: &mut Physics) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         self.spawn_mesh(
@@ -81,14 +81,14 @@ impl Scene {
         &mut self,
         pos: Vec3,
         scale: Vec3,
-        device: &Device,
+        gfx: &Graphics,
         assets: &Assets,
         physics: &mut Physics,
     ) {
         self.spawn_mesh(
             Transform::new(pos, scale),
             assets.box_mesh(),
-            Material::diffuse(device, assets, assets.stone_texture()),
+            Material::diffuse(gfx, assets, assets.stone_texture()),
             Some(PhysicalBody::cuboid(
                 PhysicalBodyParams {
                     pos,
@@ -102,7 +102,7 @@ impl Scene {
         );
     }
 
-    pub fn spawn_skybox(&mut self, device: &Device, assets: &Assets) {
+    pub fn spawn_skybox(&mut self, device: &Graphics, assets: &Assets) {
         self.spawn_mesh(
             Transform::default(),
             Rc::new(Mesh::quad(device)),
@@ -113,7 +113,7 @@ impl Scene {
         );
     }
 
-    pub fn spawn_player_target(&mut self, device: &Device, assets: &Assets) -> usize {
+    pub fn spawn_player_target(&mut self, device: &Graphics, assets: &Assets) -> usize {
         self.spawn_mesh(
             Transform::default(),
             assets.box_mesh(),
@@ -127,7 +127,7 @@ impl Scene {
     pub fn spawn_post_process_overlay(
         &mut self,
         source_color_tex: &Texture,
-        device: &Device,
+        device: &Graphics,
         assets: &Assets,
     ) -> usize {
         self.spawn_mesh(
@@ -193,10 +193,10 @@ impl Scene {
         &mut self,
         idx: usize,
         source_color_tex: &Texture,
-        device: &Device,
+        gfx: &Graphics,
         assets: &Assets,
     ) {
-        self.materials[idx] = Some(Material::post_process(device, assets, source_color_tex));
+        self.materials[idx] = Some(Material::post_process(gfx, assets, source_color_tex));
     }
 
     pub fn update_player_target(&mut self, player: &Player, target_idx: usize) {
@@ -231,7 +231,7 @@ impl Scene {
         &mut self,
         camera: &Camera,
         camera_transform: &Transform,
-        device: &Device,
+        device: &Graphics,
     ) -> Vec<RenderBundle> {
         let mut sorted_indices: Vec<(usize, i32)> = (0..self.meshes.len())
             .map(|idx| (idx, *self.render_orders.get(idx).unwrap()))

@@ -4,7 +4,7 @@ use crate::assets::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
-pub struct Device {
+pub struct Graphics {
     surface: wgpu::Surface,
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
@@ -12,7 +12,7 @@ pub struct Device {
     depth_tex: Texture,
 }
 
-impl Device {
+impl Graphics {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
@@ -115,7 +115,7 @@ impl Device {
     }
 }
 
-impl Deref for Device {
+impl Deref for Graphics {
     type Target = wgpu::Device;
 
     fn deref(&self) -> &Self::Target {

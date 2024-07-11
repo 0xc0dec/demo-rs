@@ -1,4 +1,4 @@
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 use super::super::{Camera, Transform};
 
@@ -7,7 +7,7 @@ pub trait ApplyMaterial: Sync + Send {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
-        device: &Device,
+        gfx: &Graphics,
         camera: (&Camera, &Transform),
         transform: &Transform,
     );

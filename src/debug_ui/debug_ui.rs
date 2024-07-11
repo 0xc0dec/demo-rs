@@ -5,7 +5,7 @@ use winit::event::Event;
 use winit::window::Window;
 
 use crate::debug_ui::imgui_winit;
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 pub struct DebugUI {
     renderer: imgui_wgpu::Renderer,
@@ -15,7 +15,7 @@ pub struct DebugUI {
 }
 
 impl DebugUI {
-    pub fn new(device: &Device, window: &Window) -> Self {
+    pub fn new(gfx: &Graphics, window: &Window) -> Self {
         let mut context = imgui::Context::create();
         let mut platform = imgui_winit::WinitPlatform::init(&mut context);
         platform.attach_window(context.io_mut(), window, imgui_winit::HiDpiMode::Default);
@@ -36,13 +36,12 @@ impl DebugUI {
             }]);
 
         let renderer_config = imgui_wgpu::RendererConfig {
-            texture_format: device.surface_texture_format(),
-            depth_format: Some(device.depth_texture_format()),
+            texture_format: gfx.surface_texture_format(),
+            depth_format: Some(gfx.depth_texture_format()),
             ..Default::default()
         };
 
-        let renderer =
-            imgui_wgpu::Renderer::new(&mut context, device, device.queue(), renderer_config);
+        let renderer = imgui_wgpu::Renderer::new(&mut context, gfx, gfx.queue(), renderer_config);
 
         Self {
             context,
@@ -75,10 +74,10 @@ impl DebugUI {
         }
     }
 
-    pub fn render<'a>(&'a mut self, device: &Device, pass: &mut wgpu::RenderPass<'a>) {
+    pub fn render<'a>(&'a mut self, gfx: &Graphics, pass: &mut wgpu::RenderPass<'a>) {
         let draw_data = self.context.render();
         self.renderer
-            .render(draw_data, device.queue(), device, pass)
+            .render(draw_data, gfx.queue(), gfx, pass)
             .expect("Failed to render debug UI");
     }
 }

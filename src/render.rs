@@ -4,17 +4,16 @@ use crate::assets::{DrawMesh, Mesh};
 use crate::assets::RenderTarget;
 use crate::components::{ApplyMaterial, Camera, Material, Transform};
 use crate::debug_ui::DebugUI;
-use crate::device::Device;
+use crate::graphics::Graphics;
 
 pub fn render_pass(
-    device: &Device,
+    gfx: &Graphics,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
     debug_ui: Option<&mut DebugUI>,
 ) {
     let surface_tex = target.is_none().then(|| {
-        device
-            .surface()
+        gfx.surface()
             .get_current_texture()
             .expect("Missing surface texture")
     });
@@ -38,7 +37,7 @@ pub fn render_pass(
 
     let depth_tex_view = target
         .map(|t| t.depth_tex().view())
-        .unwrap_or(device.depth_tex().view());
+        .unwrap_or(gfx.depth_tex().view());
     let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
         view: depth_tex_view,
         depth_ops: Some(wgpu::Operations {
@@ -50,7 +49,7 @@ pub fn render_pass(
 
     let cmd_buffer = {
         let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            gfx.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
         {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -61,27 +60,27 @@ pub fn render_pass(
 
             pass.execute_bundles(bundles.iter());
             if let Some(ui) = debug_ui {
-                ui.render(device, &mut pass)
+                ui.render(gfx, &mut pass)
             }
         }
 
         encoder.finish()
     };
 
-    device.queue().submit(Some(cmd_buffer));
+    gfx.queue().submit(Some(cmd_buffer));
     if let Some(t) = surface_tex {
         t.present()
     }
 }
 
 fn new_bundle_encoder<'a>(
-    device: &'a Device,
+    gfx: &'a Graphics,
     target: Option<&RenderTarget>,
 ) -> wgpu::RenderBundleEncoder<'a> {
-    let color_format = target.map_or(device.surface_texture_format(), |t| t.color_tex().format());
-    let depth_format = target.map_or(device.depth_texture_format(), |t| t.depth_tex().format());
+    let color_format = target.map_or(gfx.surface_texture_format(), |t| t.color_tex().format());
+    let depth_format = target.map_or(gfx.depth_texture_format(), |t| t.depth_tex().format());
 
-    device.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+    gfx.create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
         label: None,
         multiview: None,
         sample_count: 1,
@@ -99,10 +98,10 @@ pub fn build_render_bundle(
     material: &mut Material,
     transform: &Transform,
     camera: (&Camera, &Transform),
-    device: &Device,
+    gfx: &Graphics,
 ) -> RenderBundle {
-    let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-    material.apply(&mut encoder, device, camera, transform);
+    let mut encoder = new_bundle_encoder(gfx, camera.0.target().as_ref());
+    material.apply(&mut encoder, gfx, camera, transform);
     encoder.draw_mesh(mesh);
     encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
 }
