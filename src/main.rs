@@ -199,7 +199,7 @@ fn main() {
         }
 
         input.update(&mouse_events, &keyboard_events);
-        frame_time.update();
+        frame_time = frame_time.advance();
         physics.update(frame_time.delta);
 
         player.update(

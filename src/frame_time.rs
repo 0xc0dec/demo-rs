@@ -21,19 +21,23 @@ impl FrameTime {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn advance(self) -> Self {
         // Stolen from Kajiya
         let now = Instant::now();
-        let dt = now - self.last_frame_instant;
-        self.last_frame_instant = now;
+        let dt = (now - self.last_frame_instant).as_secs_f32();
 
-        let dt = dt.as_secs_f32();
-
-        if self.queue.len() >= DT_FILTER_WIDTH {
-            self.queue.pop_front();
+        let mut queue = self.queue;
+        if queue.len() >= DT_FILTER_WIDTH {
+            queue.pop_front();
         }
-        self.queue.push_back(dt);
+        queue.push_back(dt);
 
-        self.delta = self.queue.iter().copied().sum::<f32>() / self.queue.len() as f32;
+        let delta = queue.iter().copied().sum::<f32>() / queue.len() as f32;
+
+        Self {
+            last_frame_instant: now,
+            delta,
+            queue,
+        }
     }
 }
