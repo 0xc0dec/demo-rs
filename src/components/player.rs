@@ -22,9 +22,8 @@ pub struct Player {
     v_rot_acc: f32,
     translation_acc: Vec3,
     controlled: bool,
-    // TODO Public readonly
-    pub camera: Camera,
-    pub transform: Transform,
+    camera: Camera,
+    transform: Transform,
 }
 
 impl Player {
@@ -57,6 +56,14 @@ impl Player {
             camera,
             transform,
         }
+    }
+
+    pub fn camera(&self) -> &Camera {
+        &self.camera
+    }
+
+    pub fn transform(&self) -> &Transform {
+        &self.transform
     }
 
     pub fn focus_point(&self) -> Option<Vec3> {

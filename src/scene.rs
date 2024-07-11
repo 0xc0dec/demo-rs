@@ -161,7 +161,7 @@ impl Scene {
                     body.set_kinematic(physics, true);
                     let body = physics.bodies.get_mut(focus_body_handle).unwrap();
                     let local_pos = player
-                        .transform
+                        .transform()
                         .matrix()
                         .try_inverse()
                         .unwrap()
@@ -176,7 +176,7 @@ impl Scene {
                     let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
                     let body = physics.bodies.get_mut(body.body_handle()).unwrap();
                     let new_pos = player
-                        .transform
+                        .transform()
                         .matrix()
                         .transform_point(&to_point(self.grabbed_body_player_local_pos.unwrap()));
                     body.set_translation(new_pos.coords, true);
@@ -205,7 +205,7 @@ impl Scene {
 
     pub fn update_player_target(&mut self, player: &Player, target_idx: usize) {
         let new_tag = if let Some(player_focus_pt) = player.focus_point() {
-            let dist_to_camera = (player.transform.position() - player_focus_pt).magnitude();
+            let dist_to_camera = (player.transform().position() - player_focus_pt).magnitude();
             let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
 
             let target_transform = self

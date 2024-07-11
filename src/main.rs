@@ -179,7 +179,7 @@ fn main() {
     // in the background.
     scene.spawn_skybox(&device, &assets);
     let pp_idx = scene.spawn_post_process_overlay(
-        player.camera.target().as_ref().unwrap().color_tex(),
+        player.camera().target().as_ref().unwrap().color_tex(),
         &device,
         &assets,
     );
@@ -218,7 +218,7 @@ fn main() {
         if last_resize_event.is_some() {
             scene.update_post_process_overlay(
                 pp_idx,
-                player.camera.target().as_ref().unwrap().color_tex(),
+                player.camera().target().as_ref().unwrap().color_tex(),
                 &device,
                 &assets,
             );
@@ -233,7 +233,7 @@ fn main() {
         {
             if input.action_activated(InputAction::Spawn) || !spawned_demo_box {
                 let pos = if spawned_demo_box {
-                    player.transform.position() + player.transform.forward().xyz() * 5.0
+                    player.transform().position() + player.transform().forward().xyz() * 5.0
                 } else {
                     spawned_demo_box = true;
                     Vec3::y_axis().xyz() * 5.0
@@ -245,8 +245,8 @@ fn main() {
         // Render main scene into a texture
         render_pass(
             &device,
-            &scene.build_render_bundles(&player.camera, &player.transform, &device),
-            player.camera.target().as_ref(),
+            &scene.build_render_bundles(player.camera(), player.transform(), &device),
+            player.camera().target().as_ref(),
             None,
         );
 
