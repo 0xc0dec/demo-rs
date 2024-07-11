@@ -7,6 +7,7 @@ pub enum TransformSpace {
     World,
 }
 
+#[derive(Default)]
 pub struct Transform {
     m: Mat4,
     scale: Vec3,
@@ -96,11 +97,5 @@ impl Transform {
         self.m = rot_and_tr_m
             .to_matrix()
             .prepend_nonuniform_scaling(&self.scale);
-    }
-}
-
-impl Default for Transform {
-    fn default() -> Self {
-        Transform::new(Vec3::new(0.0, 0.0, 0.0), Vec3::identity())
     }
 }

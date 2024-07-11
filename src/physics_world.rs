@@ -7,7 +7,7 @@ use crate::math::Vec3;
 pub struct PhysicsWorld {
     pub bodies: RigidBodySet,
     pub colliders: ColliderSet,
-    pub query_pipeline: QueryPipeline,
+    query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
     broad_phase: Box<dyn BroadPhase>,
