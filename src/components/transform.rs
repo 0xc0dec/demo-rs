@@ -1,4 +1,3 @@
-use bevy_ecs::prelude::*;
 use rapier3d::na;
 
 use crate::math::{Mat4, Quat, UnitQuat, Vec3};
@@ -8,7 +7,7 @@ pub enum TransformSpace {
     World,
 }
 
-#[derive(Component)]
+#[derive(Default)]
 pub struct Transform {
     m: Mat4,
     scale: Vec3,
@@ -16,7 +15,7 @@ pub struct Transform {
     rot: UnitQuat,
 }
 
-// TODO Parent-child relationships
+// TODO Transform hierarchies
 impl Transform {
     pub fn new(pos: Vec3, scale: Vec3) -> Self {
         let m = Mat4::identity();
@@ -98,11 +97,5 @@ impl Transform {
         self.m = rot_and_tr_m
             .to_matrix()
             .prepend_nonuniform_scaling(&self.scale);
-    }
-}
-
-impl Default for Transform {
-    fn default() -> Self {
-        Transform::new(Vec3::new(0.0, 0.0, 0.0), Vec3::identity())
     }
 }

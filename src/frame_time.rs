@@ -1,20 +1,17 @@
 use std::collections::VecDeque;
 use std::time::Instant;
 
-use bevy_ecs::prelude::*;
-
-#[derive(Resource)]
 pub struct FrameTime {
     pub delta: f32,
     queue: VecDeque<f32>,
     last_frame_instant: Instant,
 }
 
-impl FrameTime {
-    const DT_FILTER_WIDTH: usize = 10;
+const DT_FILTER_WIDTH: usize = 10;
 
+impl FrameTime {
     pub fn new() -> Self {
-        let queue = VecDeque::with_capacity(Self::DT_FILTER_WIDTH);
+        let queue = VecDeque::with_capacity(DT_FILTER_WIDTH);
         let last_frame_instant = Instant::now();
 
         Self {
@@ -32,7 +29,7 @@ impl FrameTime {
 
         let dt = dt.as_secs_f32();
 
-        if self.queue.len() >= FrameTime::DT_FILTER_WIDTH {
+        if self.queue.len() >= DT_FILTER_WIDTH {
             self.queue.pop_front();
         }
         self.queue.push_back(dt);

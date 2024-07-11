@@ -1,7 +1,6 @@
-use crate::assets::shaders::WorldViewProjUniform;
-use crate::assets::{MeshVertex, Texture};
+use crate::assets::{Assets, MeshVertex, Texture, WorldViewProjUniform};
 use crate::components::{Camera, Transform};
-use crate::resources::{Assets, Device};
+use crate::device::Device;
 
 use super::apply_material::ApplyMaterial;
 use super::utils::*;

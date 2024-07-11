@@ -1,4 +1,4 @@
-use crate::resources::Device;
+use crate::device::Device;
 
 use super::super::{Camera, Transform};
 

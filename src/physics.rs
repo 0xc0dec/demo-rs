@@ -1,14 +1,13 @@
-use bevy_ecs::prelude::Resource;
 use rapier3d::control::{EffectiveCharacterMovement, KinematicCharacterController};
 use rapier3d::prelude::*;
 
 use crate::math::Vec3;
 
-#[derive(Resource)]
-pub struct PhysicsWorld {
+// TODO Try to fully encapsulate Rapier types
+pub struct Physics {
     pub bodies: RigidBodySet,
     pub colliders: ColliderSet,
-    pub query_pipeline: QueryPipeline,
+    query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
     broad_phase: Box<dyn BroadPhase>,
@@ -19,7 +18,7 @@ pub struct PhysicsWorld {
     char_controller: KinematicCharacterController,
 }
 
-impl PhysicsWorld {
+impl Physics {
     pub fn new() -> Self {
         Self {
             bodies: RigidBodySet::new(),

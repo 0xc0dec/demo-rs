@@ -1,12 +1,9 @@
 use super::apply_material::ApplyMaterial;
 use super::utils::*;
-use crate::assets::shaders::ViewInvProjUniform;
-use crate::assets::{MeshVertex, Texture};
+use crate::assets::{Assets, MeshVertex, Texture, ViewInvProjUniform};
 use crate::components::{Camera, Transform};
-use crate::resources::{Assets, Device};
-use bevy_ecs::prelude::Component;
+use crate::device::Device;
 
-#[derive(Component)]
 pub struct SkyboxMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,

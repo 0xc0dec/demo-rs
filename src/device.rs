@@ -1,12 +1,9 @@
 use std::ops::Deref;
 
-use bevy_ecs::prelude::Resource;
-
 use crate::assets::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
-#[derive(Resource)]
 pub struct Device {
     surface: wgpu::Surface,
     surface_config: wgpu::SurfaceConfiguration,

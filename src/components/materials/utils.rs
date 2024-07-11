@@ -1,7 +1,7 @@
 use wgpu::util::DeviceExt;
 
 use crate::assets::Texture;
-use crate::resources::Device;
+use crate::device::Device;
 
 pub fn new_uniform_bind_group(
     device: &Device,

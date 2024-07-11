@@ -1,15 +1,12 @@
-use bevy_ecs::prelude::*;
 use wgpu::RenderBundle;
 
-use crate::assets::DrawMesh;
+use crate::assets::{DrawMesh, Mesh};
 use crate::assets::RenderTarget;
-use crate::components::{
-    ApplyMaterial, Camera, Material, Mesh, RENDER_TAG_DEBUG_UI, RenderOrder, RenderTags, Transform,
-};
+use crate::components::{ApplyMaterial, Camera, Material, Transform};
 use crate::debug_ui::DebugUI;
-use crate::resources::Device;
+use crate::device::Device;
 
-fn render_pass(
+pub fn render_pass(
     device: &Device,
     bundles: &[RenderBundle],
     target: Option<&RenderTarget>,
@@ -97,65 +94,15 @@ fn new_bundle_encoder<'a>(
     })
 }
 
-fn build_render_bundles<'a>(
-    meshes: &mut [(
-        &'a Mesh,
-        &'a mut Material,
-        &'a Transform,
-        Option<&'a RenderTags>,
-    )],
+pub fn build_render_bundle(
+    mesh: &Mesh,
+    material: &mut Material,
+    transform: &Transform,
     camera: (&Camera, &Transform),
     device: &Device,
-) -> Vec<RenderBundle> {
-    // Couldn't make it work with a single bundler encoder due to lifetimes
-    meshes
-        .iter_mut()
-        .filter(|(.., tags)| camera.0.should_render(tags.map_or(0u32, |t| t.0)))
-        .map(|(mesh, ref mut mat, tr, _)| {
-            let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
-            mat.apply(&mut encoder, device, camera, tr);
-            encoder.draw_mesh(&mesh.0);
-            encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
-        })
-        .collect::<Vec<_>>()
-}
-
-pub fn render(
-    cameras: Query<(&Camera, &Transform, Option<&RenderOrder>)>,
-    mut meshes: Query<(
-        &Mesh,
-        &mut Material,
-        &Transform,
-        Option<&RenderOrder>,
-        Option<&RenderTags>,
-    )>,
-    device: Res<Device>,
-    mut debug_ui: NonSendMut<DebugUI>,
-) {
-    let mut cameras = cameras.into_iter().collect::<Vec<_>>();
-    cameras.sort_by_key(|(.., order)| order.map_or(0, |o| o.0));
-    let cameras = cameras.iter().map(|(c, t, ..)| (*c, *t));
-
-    let mut meshes = meshes
-        .iter_mut()
-        .map(|(mesh, mat, tr, order, tags)| (mesh, mat.into_inner(), tr, order, tags))
-        .collect::<Vec<_>>();
-    meshes.sort_by_key(|(.., order, _)| order.map_or(0, |o| o.0));
-    let mut meshes = meshes
-        .into_iter()
-        .map(|(mesh, mat, tr, _, tags)| (mesh, mat, tr, tags))
-        .collect::<Vec<_>>();
-
-    for camera in cameras {
-        let bundles = build_render_bundles(&mut meshes, camera, &device);
-        render_pass(
-            &device,
-            &bundles,
-            camera.0.target().as_ref(),
-            camera
-                .0
-                .should_render(RENDER_TAG_DEBUG_UI)
-                .then(|| debug_ui.as_mut()),
-        );
-    }
+) -> RenderBundle {
+    let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
+    material.apply(&mut encoder, device, camera, transform);
+    encoder.draw_mesh(mesh);
+    encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
 }

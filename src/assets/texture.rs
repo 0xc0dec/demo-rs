@@ -3,7 +3,7 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
 
-use crate::resources::Device;
+use crate::device::Device;
 
 pub type TextureSize = (u32, u32);
 
