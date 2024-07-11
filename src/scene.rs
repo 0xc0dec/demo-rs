@@ -10,7 +10,7 @@ use crate::components::{
 use crate::device::Device;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point, Vec3};
-use crate::physics_world::PhysicsWorld;
+use crate::physics::PhysicsWorld;
 use crate::render::build_render_bundle;
 
 // TODO A proper ECS or some other solution. This is a very basic solution for now.

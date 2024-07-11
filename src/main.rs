@@ -5,7 +5,7 @@ use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::{Window, WindowBuilder};
 
 use frame_time::FrameTime;
-use physics_world::PhysicsWorld;
+use physics::PhysicsWorld;
 use render::render_pass;
 
 use crate::assets::Assets;
@@ -25,7 +25,7 @@ mod events;
 mod frame_time;
 mod input;
 mod math;
-mod physics_world;
+mod physics;
 mod render;
 mod scene;
 

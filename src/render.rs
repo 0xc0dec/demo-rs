@@ -103,6 +103,6 @@ pub fn build_render_bundle(
 ) -> RenderBundle {
     let mut encoder = new_bundle_encoder(device, camera.0.target().as_ref());
     material.apply(&mut encoder, device, camera, transform);
-    encoder.draw_mesh(&mesh);
+    encoder.draw_mesh(mesh);
     encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
 }

@@ -10,7 +10,7 @@ use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
-use crate::physics_world::PhysicsWorld;
+use crate::physics::PhysicsWorld;
 
 pub struct Player {
     // Point and physics body at which the player is currently looking at
