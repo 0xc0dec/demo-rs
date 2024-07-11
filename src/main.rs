@@ -35,7 +35,7 @@ fn consume_system_events(
     debug_ui: &mut DebugUI,
     mouse_events: &mut Vec<MouseEvent>,
     keyboard_events: &mut Vec<KeyboardEvent>,
-    resize_events: &mut Vec<ResizeEvent>,
+    resize_event: &mut Option<ResizeEvent>,
 ) {
     event_loop.run_return(|event, _, flow| {
         *flow = ControlFlow::Poll;
@@ -82,11 +82,11 @@ fn consume_system_events(
                 }
 
                 WindowEvent::Resized(new_size) => {
-                    resize_events.push(ResizeEvent(*new_size));
+                    resize_event.replace(ResizeEvent(*new_size));
                 }
 
                 WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    resize_events.push(ResizeEvent(**new_inner_size));
+                    resize_event.replace(ResizeEvent(**new_inner_size));
                 }
 
                 _ => (),
@@ -159,7 +159,7 @@ fn main() {
     // TODO More optimal, avoid vec cleanup on each iteration
     let mut mouse_events = Vec::new();
     let mut keyboard_events = Vec::new();
-    let mut resize_events = Vec::new();
+    let mut resize_event = None;
 
     // TODO Replace with a proper ECS or restructure in some other better way
     let mut scene = Scene::new();
@@ -191,12 +191,10 @@ fn main() {
             &mut debug_ui,
             &mut mouse_events,
             &mut keyboard_events,
-            &mut resize_events,
+            &mut resize_event,
         );
 
-        let last_resize_event = resize_events.last();
-
-        if let Some(e) = last_resize_event {
+        if let Some(e) = resize_event.as_ref() {
             device.resize(e.0);
         }
 
@@ -210,10 +208,10 @@ fn main() {
             &input,
             &window,
             &mut physics,
-            last_resize_event,
+            &resize_event,
         );
 
-        if last_resize_event.is_some() {
+        if resize_event.is_some() {
             scene.update_post_process_overlay(
                 pp_idx,
                 player.camera().target().as_ref().unwrap().color_tex(),
@@ -259,6 +257,6 @@ fn main() {
 
         mouse_events.clear();
         keyboard_events.clear();
-        resize_events.clear();
+        resize_event.take();
     }
 }

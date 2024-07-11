@@ -11,6 +11,7 @@ pub struct Camera {
     proj_matrix: Mat4,
     // Tags to render via this camera
     render_tags: u32,
+    // TODO Move out of `Camera`?
     target: Option<RenderTarget>,
 }
 

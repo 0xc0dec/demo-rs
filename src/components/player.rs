@@ -85,7 +85,7 @@ impl Player {
         input: &Input,
         window: &Window,
         physics: &mut Physics,
-        resize_event: Option<&ResizeEvent>,
+        resize_event: &Option<ResizeEvent>,
     ) {
         // Update camera aspect and RT size
         if let Some(e) = resize_event {
