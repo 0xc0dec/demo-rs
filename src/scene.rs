@@ -64,12 +64,10 @@ impl Scene {
             Transform::new(pos, scale),
             assets.box_mesh(),
             Material::diffuse(device, assets, assets.stone_texture()),
-            Some(PhysicalBody::new(
+            Some(PhysicalBody::cuboid(
                 PhysicalBodyParams {
                     pos,
                     scale,
-                    rotation_axis: Vec3::from_element(0.0),
-                    rotation_angle: 0.0,
                     movable: false,
                 },
                 physics,
@@ -91,12 +89,10 @@ impl Scene {
             Transform::new(pos, scale),
             assets.box_mesh(),
             Material::diffuse(device, assets, assets.stone_texture()),
-            Some(PhysicalBody::new(
+            Some(PhysicalBody::cuboid(
                 PhysicalBodyParams {
                     pos,
                     scale,
-                    rotation_axis: Vec3::identity(),
-                    rotation_angle: 0.0,
                     movable: true,
                 },
                 physics,

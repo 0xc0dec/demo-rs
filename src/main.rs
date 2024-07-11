@@ -29,8 +29,6 @@ mod physics;
 mod render;
 mod scene;
 
-// TODO After removing Bevy, refactor file structure, remove the notion of components/resources/systems.
-
 fn consume_system_events(
     event_loop: &mut EventLoop<()>,
     window: &Window,

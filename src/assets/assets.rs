@@ -4,6 +4,7 @@ use crate::assets::{Mesh, Texture};
 use crate::assets::utils::new_shader_module;
 use crate::device::Device;
 
+// TODO Store groups of assets in hash maps
 pub struct Assets {
     skybox_tex: Texture,
     stone_tex: Texture,

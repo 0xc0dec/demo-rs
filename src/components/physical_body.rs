@@ -11,31 +11,25 @@ pub struct PhysicalBody {
 pub struct PhysicalBodyParams {
     pub pos: Vec3,
     pub scale: Vec3,
-    pub rotation_angle: f32,
-    pub rotation_axis: Vec3,
     pub movable: bool,
 }
 
 impl PhysicalBody {
-    pub fn new(params: PhysicalBodyParams, physics: &mut Physics) -> Self {
+    pub fn cuboid(params: PhysicalBodyParams, physics: &mut Physics) -> Self {
         let PhysicalBodyParams {
             pos,
             scale,
-            rotation_axis,
-            rotation_angle,
             movable,
         } = params;
 
         let body = RigidBodyBuilder::new(body_type(movable))
             .translation(vector![pos.x, pos.y, pos.z])
-            .rotation(rotation_axis * rotation_angle)
             .build();
-
-        // TODO Other shapes
         let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
             .restitution(0.2)
             .friction(0.7)
             .build();
+
         let (handle, _) = physics.add_body(body, collider);
 
         Self { handle, movable }
