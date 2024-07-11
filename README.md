@@ -1,6 +1,6 @@
 # About
 
-A simple graphics demo where you can fly around, spawn boxes with physics and grab them.
+A simple graphics demo where you can fly around, spawn boxes and grab them.
 
 ![Demo](/demo.gif?raw=true)
 
