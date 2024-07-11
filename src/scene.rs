@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use wgpu::RenderBundle;
 
@@ -63,7 +63,7 @@ impl Scene {
         let scale = Vec3::new(10.0, 0.5, 10.0);
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Mesh(Arc::clone(&assets.box_mesh)),
+            Mesh(Rc::clone(&assets.box_mesh)),
             Material::diffuse(device, assets, &assets.stone_tex),
             Some(PhysicsBody::new(
                 PhysicsBodyParams {
@@ -90,7 +90,7 @@ impl Scene {
     ) {
         self.spawn_mesh(
             Transform::new(pos, scale),
-            Mesh(Arc::clone(&assets.box_mesh)),
+            Mesh(Rc::clone(&assets.box_mesh)),
             Material::diffuse(device, assets, &assets.stone_tex),
             Some(PhysicsBody::new(
                 PhysicsBodyParams {
@@ -110,7 +110,7 @@ impl Scene {
     pub fn spawn_skybox(&mut self, device: &Device, assets: &Assets) {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Arc::new(assets::Mesh::quad(device))),
+            Mesh(Rc::new(assets::Mesh::quad(device))),
             Material::skybox(device, assets, &assets.skybox_tex),
             None,
             Some(-100),
@@ -121,7 +121,7 @@ impl Scene {
     pub fn spawn_player_target(&mut self, device: &Device, assets: &Assets) -> usize {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Arc::clone(&assets.box_mesh)),
+            Mesh(Rc::clone(&assets.box_mesh)),
             Material::color(device, assets),
             None,
             None,
@@ -137,7 +137,7 @@ impl Scene {
     ) -> usize {
         self.spawn_mesh(
             Transform::default(),
-            Mesh(Arc::new(assets::Mesh::quad(device))),
+            Mesh(Rc::new(assets::Mesh::quad(device))),
             Material::post_process(device, assets, source_color_tex),
             None,
             Some(100),

@@ -1,4 +1,3 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
-// TODO Avoid Arc? It's needed because apparently components must be thread-safe.
-pub struct Mesh(pub Arc<crate::assets::Mesh>);
+pub struct Mesh(pub Rc<crate::assets::Mesh>);

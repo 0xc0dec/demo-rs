@@ -1,7 +1,7 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
-use crate::assets::utils::new_shader_module;
 use crate::assets::{Mesh, Texture};
+use crate::assets::utils::new_shader_module;
 use crate::device::Device;
 
 pub struct Assets {
@@ -12,8 +12,7 @@ pub struct Assets {
     pub diffuse_shader: wgpu::ShaderModule,
     pub postprocess_shader: wgpu::ShaderModule,
     pub skybox_shader: wgpu::ShaderModule,
-    // TODO Review the usage of `Arc`, it was introduced due to Bevy requirements.
-    pub box_mesh: Arc<Mesh>,
+    pub box_mesh: Rc<Mesh>,
 }
 
 impl Assets {
@@ -28,7 +27,7 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Arc::new(Mesh::from_file("cube.obj", device).await),
+                Rc::new(Mesh::from_file("cube.obj", device).await),
                 Texture::new_cube_from_file("skybox_bgra.dds", device)
                     .await
                     .unwrap(),
