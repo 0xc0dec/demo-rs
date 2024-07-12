@@ -3,7 +3,6 @@ use std::f32::consts::PI;
 use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
-use crate::assets::RenderTarget;
 use crate::components::*;
 use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
@@ -11,6 +10,7 @@ use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
+use crate::render_target::RenderTarget;
 
 pub struct Player {
     // Point and physics body at which the player is currently looking at

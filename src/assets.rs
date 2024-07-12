@@ -1,8 +1,9 @@
 use std::rc::Rc;
 
-use crate::assets::{Mesh, Texture};
 use crate::fs::load_string_asset;
 use crate::graphics::Graphics;
+use crate::mesh::Mesh;
+use crate::texture::Texture;
 
 // TODO Store groups of assets in hash maps
 pub struct Assets {

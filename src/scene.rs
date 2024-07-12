@@ -2,16 +2,19 @@ use std::rc::Rc;
 
 use wgpu::RenderBundle;
 
-use crate::assets::{Assets, Mesh, Texture};
+use crate::assets::Assets;
 use crate::components::{
-    Camera, Material, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
+    Camera, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE, Transform,
 };
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
+use crate::materials::Material;
 use crate::math::{to_point, Vec3};
+use crate::mesh::Mesh;
 use crate::physics::Physics;
 use crate::render::build_render_bundle;
+use crate::texture::Texture;
 
 // TODO A proper ECS or some other solution. This is a very basic solution for now.
 pub struct Scene {

@@ -1,61 +1,67 @@
-use crate::assets::{Assets, MeshVertex, Texture, ViewInvProjUniform};
+use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::graphics::Graphics;
+use crate::mesh::MeshVertex;
+use crate::texture::Texture;
 
 use super::apply_material::ApplyMaterial;
+use super::uniforms::WorldViewProjUniform;
 use super::utils::*;
 
-pub struct SkyboxMaterial {
+pub struct DiffuseMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
-    matrices_uniform: ViewInvProjUniform,
+    matrices_uniform: WorldViewProjUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: wgpu::BindGroup,
 }
 
-impl SkyboxMaterial {
+impl DiffuseMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
-        let matrices_uniform = ViewInvProjUniform::new();
+        let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(gfx, texture, wgpu::TextureViewDimension::Cube);
+            new_texture_bind_group(gfx, texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = new_render_pipeline(
             gfx,
             RenderPipelineParams {
-                shader_module: assets.skybox_shader(),
-                depth_write: false,
+                shader_module: assets.diffuse_shader(),
+                depth_write: true,
                 depth_enabled: true,
                 bind_group_layouts: &[
-                    &matrices_uniform_bind_group_layout,
                     &texture_bind_group_layout,
+                    &matrices_uniform_bind_group_layout,
                 ],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
         );
 
         Self {
-            pipeline,
             texture_bind_group,
             matrices_uniform,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
+            pipeline,
         }
     }
 }
 
-impl ApplyMaterial for SkyboxMaterial {
+impl ApplyMaterial for DiffuseMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
         gfx: &Graphics,
         camera: (&Camera, &Transform),
-        _transform: &Transform,
+        transform: &Transform,
     ) {
-        self.matrices_uniform
-            .update(&camera.1.view_matrix(), &camera.0.proj_matrix());
+        self.matrices_uniform.update(
+            &transform.matrix(),
+            &camera.1.view_matrix(),
+            &camera.0.proj_matrix(),
+        );
         gfx.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
@@ -63,7 +69,7 @@ impl ApplyMaterial for SkyboxMaterial {
         );
 
         encoder.set_pipeline(&self.pipeline);
-        encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
-        encoder.set_bind_group(1, &self.texture_bind_group, &[]);
+        encoder.set_bind_group(0, &self.texture_bind_group, &[]);
+        encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
     }
 }

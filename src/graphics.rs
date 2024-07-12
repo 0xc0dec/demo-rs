@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::assets::Texture;
+use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 

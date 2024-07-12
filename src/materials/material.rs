@@ -1,5 +1,6 @@
-use crate::assets::{Assets, Texture};
+use crate::assets::Assets;
 use crate::graphics::Graphics;
+use crate::texture::Texture;
 
 use super::apply_material::ApplyMaterial;
 use super::color::ColorMaterial;

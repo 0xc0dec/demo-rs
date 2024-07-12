@@ -1,7 +1,7 @@
 use rapier3d::na;
 
-use crate::assets::RenderTarget;
 use crate::math::Mat4;
+use crate::render_target::RenderTarget;
 
 pub struct Camera {
     aspect: f32,

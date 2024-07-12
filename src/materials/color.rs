@@ -1,43 +1,37 @@
-use crate::assets::{Assets, MeshVertex, Texture, WorldViewProjUniform};
+use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::graphics::Graphics;
+use crate::mesh::MeshVertex;
 
 use super::apply_material::ApplyMaterial;
+use super::uniforms::WorldViewProjUniform;
 use super::utils::*;
 
-pub struct DiffuseMaterial {
+pub struct ColorMaterial {
     pipeline: wgpu::RenderPipeline,
-    texture_bind_group: wgpu::BindGroup,
     matrices_uniform: WorldViewProjUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: wgpu::BindGroup,
 }
 
-impl DiffuseMaterial {
-    pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
+impl ColorMaterial {
+    pub fn new(gfx: &Graphics, assets: &Assets) -> Self {
         let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
 
-        let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(gfx, texture, wgpu::TextureViewDimension::D2);
-
         let pipeline = new_render_pipeline(
             gfx,
             RenderPipelineParams {
-                shader_module: assets.diffuse_shader(),
+                shader_module: assets.color_shader(),
                 depth_write: true,
                 depth_enabled: true,
-                bind_group_layouts: &[
-                    &texture_bind_group_layout,
-                    &matrices_uniform_bind_group_layout,
-                ],
+                bind_group_layouts: &[&matrices_uniform_bind_group_layout],
                 vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
             },
         );
 
         Self {
-            texture_bind_group,
             matrices_uniform,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
@@ -46,7 +40,7 @@ impl DiffuseMaterial {
     }
 }
 
-impl ApplyMaterial for DiffuseMaterial {
+impl ApplyMaterial for ColorMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
@@ -66,7 +60,6 @@ impl ApplyMaterial for DiffuseMaterial {
         );
 
         encoder.set_pipeline(&self.pipeline);
-        encoder.set_bind_group(0, &self.texture_bind_group, &[]);
-        encoder.set_bind_group(1, &self.matrices_uniform_bind_group, &[]);
+        encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
     }
 }
