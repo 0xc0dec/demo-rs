@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::assets::{Mesh, Texture};
-use crate::assets::utils::new_shader_module;
+use crate::fs::load_string_asset;
 use crate::graphics::Graphics;
 
 // TODO Store groups of assets in hash maps
@@ -79,4 +79,13 @@ impl Assets {
     pub fn box_mesh(&self) -> Rc<Mesh> {
         Rc::clone(&self.box_mesh)
     }
+}
+
+async fn new_shader_module(device: &wgpu::Device, src_file_path: &str) -> wgpu::ShaderModule {
+    let src = load_string_asset(src_file_path).await.unwrap();
+
+    device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: wgpu::ShaderSource::Wgsl(src.into()),
+    })
 }

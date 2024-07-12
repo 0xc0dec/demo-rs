@@ -22,6 +22,7 @@ mod components;
 mod debug_ui;
 mod events;
 mod frame_time;
+mod fs;
 mod graphics;
 mod input;
 mod math;
