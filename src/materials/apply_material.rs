@@ -3,7 +3,7 @@ use crate::graphics::Graphics;
 use super::super::{Camera, Transform};
 
 // TODO Better name
-pub trait ApplyMaterial: Sync + Send {
+pub trait ApplyMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
