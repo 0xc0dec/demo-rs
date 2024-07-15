@@ -102,7 +102,7 @@ pub fn new_render_pipeline(
         push_constant_ranges: &[],
     });
 
-    let pipeline = gfx.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+    gfx.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&layout),
         vertex: wgpu::VertexState {
@@ -145,7 +145,5 @@ pub fn new_render_pipeline(
             alpha_to_coverage_enabled: false,
         },
         multiview: None,
-    });
-
-    pipeline
+    })
 }

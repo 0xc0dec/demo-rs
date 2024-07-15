@@ -1,7 +1,8 @@
 use crate::assets::Assets;
-use crate::components::{Camera, Transform};
+use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::mesh::MeshVertex;
+use crate::transform::Transform;
 
 use super::apply_material::ApplyMaterial;
 use super::uniforms::WorldViewProjUniform;

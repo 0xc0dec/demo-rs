@@ -9,16 +9,19 @@ use physics::Physics;
 use render::render_pass;
 
 use crate::assets::Assets;
-use crate::components::{Camera, Player, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
+use crate::camera::Camera;
 use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
+use crate::player::Player;
+use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
 use crate::scene::Scene;
+use crate::transform::Transform;
 
 mod assets;
-mod components;
+mod camera;
 mod debug_ui;
 mod events;
 mod frame_time;
@@ -28,11 +31,15 @@ mod input;
 mod materials;
 mod math;
 mod mesh;
+mod physical_body;
 mod physics;
+mod player;
 mod render;
+mod render_tags;
 mod render_target;
 mod scene;
 mod texture;
+mod transform;
 
 fn consume_system_events(
     event_loop: &mut EventLoop<()>,

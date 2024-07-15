@@ -1,6 +1,6 @@
+use crate::camera::Camera;
 use crate::graphics::Graphics;
-
-use super::super::{Camera, Transform};
+use crate::transform::Transform;
 
 // TODO Better name
 pub trait ApplyMaterial {

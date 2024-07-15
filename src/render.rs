@@ -1,11 +1,12 @@
 use wgpu::RenderBundle;
 
-use crate::components::{Camera, Transform};
+use crate::camera::Camera;
 use crate::debug_ui::DebugUI;
 use crate::graphics::Graphics;
 use crate::materials::{ApplyMaterial, Material};
 use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
+use crate::transform::Transform;
 
 pub fn render_pass(
     gfx: &Graphics,

@@ -1,10 +1,11 @@
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
-use crate::components::{Camera, Transform};
+use crate::camera::Camera;
 use crate::graphics::Graphics;
 use crate::mesh::MeshVertex;
 use crate::texture::Texture;
+use crate::transform::Transform;
 
 use super::apply_material::ApplyMaterial;
 use super::utils::*;

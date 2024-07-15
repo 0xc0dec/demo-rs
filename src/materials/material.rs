@@ -1,13 +1,14 @@
 use crate::assets::Assets;
 use crate::graphics::Graphics;
 use crate::texture::Texture;
+use crate::transform::Transform;
 
 use super::apply_material::ApplyMaterial;
 use super::color::ColorMaterial;
 use super::diffuse::DiffuseMaterial;
 use super::post_process::PostProcessMaterial;
 use super::skybox::SkyboxMaterial;
-use super::super::{Camera, Transform};
+use super::super::Camera;
 
 pub struct Material(Box<dyn ApplyMaterial>);
 
