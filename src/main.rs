@@ -259,6 +259,7 @@ fn main() {
         );
 
         // Render post-process overlay + debug UI
+        // TODO Fix debug UI on Windows - it simply crashes :|
         build_debug_ui(&mut debug_ui, &frame_time, &window);
         render_pass(
             &gfx,
