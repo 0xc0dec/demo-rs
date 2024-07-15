@@ -1,19 +1,13 @@
 use wgpu::RenderBundle;
 
 use crate::camera::Camera;
-use crate::debug_ui::DebugUI;
 use crate::graphics::Graphics;
 use crate::materials::Material;
 use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
 use crate::transform::Transform;
 
-pub fn render_pass(
-    gfx: &Graphics,
-    bundles: &[RenderBundle],
-    target: Option<&RenderTarget>,
-    debug_ui: Option<&mut DebugUI>,
-) {
+pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&RenderTarget>) {
     let surface_tex = target.is_none().then(|| {
         gfx.surface()
             .get_current_texture()
@@ -61,9 +55,6 @@ pub fn render_pass(
             });
 
             pass.execute_bundles(bundles.iter());
-            if let Some(ui) = debug_ui {
-                ui.render(gfx, &mut pass)
-            }
         }
 
         encoder.finish()

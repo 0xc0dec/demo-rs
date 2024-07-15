@@ -8,8 +8,6 @@ anyhow = "1.0.69"
 bytemuck = { version = "1.13.0", features = ["derive"] }
 ddsfile = "0.5.1"
 image = { version = "0.25.1", features = ["png", "jpeg"], default-features = false }
-imgui = "0.10.0"
-imgui-wgpu = "0.22.0"
 instant = "0.1.12"
 pollster = "0.3.0"
 rapier3d = { version = "0.21.0", features = ["simd-stable"] }
