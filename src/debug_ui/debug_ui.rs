@@ -64,7 +64,7 @@ impl DebugUI {
             .prepare_frame(self.context.io_mut(), window)
             .expect("Failed to prepare debug UI frame");
 
-        let frame = self.context.frame();
+        let frame = self.context.new_frame();
 
         build(frame);
 
