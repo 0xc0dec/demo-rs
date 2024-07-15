@@ -1,7 +1,8 @@
 use winit::dpi::PhysicalSize;
-use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::platform::run_return::EventLoopExtRunReturn;
+use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, WindowEvent};
+use winit::event_loop::EventLoop;
+use winit::keyboard::PhysicalKey::Code;
+use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
 use winit::window::{Window, WindowBuilder};
 
 use frame_time::FrameTime;
@@ -46,63 +47,54 @@ fn consume_system_events(
     keyboard_events: &mut Vec<KeyboardEvent>,
     resize_event: &mut Option<ResizeEvent>,
 ) {
-    event_loop.run_return(|event, _, flow| {
-        *flow = ControlFlow::Poll;
+    let _ = event_loop.run_on_demand(|event, target| match event {
+        Event::AboutToWait => target.exit(),
+        Event::DeviceEvent {
+            event: DeviceEvent::MouseMotion { delta },
+            ..
+        } => {
+            mouse_events.push(MouseEvent::Move {
+                dx: delta.0 as f32,
+                dy: delta.1 as f32,
+            });
+        }
 
-        match event {
-            Event::MainEventsCleared => {
-                *flow = ControlFlow::Exit;
-            }
-
-            Event::DeviceEvent {
-                event: DeviceEvent::MouseMotion { delta },
-                ..
-            } => {
-                mouse_events.push(MouseEvent::Move {
-                    dx: delta.0 as f32,
-                    dy: delta.1 as f32,
+        Event::WindowEvent {
+            ref event,
+            window_id,
+        } if window_id == window.id() => match event {
+            WindowEvent::MouseInput { state, button, .. } => {
+                mouse_events.push(MouseEvent::Button {
+                    btn: *button,
+                    pressed: *state == ElementState::Pressed,
                 });
             }
 
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => match event {
-                WindowEvent::MouseInput { state, button, .. } => {
-                    mouse_events.push(MouseEvent::Button {
-                        btn: *button,
-                        pressed: *state == ElementState::Pressed,
-                    });
-                }
-
-                WindowEvent::KeyboardInput {
-                    input:
-                        KeyboardInput {
-                            state: key_state,
-                            virtual_keycode: Some(keycode),
-                            ..
-                        },
-                    ..
-                } => {
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        state: key_state,
+                        physical_key: key,
+                        ..
+                    },
+                ..
+            } => {
+                if let Code(code) = key {
                     keyboard_events.push(KeyboardEvent {
-                        code: *keycode,
+                        code: *code,
                         pressed: *key_state == ElementState::Pressed,
                     });
                 }
+            }
 
-                WindowEvent::Resized(new_size) => {
-                    resize_event.replace(ResizeEvent(*new_size));
-                }
+            WindowEvent::Resized(new_size) => {
+                resize_event.replace(ResizeEvent(*new_size));
+            }
 
-                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    resize_event.replace(ResizeEvent(**new_inner_size));
-                }
+            _ => (),
+        },
 
-                _ => (),
-            },
-
-            _ => {}
-        }
+        _ => {}
     });
 }
 
@@ -110,7 +102,7 @@ fn consume_system_events(
 // TODO Grabbing objects with a cursor (when camera is not controlled)
 
 fn main() {
-    let mut event_loop = EventLoop::new();
+    let mut event_loop = EventLoop::new().unwrap();
     let window = WindowBuilder::new()
         .with_title("Demo")
         .with_inner_size(PhysicalSize {

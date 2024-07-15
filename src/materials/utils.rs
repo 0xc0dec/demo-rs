@@ -109,10 +109,12 @@ pub fn new_render_pipeline(
             module: params.shader_module,
             entry_point: "vs_main",
             buffers: params.vertex_buffer_layouts,
+            compilation_options: Default::default(),
         },
         fragment: Some(wgpu::FragmentState {
             module: params.shader_module,
             entry_point: "fs_main",
+            compilation_options: Default::default(),
             targets: &[Some(wgpu::ColorTargetState {
                 format: gfx.surface_texture_format(),
                 blend: Some(wgpu::BlendState::REPLACE),

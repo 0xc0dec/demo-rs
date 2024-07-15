@@ -1,6 +1,6 @@
 use anyhow::*;
 use image::GenericImageView;
-use wgpu::util::DeviceExt;
+use wgpu::util::{DeviceExt, TextureDataOrder};
 
 use crate::fs::load_binary_asset;
 use crate::graphics::Graphics;
@@ -113,12 +113,12 @@ impl Texture {
         }
     }
 
-    pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
         let data = load_binary_asset(file_name).await?;
         Self::new_2d_from_mem(gfx, &data)
     }
 
-    pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics) -> Result<Self> {
+    pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
         let data = load_binary_asset(file_name).await?;
         Self::new_cube_from_mem(gfx, &data)
     }
@@ -162,6 +162,7 @@ impl Texture {
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 view_formats: &[],
             },
+            TextureDataOrder::default(),
             &rgba,
         );
 
@@ -210,6 +211,7 @@ impl Texture {
                 label: None,
                 view_formats: &[],
             },
+            TextureDataOrder::default(),
             &image.data,
         );
 
