@@ -5,7 +5,7 @@ use crate::mesh::MeshVertex;
 use crate::texture::Texture;
 use crate::transform::Transform;
 
-use super::apply_material::ApplyMaterial;
+use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
 use super::utils::*;
 
@@ -50,7 +50,7 @@ impl DiffuseMaterial {
     }
 }
 
-impl ApplyMaterial for DiffuseMaterial {
+impl Material for DiffuseMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,

@@ -4,7 +4,7 @@ use crate::graphics::Graphics;
 use crate::mesh::MeshVertex;
 use crate::transform::Transform;
 
-use super::apply_material::ApplyMaterial;
+use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
 use super::utils::*;
 
@@ -41,7 +41,7 @@ impl ColorMaterial {
     }
 }
 
-impl ApplyMaterial for ColorMaterial {
+impl Material for ColorMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,

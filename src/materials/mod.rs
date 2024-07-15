@@ -1,7 +1,9 @@
-pub use apply_material::ApplyMaterial;
+pub use color::ColorMaterial;
+pub use diffuse::DiffuseMaterial;
 pub use material::Material;
+pub use post_process::PostProcessMaterial;
+pub use skybox::SkyboxMaterial;
 
-mod apply_material;
 mod color;
 mod diffuse;
 mod material;

@@ -5,7 +5,7 @@ use crate::mesh::MeshVertex;
 use crate::texture::Texture;
 use crate::transform::Transform;
 
-use super::apply_material::ApplyMaterial;
+use super::material::Material;
 use super::uniforms::ViewInvProjUniform;
 use super::utils::*;
 
@@ -50,7 +50,7 @@ impl SkyboxMaterial {
     }
 }
 
-impl ApplyMaterial for SkyboxMaterial {
+impl Material for SkyboxMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,

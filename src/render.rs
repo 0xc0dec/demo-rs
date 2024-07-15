@@ -3,7 +3,7 @@ use wgpu::RenderBundle;
 use crate::camera::Camera;
 use crate::debug_ui::DebugUI;
 use crate::graphics::Graphics;
-use crate::materials::{ApplyMaterial, Material};
+use crate::materials::Material;
 use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
 use crate::transform::Transform;
@@ -97,7 +97,7 @@ fn new_bundle_encoder<'a>(
 
 pub fn build_render_bundle(
     mesh: &Mesh,
-    material: &mut Material,
+    material: &mut dyn Material,
     transform: &Transform,
     camera: (&Camera, &Transform),
     gfx: &Graphics,

@@ -7,7 +7,7 @@ use crate::mesh::MeshVertex;
 use crate::texture::Texture;
 use crate::transform::Transform;
 
-use super::apply_material::ApplyMaterial;
+use super::material::Material;
 use super::utils::*;
 
 pub struct PostProcessMaterial {
@@ -38,7 +38,7 @@ impl PostProcessMaterial {
     }
 }
 
-impl ApplyMaterial for PostProcessMaterial {
+impl Material for PostProcessMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,
