@@ -3,7 +3,7 @@ use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, WindowEvent};
 use winit::event_loop::EventLoop;
 use winit::keyboard::PhysicalKey::Code;
 use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
-use winit::window::{Window, WindowBuilder};
+use winit::window::Window;
 
 use frame_time::FrameTime;
 use physics::Physics;
@@ -98,18 +98,20 @@ fn consume_system_events(
     });
 }
 
-// TODO Update deps
-// TODO Grabbing objects with a cursor (when camera is not controlled)
+// TODO Switch to what winit recommends instead of the deprecated stuff.
+// TODO Grabbing objects with a cursor (when camera is not controlled).
 
 fn main() {
     let mut event_loop = EventLoop::new().unwrap();
-    let window = WindowBuilder::new()
-        .with_title("Demo")
-        .with_inner_size(PhysicalSize {
-            width: 1900,
-            height: 1200,
-        })
-        .build(&event_loop)
+    let window = event_loop
+        .create_window(
+            Window::default_attributes()
+                .with_title("Demo")
+                .with_inner_size(PhysicalSize {
+                    width: 1900,
+                    height: 1200,
+                }),
+        )
         .unwrap();
     // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
     let mut gfx = pollster::block_on(Graphics::new(&window));
