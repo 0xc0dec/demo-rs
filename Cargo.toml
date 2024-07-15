@@ -7,7 +7,7 @@ edition = "2021"
 anyhow = "1.0.69"
 bytemuck = { version = "1.13.0", features = ["derive"] }
 ddsfile = "0.5.1"
-image = { version = "0.24.5", features = ["png", "jpeg"], default-features = false }
+image = { version = "0.25.1", features = ["png", "jpeg"], default-features = false }
 imgui = "0.10.0"
 imgui-wgpu = "0.22.0"
 instant = "0.1.12"
