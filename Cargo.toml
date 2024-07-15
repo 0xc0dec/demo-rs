@@ -12,5 +12,5 @@ instant = "0.1.12"
 pollster = "0.3.0"
 rapier3d = { version = "0.21.0", features = ["simd-stable"] }
 tobj = { version = "4.0.1", features = ["async"] }
-wgpu = "0.15.1"
+wgpu = "0.18.0"
 winit = "0.28.1"

@@ -1,5 +1,7 @@
 use std::ops::Deref;
 
+use wgpu::{Gles3MinorVersion, InstanceFlags};
+
 use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
@@ -20,6 +22,8 @@ impl Graphics {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             dx12_shader_compiler: Default::default(),
+            flags: InstanceFlags::DEBUG,
+            gles_minor_version: Gles3MinorVersion::Automatic,
         });
 
         let surface = unsafe { instance.create_surface(&window) }.unwrap();
@@ -54,7 +58,7 @@ impl Graphics {
                 .formats
                 .iter()
                 .copied()
-                .find(|f| f.describe().srgb)
+                .find(|f| f.is_srgb())
                 .unwrap_or(caps.formats[0]);
 
             wgpu::SurfaceConfiguration {

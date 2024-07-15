@@ -1,4 +1,4 @@
-use wgpu::RenderBundle;
+use wgpu::{RenderBundle, StoreOp};
 
 use crate::camera::Camera;
 use crate::graphics::Graphics;
@@ -27,7 +27,7 @@ pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&Ren
         resolve_target: None,
         ops: wgpu::Operations {
             load: wgpu::LoadOp::Clear(wgpu::Color::RED),
-            store: true,
+            store: StoreOp::Store,
         },
     });
 
@@ -38,7 +38,7 @@ pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&Ren
         view: depth_tex_view,
         depth_ops: Some(wgpu::Operations {
             load: wgpu::LoadOp::Clear(1.0),
-            store: true,
+            store: StoreOp::Store,
         }),
         stencil_ops: None,
     });
@@ -52,6 +52,8 @@ pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&Ren
                 label: None,
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
+                occlusion_query_set: None,
+                timestamp_writes: None,
             });
 
             pass.execute_bundles(bundles.iter());
