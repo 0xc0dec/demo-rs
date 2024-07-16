@@ -13,7 +13,13 @@ is pretty low level and abstractions are built along the way when needed.
 cargo run
 ```
 
-Check the on-screen tip for controls.
+Controls:
+
+- Toggle camera control: `Tab`
+- Move: `WASDQE`
+- Grab objects: focus on an object and hold `LMB`
+- Spawn new box: `Space`
+- Quit: `Esc`
 
 ## Features
 
