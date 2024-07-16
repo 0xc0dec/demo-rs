@@ -1,8 +1,9 @@
 use winit::dpi::PhysicalSize;
-use winit::event::{DeviceEvent, ElementState, Event, KeyboardInput, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::platform::run_return::EventLoopExtRunReturn;
-use winit::window::{Window, WindowBuilder};
+use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, WindowEvent};
+use winit::event_loop::EventLoop;
+use winit::keyboard::PhysicalKey::Code;
+use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
+use winit::window::Window;
 
 use frame_time::FrameTime;
 use physics::Physics;
@@ -10,7 +11,6 @@ use render::render_pass;
 
 use crate::assets::Assets;
 use crate::camera::Camera;
-use crate::debug_ui::DebugUI;
 use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
@@ -22,7 +22,6 @@ use crate::transform::Transform;
 
 mod assets;
 mod camera;
-mod debug_ui;
 mod events;
 mod frame_time;
 mod fs;
@@ -44,120 +43,77 @@ mod transform;
 fn consume_system_events(
     event_loop: &mut EventLoop<()>,
     window: &Window,
-    debug_ui: &mut DebugUI,
     mouse_events: &mut Vec<MouseEvent>,
     keyboard_events: &mut Vec<KeyboardEvent>,
     resize_event: &mut Option<ResizeEvent>,
 ) {
-    event_loop.run_return(|event, _, flow| {
-        *flow = ControlFlow::Poll;
+    let _ = event_loop.run_on_demand(|event, target| match event {
+        Event::AboutToWait => target.exit(),
+        Event::DeviceEvent {
+            event: DeviceEvent::MouseMotion { delta },
+            ..
+        } => {
+            mouse_events.push(MouseEvent::Move {
+                dx: delta.0 as f32,
+                dy: delta.1 as f32,
+            });
+        }
 
-        match event {
-            Event::MainEventsCleared => {
-                *flow = ControlFlow::Exit;
-            }
-
-            Event::DeviceEvent {
-                event: DeviceEvent::MouseMotion { delta },
-                ..
-            } => {
-                mouse_events.push(MouseEvent::Move {
-                    dx: delta.0 as f32,
-                    dy: delta.1 as f32,
+        Event::WindowEvent {
+            ref event,
+            window_id,
+        } if window_id == window.id() => match event {
+            WindowEvent::MouseInput { state, button, .. } => {
+                mouse_events.push(MouseEvent::Button {
+                    btn: *button,
+                    pressed: *state == ElementState::Pressed,
                 });
             }
 
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => match event {
-                WindowEvent::MouseInput { state, button, .. } => {
-                    mouse_events.push(MouseEvent::Button {
-                        btn: *button,
-                        pressed: *state == ElementState::Pressed,
-                    });
-                }
-
-                WindowEvent::KeyboardInput {
-                    input:
-                        KeyboardInput {
-                            state: key_state,
-                            virtual_keycode: Some(keycode),
-                            ..
-                        },
-                    ..
-                } => {
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        state: key_state,
+                        physical_key: key,
+                        ..
+                    },
+                ..
+            } => {
+                if let Code(code) = key {
                     keyboard_events.push(KeyboardEvent {
-                        code: *keycode,
+                        code: *code,
                         pressed: *key_state == ElementState::Pressed,
                     });
                 }
+            }
 
-                WindowEvent::Resized(new_size) => {
-                    resize_event.replace(ResizeEvent(*new_size));
-                }
+            WindowEvent::Resized(new_size) => {
+                resize_event.replace(ResizeEvent(*new_size));
+            }
 
-                WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                    resize_event.replace(ResizeEvent(**new_inner_size));
-                }
+            _ => (),
+        },
 
-                _ => (),
-            },
-
-            _ => {}
-        }
-
-        // TODO Make DebugUI consume events from the event vectors we're filling in this function.
-        debug_ui.handle_window_event(window, &event);
+        _ => {}
     });
 }
 
-fn build_debug_ui(ui: &mut DebugUI, frame_time: &FrameTime, window: &Window) {
-    ui.prepare_render(window, frame_time.delta, |frame| {
-        frame
-            .window("Debug info")
-            .position([10.0, 10.0], imgui::Condition::FirstUseEver)
-            .movable(false)
-            .resizable(false)
-            .always_auto_resize(true)
-            .collapsible(false)
-            .no_decoration()
-            .build(|| {
-                frame.text(
-                    "Controls:\n\
-                    - Toggle camera control: Tab\n\
-                    - Move: WASDQE\n\
-                    - Grab objects: hold LMB\n\
-                    - Spawn new box: Space\n\
-                    - Quit: Escape",
-                );
-
-                let mut mouse_pos = frame.io().mouse_pos;
-                // Prevent UI jumping at start when the mouse position is not yet known
-                // and imgui returns extra huge numbers.
-                if !(-10000.0f32..10000.0f32).contains(&mouse_pos[0]) {
-                    mouse_pos = [-1.0f32, -1.0f32];
-                }
-                frame.text(format!(
-                    "Mouse position: ({:.1},{:.1})",
-                    mouse_pos[0], mouse_pos[1]
-                ));
-            });
-    });
-}
-
-// TODO Update deps
-// TODO Grabbing objects with a cursor (when camera is not controlled)
+// TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
+// update of winit to versions 0.29 - 0.30
+// TODO Switch to what winit recommends instead of the deprecated stuff.
+// TODO Grabbing objects with a cursor (when camera is not controlled).
 
 fn main() {
-    let mut event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
-        .with_title("Demo")
-        .with_inner_size(PhysicalSize {
-            width: 1900,
-            height: 1200,
-        })
-        .build(&event_loop)
+    let mut event_loop = EventLoop::new().unwrap();
+    let window = event_loop
+        .create_window(
+            Window::default_attributes()
+                .with_title("Demo")
+                .with_inner_size(PhysicalSize {
+                    width: 1900,
+                    height: 1200,
+                }),
+        )
         .unwrap();
     // Store device + window in a new struct Device (or smth like that), add Deref traits to it.
     let mut gfx = pollster::block_on(Graphics::new(&window));
@@ -166,7 +122,6 @@ fn main() {
     let mut frame_time = FrameTime::new();
 
     let assets = Assets::load(&gfx);
-    let mut debug_ui = DebugUI::new(&gfx, &window);
 
     // TODO More optimal, avoid vec cleanup on each iteration
     let mut mouse_events = Vec::new();
@@ -200,7 +155,6 @@ fn main() {
         consume_system_events(
             &mut event_loop,
             &window,
-            &mut debug_ui,
             &mut mouse_events,
             &mut keyboard_events,
             &mut resize_event,
@@ -255,17 +209,13 @@ fn main() {
             &gfx,
             &scene.build_render_bundles(player.camera(), player.transform(), &gfx),
             player.camera().target().as_ref(),
-            None,
         );
 
-        // Render post-process overlay + debug UI
-        // TODO Fix debug UI on Windows - it simply crashes :|
-        build_debug_ui(&mut debug_ui, &frame_time, &window);
+        // Render post-process overlay
         render_pass(
             &gfx,
             &scene.build_render_bundles(&pp_cam, &Transform::default(), &gfx),
             None,
-            Some(&mut debug_ui),
         );
 
         mouse_events.clear();

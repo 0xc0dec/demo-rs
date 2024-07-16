@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use winit::event::*;
+use winit::keyboard::KeyCode;
 
 use crate::events::{KeyboardEvent, MouseEvent};
 
@@ -19,7 +20,7 @@ pub enum InputAction {
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 enum Key {
-    Keyboard(VirtualKeyCode),
+    Keyboard(KeyCode),
     MouseButton(MouseButton),
 }
 
@@ -85,15 +86,15 @@ impl Input {
 
 fn action_key(action: InputAction) -> Key {
     match action {
-        InputAction::MoveForward => Key::Keyboard(VirtualKeyCode::W),
-        InputAction::MoveBack => Key::Keyboard(VirtualKeyCode::S),
-        InputAction::MoveLeft => Key::Keyboard(VirtualKeyCode::A),
-        InputAction::MoveRight => Key::Keyboard(VirtualKeyCode::D),
-        InputAction::MoveUp => Key::Keyboard(VirtualKeyCode::E),
-        InputAction::MoveDown => Key::Keyboard(VirtualKeyCode::Q),
-        InputAction::Escape => Key::Keyboard(VirtualKeyCode::Escape),
-        InputAction::ControlPlayer => Key::Keyboard(VirtualKeyCode::Tab),
-        InputAction::Spawn => Key::Keyboard(VirtualKeyCode::Space),
+        InputAction::MoveForward => Key::Keyboard(KeyCode::KeyW),
+        InputAction::MoveBack => Key::Keyboard(KeyCode::KeyS),
+        InputAction::MoveLeft => Key::Keyboard(KeyCode::KeyA),
+        InputAction::MoveRight => Key::Keyboard(KeyCode::KeyD),
+        InputAction::MoveUp => Key::Keyboard(KeyCode::KeyE),
+        InputAction::MoveDown => Key::Keyboard(KeyCode::KeyQ),
+        InputAction::Escape => Key::Keyboard(KeyCode::Escape),
+        InputAction::ControlPlayer => Key::Keyboard(KeyCode::Tab),
+        InputAction::Spawn => Key::Keyboard(KeyCode::Space),
         InputAction::Grab => Key::MouseButton(MouseButton::Left),
     }
 }

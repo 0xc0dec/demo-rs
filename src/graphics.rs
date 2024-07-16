@@ -1,28 +1,32 @@
 use std::ops::Deref;
 
+use wgpu::{Gles3MinorVersion, InstanceFlags};
+
 use crate::texture::Texture;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
-pub struct Graphics {
-    surface: wgpu::Surface,
+pub struct Graphics<'a> {
+    surface: wgpu::Surface<'a>,
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
     queue: wgpu::Queue,
     depth_tex: Texture,
 }
 
-impl Graphics {
+impl<'a> Graphics<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
-    pub async fn new(window: &winit::window::Window) -> Self {
+    pub async fn new(window: &'a winit::window::Window) -> Graphics<'a> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::all(),
+            backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: Default::default(),
+            flags: InstanceFlags::DEBUG,
+            gles_minor_version: Gles3MinorVersion::Automatic,
         });
 
-        let surface = unsafe { instance.create_surface(&window) }.unwrap();
+        let surface = instance.create_surface(window).unwrap();
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -37,8 +41,8 @@ impl Graphics {
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: wgpu::Features::empty(),
-                    limits: wgpu::Limits::default(),
+                    required_features: wgpu::Features::empty(),
+                    required_limits: wgpu::Limits::default(),
                 },
                 None,
             )
@@ -54,7 +58,7 @@ impl Graphics {
                 .formats
                 .iter()
                 .copied()
-                .find(|f| f.describe().srgb)
+                .find(|f| f.is_srgb())
                 .unwrap_or(caps.formats[0]);
 
             wgpu::SurfaceConfiguration {
@@ -65,6 +69,7 @@ impl Graphics {
                 present_mode: caps.present_modes[0],
                 alpha_mode: caps.alpha_modes[0],
                 view_formats: vec![],
+                desired_maximum_frame_latency: 2,
             }
         };
         surface.configure(&device, &surface_config);
@@ -115,7 +120,7 @@ impl Graphics {
     }
 }
 
-impl Deref for Graphics {
+impl<'a> Deref for Graphics<'a> {
     type Target = wgpu::Device;
 
     fn deref(&self) -> &Self::Target {

@@ -1,4 +1,5 @@
-use winit::event::{MouseButton, VirtualKeyCode};
+use winit::event::MouseButton;
+use winit::keyboard::KeyCode;
 
 use crate::graphics::SurfaceSize;
 
@@ -10,6 +11,6 @@ pub enum MouseEvent {
 }
 
 pub struct KeyboardEvent {
-    pub code: VirtualKeyCode,
+    pub code: KeyCode,
     pub pressed: bool,
 }

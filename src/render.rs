@@ -1,19 +1,13 @@
-use wgpu::RenderBundle;
+use wgpu::{RenderBundle, StoreOp};
 
 use crate::camera::Camera;
-use crate::debug_ui::DebugUI;
 use crate::graphics::Graphics;
 use crate::materials::Material;
 use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
 use crate::transform::Transform;
 
-pub fn render_pass(
-    gfx: &Graphics,
-    bundles: &[RenderBundle],
-    target: Option<&RenderTarget>,
-    debug_ui: Option<&mut DebugUI>,
-) {
+pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&RenderTarget>) {
     let surface_tex = target.is_none().then(|| {
         gfx.surface()
             .get_current_texture()
@@ -33,7 +27,7 @@ pub fn render_pass(
         resolve_target: None,
         ops: wgpu::Operations {
             load: wgpu::LoadOp::Clear(wgpu::Color::RED),
-            store: true,
+            store: StoreOp::Store,
         },
     });
 
@@ -44,7 +38,7 @@ pub fn render_pass(
         view: depth_tex_view,
         depth_ops: Some(wgpu::Operations {
             load: wgpu::LoadOp::Clear(1.0),
-            store: true,
+            store: StoreOp::Store,
         }),
         stencil_ops: None,
     });
@@ -58,12 +52,11 @@ pub fn render_pass(
                 label: None,
                 color_attachments: &[color_attachment],
                 depth_stencil_attachment: depth_attachment,
+                occlusion_query_set: None,
+                timestamp_writes: None,
             });
 
             pass.execute_bundles(bundles.iter());
-            if let Some(ui) = debug_ui {
-                ui.render(gfx, &mut pass)
-            }
         }
 
         encoder.finish()
