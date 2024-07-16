@@ -2,7 +2,7 @@
 
 A simple graphics demo where you can fly around, spawn boxes and grab them.
 
-![Demo](/demo.gif?raw=true)
+![Demo](/screenshot.png?raw=true)
 
 I made this project to learn Rust and try it in game development. There is no attempt to create an "engine", everything
 is pretty low level and abstractions are built along the way when needed.
@@ -18,7 +18,6 @@ Check the on-screen tip for controls.
 ## Features
 
 - [wgpu](https://github.com/gfx-rs/wgpu) rendering.
-- [Dear ImGui](https://github.com/yatekii/imgui-wgpu-rs) UI.
 - [nalgebra](https://github.com/dimforge/nalgebra) math.
 - [Rapier](https://rapier.rs) physics
     - Rigid bodies with colliders.

@@ -98,6 +98,8 @@ fn consume_system_events(
     });
 }
 
+// TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
+// update of winit to versions 0.29 - 0.30
 // TODO Switch to what winit recommends instead of the deprecated stuff.
 // TODO Grabbing objects with a cursor (when camera is not controlled).
 
