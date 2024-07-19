@@ -5,7 +5,6 @@ use winit::window::{CursorGrabMode, Window};
 
 use crate::camera::Camera;
 use crate::events::ResizeEvent;
-use crate::frame_time::FrameTime;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
@@ -83,7 +82,7 @@ impl Player {
     pub fn update(
         &mut self,
         gfx: &Graphics,
-        frame_time: &FrameTime,
+        dt: f32,
         input: &Input,
         window: &Window,
         physics: &mut Physics,
@@ -98,7 +97,6 @@ impl Player {
         }
 
         // Move and rotate
-        let dt = frame_time.delta;
         if self.controlled {
             self.rotate(dt, input);
             self.translate(dt, input, physics);

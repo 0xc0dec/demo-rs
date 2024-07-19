@@ -24,6 +24,7 @@ enum Key {
     MouseButton(MouseButton),
 }
 
+#[derive(Default)]
 pub struct Input {
     mouse_delta: (f32, f32),
     // TODO Use something faster than hashmaps (non-heap)

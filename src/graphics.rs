@@ -1,5 +1,5 @@
 use std::ops::Deref;
-
+use std::sync::Arc;
 use wgpu::{Gles3MinorVersion, InstanceFlags};
 
 use crate::texture::Texture;
@@ -18,7 +18,8 @@ impl<'a> Graphics<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
-    pub async fn new(window: &'a winit::window::Window) -> Graphics<'a> {
+    // TODO Revert back to simple reference instead of Arc?
+    pub async fn new(window: Arc<winit::window::Window>) -> Graphics<'a> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: Default::default(),
@@ -26,7 +27,7 @@ impl<'a> Graphics<'a> {
             gles_minor_version: Gles3MinorVersion::Automatic,
         });
 
-        let surface = instance.create_surface(window).unwrap();
+        let surface = instance.create_surface(Arc::clone(&window)).unwrap();
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
