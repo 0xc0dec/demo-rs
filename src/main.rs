@@ -13,7 +13,6 @@ use crate::frame_time::FrameTime;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
-use crate::physics::Physics;
 use crate::player::Player;
 use crate::render::render_pass;
 use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
@@ -54,7 +53,6 @@ struct State<'a> {
     pp_id: usize,
     player_target_id: usize,
     input: Option<Input>,
-    physics: Option<Physics>,
     frame_time: Option<FrameTime>,
     spawned_demo_box: bool,
     new_canvas_size: Option<SurfaceSize>,
@@ -82,17 +80,16 @@ impl<'a> ApplicationHandler for State<'a> {
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let assets = Assets::load(&gfx);
         let mut scene = Scene::new();
-        let mut physics = Physics::new();
         let input = Input::new();
         let frame_time = FrameTime::new();
 
         // Player is outside the normal components set for convenience because it's a singleton.
         // Ideally it should be unified with the rest of the objects once we have a proper ECS
         // or an alternative.
-        let player = Player::new(&gfx, &mut physics);
+        let player = Player::new(&gfx, scene.physics_mut());
         let player_target_idx = scene.spawn_player_target(&gfx, &assets);
         let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
-        scene.spawn_floor(&gfx, &assets, &mut physics);
+        scene.spawn_floor(&gfx, &assets);
 
         // Spawning skybox last to ensure the sorting by render order works and it still shows up
         // in the background.
@@ -109,7 +106,6 @@ impl<'a> ApplicationHandler for State<'a> {
         self.window = Some(window);
         self.assets = Some(assets);
         self.gfx = Some(gfx);
-        self.physics = Some(physics);
         self.input = Some(input);
         self.frame_time = Some(frame_time);
         self.scene = Some(scene);
@@ -126,9 +122,9 @@ impl<'a> ApplicationHandler for State<'a> {
 
         match event {
             WindowEvent::RedrawRequested => {
-                // TODO Refactor this ugliness
+                // TODO Refactor this ugliness <--
+                // (split State into App and State - will that help?)
                 let mut scene = self.scene.take().unwrap();
-                let mut physics = self.physics.take().unwrap();
                 let mut player = self.player.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
                 let mut input = self.input.take().unwrap();
@@ -144,14 +140,15 @@ impl<'a> ApplicationHandler for State<'a> {
 
                 let dt = self.frame_time.as_mut().unwrap().advance();
 
-                physics.update(dt);
+                scene.update(dt);
 
+                // TODO Move Player into Scene?
                 player.update(
                     &gfx,
                     dt,
                     &input,
                     &window,
-                    &mut physics,
+                    scene.physics_mut(),
                     &self.new_canvas_size,
                 );
 
@@ -169,15 +166,16 @@ impl<'a> ApplicationHandler for State<'a> {
                             Vec3::from_element(1.0),
                             &gfx,
                             self.assets.as_ref().unwrap(),
-                            &mut physics,
                         );
                     }
                 }
 
-                scene.update_grabbed(&player, &input, &mut physics);
+                // TODO Merge all such calls into a single `scene.update()`
+                scene.update_grabbed(&player, &input);
                 scene.update_player_target(&player, self.player_target_id);
 
-                scene.sync_physics(&physics);
+                // TODO Remove
+                scene.sync_physics();
 
                 if self.new_canvas_size.is_some() {
                     scene.update_post_process_overlay(
@@ -205,11 +203,10 @@ impl<'a> ApplicationHandler for State<'a> {
                 );
 
                 input.clear();
-                // TODO Review - needed? Is there a better way?
+                // TODO Needed? Is there a better way?
                 window.request_redraw();
 
                 self.player = Some(player);
-                self.physics = Some(physics);
                 self.input = Some(input);
                 self.window = Some(window);
                 self.gfx = Some(gfx);

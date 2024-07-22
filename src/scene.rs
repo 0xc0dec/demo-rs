@@ -21,7 +21,9 @@ use crate::texture::Texture;
 use crate::transform::Transform;
 
 // TODO A proper ECS or some other solution. This is a very basic solution for now.
+// TODO Use arena.
 pub struct Scene {
+    physics: Physics,
     transforms: Vec<Option<Transform>>,
     meshes: Vec<Option<Rc<Mesh>>>,
     materials: Vec<Option<Box<dyn Material>>>,
@@ -35,6 +37,7 @@ pub struct Scene {
 impl Scene {
     pub fn new() -> Self {
         Self {
+            physics: Physics::new(),
             transforms: Vec::new(),
             meshes: Vec::new(),
             materials: Vec::new(),
@@ -44,6 +47,11 @@ impl Scene {
             grabbed_body_id: None,
             grabbed_body_player_local_pos: None,
         }
+    }
+
+    // TODO Remove
+    pub fn physics_mut(&mut self) -> &mut Physics {
+        &mut self.physics
     }
 
     fn spawn_mesh(
@@ -64,46 +72,45 @@ impl Scene {
         self.transforms.len() - 1
     }
 
-    pub fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets, physics: &mut Physics) {
+    pub fn update(&mut self, dt: f32) {
+        self.physics.update(dt);
+    }
+
+    pub fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
+        let body = PhysicalBody::cuboid(
+            PhysicalBodyParams {
+                pos,
+                scale,
+                movable: false,
+            },
+            &mut self.physics,
+        );
         self.spawn_mesh(
             Transform::new(pos, scale),
             assets.box_mesh(),
             Box::new(DiffuseMaterial::new(gfx, assets, assets.stone_texture())),
-            Some(PhysicalBody::cuboid(
-                PhysicalBodyParams {
-                    pos,
-                    scale,
-                    movable: false,
-                },
-                physics,
-            )),
+            Some(body),
             None,
             Some(RENDER_TAG_SCENE),
         );
     }
 
-    pub fn spawn_cube(
-        &mut self,
-        pos: Vec3,
-        scale: Vec3,
-        gfx: &Graphics,
-        assets: &Assets,
-        physics: &mut Physics,
-    ) {
+    pub fn spawn_cube(&mut self, pos: Vec3, scale: Vec3, gfx: &Graphics, assets: &Assets) {
+        let body = PhysicalBody::cuboid(
+            PhysicalBodyParams {
+                pos,
+                scale,
+                movable: true,
+            },
+            &mut self.physics,
+        );
         self.spawn_mesh(
             Transform::new(pos, scale),
             assets.box_mesh(),
             Box::new(DiffuseMaterial::new(gfx, assets, assets.stone_texture())),
-            Some(PhysicalBody::cuboid(
-                PhysicalBodyParams {
-                    pos,
-                    scale,
-                    movable: true,
-                },
-                physics,
-            )),
+            Some(body),
             None,
             Some(RENDER_TAG_SCENE),
         );
@@ -147,7 +154,7 @@ impl Scene {
         )
     }
 
-    pub fn update_grabbed(&mut self, player: &Player, input: &Input, physics: &mut Physics) {
+    pub fn update_grabbed(&mut self, player: &Player, input: &Input) {
         if input.action_active(InputAction::Grab) && player.controlled() {
             if self.grabbed_body_player_local_pos.is_none() {
                 // Initiate grab
@@ -161,8 +168,8 @@ impl Scene {
                         })
                         .unwrap();
                     let body = self.bodies.get_mut(body_idx).unwrap().as_mut().unwrap();
-                    body.set_kinematic(physics, true);
-                    let body = physics.bodies.get_mut(focus_body_handle).unwrap();
+                    body.set_kinematic(&mut self.physics, true);
+                    let body = self.physics.bodies.get_mut(focus_body_handle).unwrap();
                     let local_pos = player
                         .transform()
                         .matrix()
@@ -177,7 +184,7 @@ impl Scene {
                 // Update the grabbed object
                 if let Some(grabbed_idx) = self.grabbed_body_id {
                     let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
-                    let body = physics.bodies.get_mut(body.body_handle()).unwrap();
+                    let body = self.physics.bodies.get_mut(body.body_handle()).unwrap();
                     let new_pos = player
                         .transform()
                         .matrix()
@@ -189,7 +196,7 @@ impl Scene {
             // Release grab
             if let Some(grabbed_idx) = self.grabbed_body_id.take() {
                 let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
-                body.set_kinematic(physics, false);
+                body.set_kinematic(&mut self.physics, false);
                 self.grabbed_body_id = None;
                 self.grabbed_body_player_local_pos = None;
             }
@@ -274,11 +281,11 @@ impl Scene {
             .collect::<Vec<_>>()
     }
 
-    pub fn sync_physics(&mut self, physics: &Physics) {
+    pub fn sync_physics(&mut self) {
         for idx in 0..self.bodies.len() {
             if let Some(body) = self.bodies.get(idx).unwrap() {
                 let transform = self.transforms.get_mut(idx).unwrap().as_mut().unwrap();
-                let body = physics.bodies.get(body.body_handle()).unwrap();
+                let body = self.physics.bodies.get(body.body_handle()).unwrap();
                 let phys_pos = body.translation();
                 let phys_rot = body.rotation().inverse(); // Not sure why inverse is needed
                 transform.set(*phys_pos, *phys_rot.quaternion());
