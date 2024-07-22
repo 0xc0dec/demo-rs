@@ -1,5 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
+
 use wgpu::{Gles3MinorVersion, InstanceFlags};
 
 use crate::texture::Texture;
@@ -18,7 +19,6 @@ impl<'a> Graphics<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
-    // TODO Revert back to simple reference instead of Arc?
     pub async fn new(window: Arc<winit::window::Window>) -> Graphics<'a> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
