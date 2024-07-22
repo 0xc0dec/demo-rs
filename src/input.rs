@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use winit::event::*;
 use winit::keyboard::KeyCode;
 
-use crate::events::{KeyboardEvent, MouseEvent};
-
 pub enum InputAction {
     MoveForward,
     MoveBack,
@@ -27,7 +25,7 @@ enum Key {
 #[derive(Default)]
 pub struct Input {
     mouse_delta: (f32, f32),
-    // TODO Use something faster than hashmaps (non-heap)
+    // TODO Use something stack-based instead of HashMap?
     key_pressed: HashMap<Key, bool>,
     // Key presses from the previous frame
     key_prev_pressed: HashMap<Key, bool>,
@@ -54,24 +52,21 @@ impl Input {
         self.key_pressed_first(action_key(action))
     }
 
-    pub fn update(&mut self, mouse_events: &[MouseEvent], keyboard_events: &[KeyboardEvent]) {
+    pub fn handle_keyboard_event(&mut self, code: KeyCode, pressed: bool) {
+        self.key_pressed.insert(Key::Keyboard(code), pressed);
+    }
+
+    pub fn handle_mouse_button_event(&mut self, btn: MouseButton, pressed: bool) {
+        self.key_pressed.insert(Key::MouseButton(btn), pressed);
+    }
+
+    pub fn handle_mouse_move_event(&mut self, dx: f32, dy: f32) {
+        self.mouse_delta = (dx, dy);
+    }
+
+    pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
         self.key_prev_pressed = self.key_pressed.clone();
-
-        for e in mouse_events {
-            match *e {
-                MouseEvent::Button { btn, pressed } => {
-                    self.key_pressed.insert(Key::MouseButton(btn), pressed);
-                }
-                MouseEvent::Move { dx, dy } => {
-                    self.mouse_delta = (dx, dy);
-                }
-            }
-        }
-
-        for &KeyboardEvent { code, pressed } in keyboard_events {
-            self.key_pressed.insert(Key::Keyboard(code), pressed);
-        }
     }
 
     fn key_pressed_first(&self, key: Key) -> bool {

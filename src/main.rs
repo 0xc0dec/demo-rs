@@ -9,7 +9,7 @@ use winit::window::{Window, WindowId};
 
 use crate::assets::Assets;
 use crate::camera::Camera;
-use crate::events::{KeyboardEvent, MouseEvent, ResizeEvent};
+use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
@@ -59,9 +59,6 @@ struct State<'a> {
     physics: Option<Physics>,
     frame_time: Option<FrameTime>,
     spawned_demo_box: bool,
-    // TODO Avoid these
-    mouse_events: Vec<MouseEvent>,
-    keyboard_events: Vec<KeyboardEvent>,
     resize_event: Option<ResizeEvent>,
 }
 
@@ -144,10 +141,6 @@ impl<'a> ApplicationHandler for State<'a> {
                 let mut gfx = self.gfx.take().unwrap();
                 let window = self.window.take().unwrap();
 
-                input.update(&self.mouse_events, &self.keyboard_events);
-                self.mouse_events.clear();
-                self.keyboard_events.clear();
-
                 if input.action_activated(InputAction::Escape) {
                     event_loop.exit();
                 }
@@ -226,8 +219,9 @@ impl<'a> ApplicationHandler for State<'a> {
                 self.window = Some(window);
                 self.gfx = Some(gfx);
                 self.scene = Some(scene);
-
                 self.resize_event = None;
+
+                self.input.as_mut().unwrap().clear();
 
                 // TODO Review - needed? Is there a better way?
                 self.window.as_ref().unwrap().request_redraw();
@@ -242,17 +236,17 @@ impl<'a> ApplicationHandler for State<'a> {
                     },
                 ..
             } => {
-                self.keyboard_events.push(KeyboardEvent {
-                    code,
-                    pressed: state == ElementState::Pressed,
-                });
+                self.input
+                    .as_mut()
+                    .unwrap()
+                    .handle_keyboard_event(code, state == ElementState::Pressed);
             }
 
             WindowEvent::MouseInput { button, state, .. } => {
-                self.mouse_events.push(MouseEvent::Button {
-                    btn: button,
-                    pressed: state == ElementState::Pressed,
-                });
+                self.input
+                    .as_mut()
+                    .unwrap()
+                    .handle_mouse_button_event(button, state == ElementState::Pressed);
             }
 
             _ => {}
@@ -266,11 +260,14 @@ impl<'a> ApplicationHandler for State<'a> {
         event: DeviceEvent,
     ) {
         match event {
-            DeviceEvent::MouseMotion { delta } => self.mouse_events.push(MouseEvent::Move {
-                dx: delta.0 as f32,
-                dy: delta.1 as f32,
-            }),
+            DeviceEvent::MouseMotion { delta } => self
+                .input
+                .as_mut()
+                .unwrap()
+                .handle_mouse_move_event(delta.0 as f32, delta.1 as f32),
+
             DeviceEvent::MouseWheel { .. } => (),
+
             _ => (),
         };
     }
