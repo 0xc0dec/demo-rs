@@ -125,15 +125,10 @@ impl<'a> ApplicationHandler for State<'a> {
         }
 
         match event {
-            WindowEvent::CloseRequested => event_loop.exit(),
-
-            WindowEvent::Resized(size) => self.new_canvas_size = Some(size),
-
             WindowEvent::RedrawRequested => {
                 // TODO Refactor this ugliness
                 let mut scene = self.scene.take().unwrap();
                 let mut physics = self.physics.take().unwrap();
-                let mut frame_time = self.frame_time.take().unwrap();
                 let mut player = self.player.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
                 let input = self.input.take().unwrap();
@@ -147,13 +142,13 @@ impl<'a> ApplicationHandler for State<'a> {
                     gfx.resize(size);
                 }
 
-                frame_time.advance();
+                let dt = self.frame_time.take().unwrap().advance();
 
-                physics.update(frame_time.delta);
+                physics.update(dt);
 
                 player.update(
                     &gfx,
-                    frame_time.delta,
+                    dt,
                     &input,
                     &window,
                     &mut physics,
@@ -210,7 +205,6 @@ impl<'a> ApplicationHandler for State<'a> {
                 );
 
                 self.player = Some(player);
-                self.frame_time = Some(frame_time);
                 self.physics = Some(physics);
                 self.input = Some(input);
                 self.window = Some(window);
@@ -245,6 +239,10 @@ impl<'a> ApplicationHandler for State<'a> {
                     .unwrap()
                     .handle_mouse_button_event(button, state == ElementState::Pressed);
             }
+
+            WindowEvent::CloseRequested => event_loop.exit(),
+
+            WindowEvent::Resized(size) => self.new_canvas_size = Some(size),
 
             _ => {}
         }
