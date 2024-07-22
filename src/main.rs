@@ -131,7 +131,7 @@ impl<'a> ApplicationHandler for State<'a> {
                 let mut physics = self.physics.take().unwrap();
                 let mut player = self.player.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
-                let input = self.input.take().unwrap();
+                let mut input = self.input.take().unwrap();
                 let window = self.window.take().unwrap();
 
                 if input.action_activated(InputAction::Escape) {
@@ -142,7 +142,7 @@ impl<'a> ApplicationHandler for State<'a> {
                     gfx.resize(size);
                 }
 
-                let dt = self.frame_time.take().unwrap().advance();
+                let dt = self.frame_time.as_mut().unwrap().advance();
 
                 physics.update(dt);
 
@@ -204,6 +204,10 @@ impl<'a> ApplicationHandler for State<'a> {
                     None,
                 );
 
+                input.clear();
+                // TODO Review - needed? Is there a better way?
+                window.request_redraw();
+
                 self.player = Some(player);
                 self.physics = Some(physics);
                 self.input = Some(input);
@@ -211,11 +215,6 @@ impl<'a> ApplicationHandler for State<'a> {
                 self.gfx = Some(gfx);
                 self.scene = Some(scene);
                 self.new_canvas_size = None;
-
-                self.input.as_mut().unwrap().clear();
-
-                // TODO Review - needed? Is there a better way?
-                self.window.as_ref().unwrap().request_redraw();
             }
 
             WindowEvent::KeyboardInput {
