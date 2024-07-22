@@ -9,9 +9,8 @@ use winit::window::{Window, WindowId};
 
 use crate::assets::Assets;
 use crate::camera::Camera;
-use crate::events::ResizeEvent;
 use crate::frame_time::FrameTime;
-use crate::graphics::Graphics;
+use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
@@ -23,7 +22,6 @@ use crate::transform::Transform;
 
 mod assets;
 mod camera;
-mod events;
 mod frame_time;
 mod fs;
 mod graphics;
@@ -59,7 +57,7 @@ struct State<'a> {
     physics: Option<Physics>,
     frame_time: Option<FrameTime>,
     spawned_demo_box: bool,
-    resize_event: Option<ResizeEvent>,
+    new_canvas_size: Option<SurfaceSize>,
 }
 
 impl<'a> ApplicationHandler for State<'a> {
@@ -129,24 +127,23 @@ impl<'a> ApplicationHandler for State<'a> {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
 
-            WindowEvent::Resized(size) => self.resize_event = Some(ResizeEvent(size)),
+            WindowEvent::Resized(size) => self.new_canvas_size = Some(size),
 
             WindowEvent::RedrawRequested => {
                 // TODO Refactor this ugliness
                 let mut scene = self.scene.take().unwrap();
-                let mut input = self.input.take().unwrap();
                 let mut physics = self.physics.take().unwrap();
                 let mut frame_time = self.frame_time.take().unwrap();
                 let mut player = self.player.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
+                let input = self.input.take().unwrap();
                 let window = self.window.take().unwrap();
 
                 if input.action_activated(InputAction::Escape) {
                     event_loop.exit();
                 }
 
-                if self.resize_event.is_some() {
-                    let size = self.resize_event.as_ref().unwrap().0;
+                if let Some(&size) = self.new_canvas_size.as_ref() {
                     gfx.resize(size);
                 }
 
@@ -160,7 +157,7 @@ impl<'a> ApplicationHandler for State<'a> {
                     &input,
                     &window,
                     &mut physics,
-                    &self.resize_event,
+                    &self.new_canvas_size,
                 );
 
                 // Spawn a single box automatically
@@ -187,7 +184,7 @@ impl<'a> ApplicationHandler for State<'a> {
 
                 scene.sync_physics(&physics);
 
-                if self.resize_event.is_some() {
+                if self.new_canvas_size.is_some() {
                     scene.update_post_process_overlay(
                         self.pp_idx,
                         player.camera().target().as_ref().unwrap().color_tex(),
@@ -219,7 +216,7 @@ impl<'a> ApplicationHandler for State<'a> {
                 self.window = Some(window);
                 self.gfx = Some(gfx);
                 self.scene = Some(scene);
-                self.resize_event = None;
+                self.new_canvas_size = None;
 
                 self.input.as_mut().unwrap().clear();
 

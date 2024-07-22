@@ -4,8 +4,7 @@ use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
 use crate::camera::Camera;
-use crate::events::ResizeEvent;
-use crate::graphics::Graphics;
+use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
@@ -86,13 +85,15 @@ impl Player {
         input: &Input,
         window: &Window,
         physics: &mut Physics,
-        resize_event: &Option<ResizeEvent>,
+        new_canvas_size: &Option<SurfaceSize>,
     ) {
+        // TODO Extract this out of Player
         // Update camera aspect and RT size
-        if let Some(e) = resize_event {
-            self.camera.set_aspect(e.0.width as f32 / e.0.height as f32);
+        if let Some(&size) = new_canvas_size.as_ref() {
+            self.camera
+                .set_aspect(size.width as f32 / size.height as f32);
             if let Some(target) = self.camera.target_mut() {
-                target.resize((e.0.width, e.0.height), gfx);
+                target.resize((size.width, size.height), gfx);
             }
         }
 
