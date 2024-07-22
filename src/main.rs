@@ -51,8 +51,8 @@ struct State<'a> {
     scene: Option<Scene>,
     player: Option<Player>,
     pp_cam: Option<Camera>,
-    pp_idx: usize,
-    player_target_idx: usize,
+    pp_id: usize,
+    player_target_id: usize,
     input: Option<Input>,
     physics: Option<Physics>,
     frame_time: Option<FrameTime>,
@@ -115,8 +115,8 @@ impl<'a> ApplicationHandler for State<'a> {
         self.scene = Some(scene);
         self.player = Some(player);
         self.pp_cam = Some(pp_cam);
-        self.pp_idx = pp_idx;
-        self.player_target_idx = player_target_idx;
+        self.pp_id = pp_idx;
+        self.player_target_id = player_target_idx;
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
@@ -180,13 +180,13 @@ impl<'a> ApplicationHandler for State<'a> {
                 }
 
                 scene.update_grabbed(&player, &input, &mut physics);
-                scene.update_player_target(&player, self.player_target_idx);
+                scene.update_player_target(&player, self.player_target_id);
 
                 scene.sync_physics(&physics);
 
                 if self.new_canvas_size.is_some() {
                     scene.update_post_process_overlay(
-                        self.pp_idx,
+                        self.pp_id,
                         player.camera().target().as_ref().unwrap().color_tex(),
                         &gfx,
                         self.assets.as_ref().unwrap(),
