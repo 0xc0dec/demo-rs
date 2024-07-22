@@ -135,6 +135,7 @@ impl Texture {
         self.format
     }
 
+    #[allow(dead_code)]
     pub fn size(&self) -> TextureSize {
         (self.texture.size().width, self.texture.size().height)
     }
