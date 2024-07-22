@@ -35,6 +35,7 @@ mod transform;
 // TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
 // update of winit to versions 0.29 - 0.30
 // TODO Grabbing objects with a cursor (when camera is not controlled).
+// TODO Some kind of ECS (or at least use arena).
 
 #[derive(Default)]
 struct State<'a> {
@@ -68,18 +69,15 @@ impl<'a> ApplicationHandler for State<'a> {
 
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let assets = Assets::load(&gfx);
-        let input = Input::new();
-        let frame_time = FrameTime::new();
-        let scene = Scene::new(&gfx, &assets);
 
         window.request_redraw();
 
+        self.scene = Some(Scene::new(&gfx, &assets));
+        self.frame_time = Some(FrameTime::new());
+        self.input = Some(Input::new());
         self.window = Some(window);
         self.assets = Some(assets);
         self.gfx = Some(gfx);
-        self.input = Some(input);
-        self.frame_time = Some(frame_time);
-        self.scene = Some(scene);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
@@ -89,7 +87,7 @@ impl<'a> ApplicationHandler for State<'a> {
 
         match event {
             WindowEvent::RedrawRequested => {
-                // TODO Refactor this ugliness <--
+                // TODO Refactor this moving-out-and-moving-back-in
                 // (split State into App and State - will that help?)
                 let mut scene = self.scene.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
