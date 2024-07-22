@@ -28,7 +28,7 @@ pub struct Scene {
     bodies: Vec<Option<PhysicalBody>>,
     render_orders: Vec<i32>,
     render_tags: Vec<Option<u32>>,
-    grabbed_body_idx: Option<usize>,
+    grabbed_body_id: Option<usize>,
     grabbed_body_player_local_pos: Option<Vec3>,
 }
 
@@ -41,7 +41,7 @@ impl Scene {
             bodies: Vec::new(),
             render_orders: Vec::new(),
             render_tags: Vec::new(),
-            grabbed_body_idx: None,
+            grabbed_body_id: None,
             grabbed_body_player_local_pos: None,
         }
     }
@@ -170,12 +170,12 @@ impl Scene {
                         .unwrap()
                         .transform_point(&to_point(*body.translation()))
                         .coords;
-                    self.grabbed_body_idx = Some(body_idx);
+                    self.grabbed_body_id = Some(body_idx);
                     self.grabbed_body_player_local_pos = Some(local_pos);
                 }
             } else {
                 // Update the grabbed object
-                if let Some(grabbed_idx) = self.grabbed_body_idx {
+                if let Some(grabbed_idx) = self.grabbed_body_id {
                     let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
                     let body = physics.bodies.get_mut(body.body_handle()).unwrap();
                     let new_pos = player
@@ -187,10 +187,10 @@ impl Scene {
             }
         } else {
             // Release grab
-            if let Some(grabbed_idx) = self.grabbed_body_idx.take() {
+            if let Some(grabbed_idx) = self.grabbed_body_id.take() {
                 let body = self.bodies.get_mut(grabbed_idx).unwrap().as_mut().unwrap();
                 body.set_kinematic(physics, false);
-                self.grabbed_body_idx = None;
+                self.grabbed_body_id = None;
                 self.grabbed_body_player_local_pos = None;
             }
         }
