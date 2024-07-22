@@ -7,7 +7,7 @@ pub enum TransformSpace {
     World,
 }
 
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 pub struct Transform {
     m: Mat4,
     scale: Vec3,

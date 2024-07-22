@@ -8,16 +8,10 @@ use winit::keyboard::PhysicalKey::Code;
 use winit::window::{Window, WindowId};
 
 use crate::assets::Assets;
-use crate::camera::Camera;
 use crate::frame_time::FrameTime;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
-use crate::math::Vec3;
-use crate::player::Player;
-use crate::render::render_pass;
-use crate::render_tags::{RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS};
 use crate::scene::Scene;
-use crate::transform::Transform;
 
 mod assets;
 mod camera;
@@ -48,13 +42,8 @@ struct State<'a> {
     gfx: Option<Graphics<'a>>,
     assets: Option<Assets>,
     scene: Option<Scene>,
-    player: Option<Player>,
-    pp_cam: Option<Camera>,
-    pp_id: usize,
-    player_target_id: usize,
     input: Option<Input>,
     frame_time: Option<FrameTime>,
-    spawned_demo_box: bool,
     new_canvas_size: Option<SurfaceSize>,
 }
 
@@ -79,27 +68,9 @@ impl<'a> ApplicationHandler for State<'a> {
 
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let assets = Assets::load(&gfx);
-        let mut scene = Scene::new();
         let input = Input::new();
         let frame_time = FrameTime::new();
-
-        // Player is outside the normal components set for convenience because it's a singleton.
-        // Ideally it should be unified with the rest of the objects once we have a proper ECS
-        // or an alternative.
-        let player = Player::new(&gfx, scene.physics_mut());
-        let player_target_idx = scene.spawn_player_target(&gfx, &assets);
-        let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
-        scene.spawn_floor(&gfx, &assets);
-
-        // Spawning skybox last to ensure the sorting by render order works and it still shows up
-        // in the background.
-        scene.spawn_skybox(&gfx, &assets);
-
-        let pp_idx = scene.spawn_post_process_overlay(
-            player.camera().target().as_ref().unwrap().color_tex(),
-            &gfx,
-            &assets,
-        );
+        let scene = Scene::new(&gfx, &assets);
 
         window.request_redraw();
 
@@ -109,10 +80,6 @@ impl<'a> ApplicationHandler for State<'a> {
         self.input = Some(input);
         self.frame_time = Some(frame_time);
         self.scene = Some(scene);
-        self.player = Some(player);
-        self.pp_cam = Some(pp_cam);
-        self.pp_id = pp_idx;
-        self.player_target_id = player_target_idx;
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
@@ -125,7 +92,6 @@ impl<'a> ApplicationHandler for State<'a> {
                 // TODO Refactor this ugliness <--
                 // (split State into App and State - will that help?)
                 let mut scene = self.scene.take().unwrap();
-                let mut player = self.player.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
                 let mut input = self.input.take().unwrap();
                 let window = self.window.take().unwrap();
@@ -140,73 +106,21 @@ impl<'a> ApplicationHandler for State<'a> {
 
                 let dt = self.frame_time.as_mut().unwrap().advance();
 
-                scene.update(dt);
-
-                // TODO Move Player into Scene?
-                player.update(
-                    &gfx,
+                scene.update(
                     dt,
+                    &gfx,
                     &input,
                     &window,
-                    scene.physics_mut(),
+                    self.assets.as_ref().unwrap(),
                     &self.new_canvas_size,
                 );
 
-                // Spawn a single box automatically
-                {
-                    if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
-                        let pos = if self.spawned_demo_box {
-                            player.transform().position() + player.transform().forward().xyz() * 5.0
-                        } else {
-                            self.spawned_demo_box = true;
-                            Vec3::y_axis().xyz() * 5.0
-                        };
-                        scene.spawn_cube(
-                            pos,
-                            Vec3::from_element(1.0),
-                            &gfx,
-                            self.assets.as_ref().unwrap(),
-                        );
-                    }
-                }
-
-                // TODO Merge all such calls into a single `scene.update()`
-                scene.update_grabbed(&player, &input);
-                scene.update_player_target(&player, self.player_target_id);
-
-                // TODO Remove
-                scene.sync_physics();
-
-                if self.new_canvas_size.is_some() {
-                    scene.update_post_process_overlay(
-                        self.pp_id,
-                        player.camera().target().as_ref().unwrap().color_tex(),
-                        &gfx,
-                        self.assets.as_ref().unwrap(),
-                    );
-                }
-
-                render_pass(
-                    &gfx,
-                    &scene.build_render_bundles(player.camera(), player.transform(), &gfx),
-                    player.camera().target().as_ref(),
-                );
-
-                render_pass(
-                    &gfx,
-                    &scene.build_render_bundles(
-                        self.pp_cam.as_ref().unwrap(),
-                        &Transform::default(),
-                        &gfx,
-                    ),
-                    None,
-                );
+                scene.render(&gfx);
 
                 input.clear();
                 // TODO Needed? Is there a better way?
                 window.request_redraw();
 
-                self.player = Some(player);
                 self.input = Some(input);
                 self.window = Some(window);
                 self.gfx = Some(gfx);
