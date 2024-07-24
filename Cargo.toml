@@ -5,12 +5,14 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
+anymap = "0.12.1"
 bytemuck = { version = "1.13.0", features = ["derive"] }
 ddsfile = "0.5.1"
 image = { version = "0.25.1", features = ["png", "jpeg"], default-features = false }
 instant = "0.1.12"
 pollster = "0.3.0"
 rapier3d = { version = "0.21.0", features = ["simd-stable"] }
+slotmap = "1.0.7"
 tobj = { version = "4.0.1", features = ["async"] }
 wgpu = "0.20.1"
 winit = { version = "0.30.3", features = ["rwh_05"] }

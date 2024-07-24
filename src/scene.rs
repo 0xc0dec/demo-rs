@@ -338,3 +338,95 @@ impl Scene {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::any::TypeId;
+    use std::collections::HashMap;
+
+    use anymap::AnyMap;
+    use slotmap::{DefaultKey, SlotMap};
+
+    type SlotKey = DefaultKey;
+    type Entity = SlotKey;
+
+    struct TransformCmp(u32);
+    struct MeshCmp(u32);
+
+    struct World {
+        // TODO Use `DenseSlotMap` where iteration should be fast e.g. in `components`.
+        entities: SlotMap<Entity, HashMap<TypeId, SlotKey>>,
+        // TODO Use `SecondaryMap`?
+        components: AnyMap,
+    }
+
+    impl World {
+        fn new() -> Self {
+            Self {
+                entities: SlotMap::new(),
+                components: AnyMap::new(),
+            }
+        }
+
+        fn add_entity(&mut self) -> Entity {
+            self.entities.insert(HashMap::new())
+        }
+
+        fn set_component<C: 'static>(&mut self, e: Entity, c: C) {
+            let key = self.entities[e].entry(TypeId::of::<C>()).or_default();
+            let components = self
+                .components
+                .entry::<SlotMap<_, C>>()
+                .or_insert_with(|| SlotMap::new());
+            components.remove(*key);
+            *key = components.insert(c);
+        }
+
+        fn component_mut<C: 'static>(&mut self, e: Entity) -> Option<&mut C> {
+            let key = self.entities[e].entry(TypeId::of::<C>()).or_default();
+            let components = self
+                .components
+                .entry::<SlotMap<_, C>>()
+                .or_insert_with(|| SlotMap::new());
+            components.get_mut(*key)
+        }
+
+        fn iter_mut<C: 'static>(&mut self) -> impl Iterator<Item = &mut C> {
+            self.components
+                .get_mut::<SlotMap<SlotKey, C>>()
+                .map(|m| m.iter_mut())
+                .unwrap()
+                .map(|x| x.1)
+        }
+    }
+
+    #[test]
+    fn smoke() {
+        let mut w = World::new();
+
+        let e1 = w.add_entity();
+        w.set_component(e1, TransformCmp(1));
+        w.set_component(e1, MeshCmp(2));
+        assert_eq!(1, w.component_mut::<TransformCmp>(e1).unwrap().0);
+        assert_eq!(2, w.component_mut::<MeshCmp>(e1).unwrap().0);
+
+        w.component_mut::<TransformCmp>(e1).unwrap().0 = 11;
+        w.component_mut::<MeshCmp>(e1).unwrap().0 = 22;
+        assert_eq!(11, w.component_mut::<TransformCmp>(e1).unwrap().0);
+        assert_eq!(22, w.component_mut::<MeshCmp>(e1).unwrap().0);
+
+        let e2 = w.add_entity();
+        w.set_component(e2, TransformCmp(111));
+
+        for t in w.iter_mut::<TransformCmp>() {
+            t.0 = 666;
+        }
+
+        assert_eq!(
+            &[666, 666],
+            &w.iter_mut::<TransformCmp>()
+                .map(|t| t.0)
+                .collect::<Vec<u32>>()[..]
+        );
+    }
+}
