@@ -87,8 +87,7 @@ impl<'a> ApplicationHandler for State<'a> {
 
         match event {
             WindowEvent::RedrawRequested => {
-                // TODO Refactor this moving-out-and-moving-back-in
-                // (split State into App and State - will that help?)
+                // TODO Avoid this moving-out-and-moving-back-in
                 let mut scene = self.scene.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
                 let mut input = self.input.take().unwrap();
