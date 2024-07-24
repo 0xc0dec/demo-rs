@@ -7,6 +7,7 @@ use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
 use crate::transform::Transform;
 
+// TODO Make this a method of Graphics?
 pub fn render_pass(gfx: &Graphics, bundles: &[RenderBundle], target: Option<&RenderTarget>) {
     let surface_tex = target.is_none().then(|| {
         gfx.surface()
