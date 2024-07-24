@@ -260,7 +260,7 @@ impl Scene {
     fn update_player_target(&mut self, target_id: usize) {
         let new_tag = if let Some(player_focus_pt) = self.player.focus_point() {
             let dist_to_camera = (self.player.transform().position() - player_focus_pt).magnitude();
-            let scale = (dist_to_camera / 10.0).min(0.1).max(0.01);
+            let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
 
             let target_transform = self
                 .transforms
@@ -319,7 +319,7 @@ impl Scene {
                         .unwrap()
                         .deref_mut(),
                     self.transforms.get(idx).unwrap().as_ref().unwrap(),
-                    (&camera, &camera_transform),
+                    (camera, &camera_transform),
                     gfx,
                 )
             })
