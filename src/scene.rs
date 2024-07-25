@@ -89,7 +89,7 @@ impl Scene {
         self.player
             .update(gfx, dt, input, window, &mut self.physics, new_canvas_size);
         // self.update_grabbed(input);
-        // self.update_player_target();
+        self.update_player_target();
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
             let pos = if self.spawned_demo_box {
