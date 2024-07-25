@@ -273,10 +273,10 @@ impl Scene {
     }
 
     fn build_render_bundles(&mut self, pp: bool, gfx: &Graphics) -> Vec<wgpu::RenderBundle> {
-        let camera = if pp {
-            (&self.pp_cam, &Transform::default())
+        let (camera, camera_transform) = if pp {
+            (&self.pp_cam, Transform::default())
         } else {
-            (self.player.camera(), self.player.transform())
+            (self.player.camera(), *self.player.transform())
         };
 
         let mut renderables = self
@@ -289,7 +289,7 @@ impl Scene {
                 &RenderTagCmp,
             )>()
             .into_iter()
-            .filter(|(_, (.., tag))| camera.0.should_render(tag.0))
+            .filter(|(_, (.., tag))| camera.should_render(tag.0))
             .map(|(_, (mesh, material, transform, order, _))| (mesh, material, transform, order))
             .collect::<Vec<_>>();
         renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
@@ -301,7 +301,7 @@ impl Scene {
                     // TODO Wtf refactor, it should not be this complex
                     material.0.lock().unwrap().deref_mut(),
                     transform,
-                    camera,
+                    (camera, &camera_transform),
                     gfx,
                 )
             })
