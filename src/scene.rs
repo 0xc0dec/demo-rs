@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use hecs::{Entity, World};
 use winit::window::Window;
 
-use crate::assets::Assets;
+use crate::assets::{Assets, MeshId};
 use crate::camera::Camera;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
@@ -12,7 +12,6 @@ use crate::materials::{
     ColorMaterial, DiffuseMaterial, Material, PostProcessMaterial, SkyboxMaterial,
 };
 use crate::math::{to_point, Vec3};
-use crate::mesh::Mesh;
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
 use crate::player::Player;
@@ -22,7 +21,7 @@ use crate::render_tags::{
 use crate::transform::Transform;
 
 // TODO Refactor, maybe remove `Cmp` suffix.
-struct MeshCmp(Arc<Mesh>);
+struct MeshCmp(MeshId);
 struct MaterialCmp(Arc<Mutex<dyn Material + Send + Sync>>);
 struct RenderOrderCmp(i32);
 struct RenderTagCmp(u32);
@@ -60,7 +59,7 @@ impl Scene {
 
         scene.player_target = scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.box_mesh()),
+            MeshCmp(assets.box_mesh_id()),
             MaterialCmp(Arc::new(Mutex::new(ColorMaterial::new(gfx, assets)))),
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_HIDDEN),
@@ -113,12 +112,12 @@ impl Scene {
         }
     }
 
-    pub fn render(&mut self, gfx: &Graphics) {
+    pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
         gfx.render_pass(
-            &self.build_render_bundles(false, gfx),
+            &self.build_render_bundles(false, gfx, assets),
             self.player.camera().target().as_ref(),
         );
-        gfx.render_pass(&self.build_render_bundles(true, gfx), None);
+        gfx.render_pass(&self.build_render_bundles(true, gfx, assets), None);
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
@@ -135,7 +134,7 @@ impl Scene {
 
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh()),
+            MeshCmp(assets.box_mesh_id()),
             MaterialCmp(Arc::new(Mutex::new(DiffuseMaterial::new(
                 gfx,
                 assets,
@@ -158,7 +157,7 @@ impl Scene {
         );
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh()),
+            MeshCmp(assets.box_mesh_id()),
             MaterialCmp(Arc::new(Mutex::new(DiffuseMaterial::new(
                 gfx,
                 assets,
@@ -173,7 +172,7 @@ impl Scene {
     fn spawn_skybox(&mut self, gfx: &Graphics, assets: &Assets) {
         self.world.spawn((
             Transform::default(),
-            MeshCmp(Arc::new(Mesh::quad(gfx))),
+            MeshCmp(assets.quad_mesh_id()),
             MaterialCmp(Arc::new(Mutex::new(SkyboxMaterial::new(
                 gfx,
                 assets,
@@ -188,7 +187,7 @@ impl Scene {
         let source_color_tex = self.player.camera().target().as_ref().unwrap().color_tex();
         self.world.spawn((
             Transform::default(),
-            MeshCmp(Arc::new(Mesh::quad(gfx))),
+            MeshCmp(assets.quad_mesh_id()),
             MaterialCmp(Arc::new(Mutex::new(PostProcessMaterial::new(
                 gfx,
                 assets,
@@ -272,7 +271,12 @@ impl Scene {
             .unwrap();
     }
 
-    fn build_render_bundles(&mut self, pp: bool, gfx: &Graphics) -> Vec<wgpu::RenderBundle> {
+    fn build_render_bundles(
+        &mut self,
+        pp: bool,
+        gfx: &Graphics,
+        assets: &Assets,
+    ) -> Vec<wgpu::RenderBundle> {
         let (camera, camera_transform) = if pp {
             (&self.pp_cam, Transform::default())
         } else {
@@ -297,7 +301,7 @@ impl Scene {
             .into_iter()
             .map(|(mesh, material, transform, _)| {
                 gfx.build_render_bundle(
-                    &mesh.0,
+                    assets.mesh(mesh.0),
                     // TODO Wtf refactor, it should not be this complex
                     material.0.lock().unwrap().deref_mut(),
                     transform,

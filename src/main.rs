@@ -110,7 +110,7 @@ impl<'a> ApplicationHandler for State<'a> {
                     &self.new_canvas_size,
                 );
 
-                scene.render(&gfx);
+                scene.render(&gfx, self.assets.as_ref().unwrap());
 
                 input.clear();
                 // TODO Needed? Is there a better way?

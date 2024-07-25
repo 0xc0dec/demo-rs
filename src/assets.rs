@@ -1,9 +1,11 @@
-use std::sync::Arc;
+use slotmap::{DefaultKey, SlotMap};
 
 use crate::fs::load_string_asset;
 use crate::graphics::Graphics;
 use crate::mesh::Mesh;
 use crate::texture::Texture;
+
+pub type MeshId = DefaultKey;
 
 // TODO Store groups of assets in hash maps
 pub struct Assets {
@@ -13,7 +15,9 @@ pub struct Assets {
     diffuse_shader: wgpu::ShaderModule,
     postprocess_shader: wgpu::ShaderModule,
     skybox_shader: wgpu::ShaderModule,
-    box_mesh: Arc<Mesh>,
+    meshes: SlotMap<MeshId, Mesh>,
+    box_mesh_id: MeshId,
+    quad_mesh_id: MeshId,
 }
 
 impl Assets {
@@ -28,7 +32,7 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Arc::new(Mesh::from_file("cube.obj", gfx).await),
+                Mesh::from_file("cube.obj", gfx).await,
                 Texture::new_cube_from_file("skybox_bgra.dds", gfx)
                     .await
                     .unwrap(),
@@ -42,14 +46,20 @@ impl Assets {
             )
         });
 
+        let mut meshes = SlotMap::new();
+        let box_mesh_id = meshes.insert(box_mesh);
+        let quad_mesh_id = meshes.insert(Mesh::quad(gfx));
+
         Self {
-            box_mesh,
             skybox_tex,
             stone_tex,
             color_shader,
             diffuse_shader,
             postprocess_shader,
             skybox_shader,
+            meshes,
+            box_mesh_id,
+            quad_mesh_id,
         }
     }
 
@@ -77,8 +87,16 @@ impl Assets {
         &self.skybox_shader
     }
 
-    pub fn box_mesh(&self) -> Arc<Mesh> {
-        Arc::clone(&self.box_mesh)
+    pub fn box_mesh_id(&self) -> MeshId {
+        self.box_mesh_id
+    }
+
+    pub fn quad_mesh_id(&self) -> MeshId {
+        self.quad_mesh_id
+    }
+
+    pub fn mesh(&self, id: MeshId) -> &Mesh {
+        self.meshes.get(id).unwrap()
     }
 }
 

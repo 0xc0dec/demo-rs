@@ -479,6 +479,7 @@ dependencies = [
  "instant",
  "pollster",
  "rapier3d",
+ "slotmap",
  "tobj",
  "wgpu",
  "winit",
