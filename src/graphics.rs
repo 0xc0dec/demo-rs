@@ -1,9 +1,14 @@
 use std::ops::Deref;
 use std::sync::Arc;
 
-use wgpu::{Gles3MinorVersion, InstanceFlags};
+use wgpu::{Gles3MinorVersion, InstanceFlags, RenderBundle, StoreOp};
 
+use crate::camera::Camera;
+use crate::materials::Material;
+use crate::mesh::{DrawMesh, Mesh};
+use crate::render_target::RenderTarget;
 use crate::texture::Texture;
+use crate::transform::Transform;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -18,6 +23,22 @@ pub struct Graphics<'a> {
 impl<'a> Graphics<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
+
+    pub fn surface_texture_format(&self) -> wgpu::TextureFormat {
+        self.surface_config.format
+    }
+
+    pub fn depth_texture_format(&self) -> wgpu::TextureFormat {
+        Self::DEPTH_TEX_FORMAT
+    }
+
+    pub fn surface_size(&self) -> SurfaceSize {
+        SurfaceSize::new(self.surface_config.width, self.surface_config.height)
+    }
+
+    pub fn queue(&self) -> &wgpu::Queue {
+        &self.queue
+    }
 
     pub async fn new(window: Arc<winit::window::Window>) -> Graphics<'a> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -96,28 +117,96 @@ impl<'a> Graphics<'a> {
         }
     }
 
-    pub fn surface_texture_format(&self) -> wgpu::TextureFormat {
-        self.surface_config.format
+    pub fn build_render_bundle(
+        &self,
+        mesh: &Mesh,
+        material: &mut dyn Material,
+        transform: &Transform,
+        camera: (&Camera, &Transform),
+    ) -> RenderBundle {
+        let mut encoder = self.new_bundle_encoder(camera.0.target().as_ref());
+        material.apply(&mut encoder, self, camera, transform);
+        encoder.draw_mesh(mesh);
+        encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 
-    pub fn depth_texture_format(&self) -> wgpu::TextureFormat {
-        Self::DEPTH_TEX_FORMAT
+    pub fn render_pass(&self, bundles: &[RenderBundle], target: Option<&RenderTarget>) {
+        let surface_tex = target.is_none().then(|| {
+            self.surface
+                .get_current_texture()
+                .expect("Missing surface texture")
+        });
+        let surface_tex_view = surface_tex.as_ref().map(|t| {
+            t.texture
+                .create_view(&wgpu::TextureViewDescriptor::default())
+        });
+
+        let color_tex_view = target
+            .map(|t| t.color_tex().view())
+            .or(surface_tex_view.as_ref())
+            .unwrap();
+        let color_attachment = Some(wgpu::RenderPassColorAttachment {
+            view: color_tex_view,
+            resolve_target: None,
+            ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+                store: StoreOp::Store,
+            },
+        });
+
+        let depth_tex_view = target
+            .map(|t| t.depth_tex().view())
+            .unwrap_or(self.depth_tex.view());
+        let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
+            view: depth_tex_view,
+            depth_ops: Some(wgpu::Operations {
+                load: wgpu::LoadOp::Clear(1.0),
+                store: StoreOp::Store,
+            }),
+            stencil_ops: None,
+        });
+
+        let cmd_buffer = {
+            let mut encoder =
+                self.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+            {
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[color_attachment],
+                    depth_stencil_attachment: depth_attachment,
+                    occlusion_query_set: None,
+                    timestamp_writes: None,
+                });
+
+                pass.execute_bundles(bundles.iter());
+            }
+
+            encoder.finish()
+        };
+
+        self.queue.submit(Some(cmd_buffer));
+        if let Some(t) = surface_tex {
+            t.present()
+        }
     }
 
-    pub fn surface_size(&self) -> SurfaceSize {
-        SurfaceSize::new(self.surface_config.width, self.surface_config.height)
-    }
+    fn new_bundle_encoder(&self, target: Option<&RenderTarget>) -> wgpu::RenderBundleEncoder {
+        let color_format = target.map_or(self.surface_texture_format(), |t| t.color_tex().format());
+        let depth_format = target.map_or(self.depth_texture_format(), |t| t.depth_tex().format());
 
-    pub fn queue(&self) -> &wgpu::Queue {
-        &self.queue
-    }
-
-    pub fn surface(&self) -> &wgpu::Surface {
-        &self.surface
-    }
-
-    pub fn depth_tex(&self) -> &Texture {
-        &self.depth_tex
+        self.device
+            .create_render_bundle_encoder(&wgpu::RenderBundleEncoderDescriptor {
+                label: None,
+                multiview: None,
+                sample_count: 1,
+                color_formats: &[Some(color_format)],
+                depth_stencil: Some(wgpu::RenderBundleDepthStencil {
+                    format: depth_format,
+                    depth_read_only: false,
+                    stencil_read_only: false,
+                }),
+            })
     }
 }
 

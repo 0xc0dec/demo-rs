@@ -25,7 +25,6 @@ mod mesh;
 mod physical_body;
 mod physics;
 mod player;
-mod render;
 mod render_tags;
 mod render_target;
 mod scene;

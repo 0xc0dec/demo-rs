@@ -16,7 +16,6 @@ use crate::mesh::Mesh;
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
 use crate::player::Player;
-use crate::render::{build_render_bundle, render_pass};
 use crate::render_tags::{
     RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
 };
@@ -115,12 +114,11 @@ impl Scene {
     }
 
     pub fn render(&mut self, gfx: &Graphics) {
-        render_pass(
-            gfx,
+        gfx.render_pass(
             &self.build_render_bundles(false, gfx),
             self.player.camera().target().as_ref(),
         );
-        render_pass(gfx, &self.build_render_bundles(true, gfx), None);
+        gfx.render_pass(&self.build_render_bundles(true, gfx), None);
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
@@ -296,13 +294,12 @@ impl Scene {
         renderables
             .into_iter()
             .map(|(mesh, material, transform, _)| {
-                build_render_bundle(
+                gfx.build_render_bundle(
                     &mesh.0,
                     // TODO Wtf refactor, it should not be this complex
                     material.0.lock().unwrap().deref_mut(),
                     transform,
                     (camera, &camera_transform),
-                    gfx,
                 )
             })
             .collect::<_>()
