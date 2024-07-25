@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::fs::load_string_asset;
 use crate::graphics::Graphics;
@@ -13,7 +13,7 @@ pub struct Assets {
     diffuse_shader: wgpu::ShaderModule,
     postprocess_shader: wgpu::ShaderModule,
     skybox_shader: wgpu::ShaderModule,
-    box_mesh: Rc<Mesh>,
+    box_mesh: Arc<Mesh>,
 }
 
 impl Assets {
@@ -28,7 +28,7 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Rc::new(Mesh::from_file("cube.obj", gfx).await),
+                Arc::new(Mesh::from_file("cube.obj", gfx).await),
                 Texture::new_cube_from_file("skybox_bgra.dds", gfx)
                     .await
                     .unwrap(),
@@ -77,8 +77,8 @@ impl Assets {
         &self.skybox_shader
     }
 
-    pub fn box_mesh(&self) -> Rc<Mesh> {
-        Rc::clone(&self.box_mesh)
+    pub fn box_mesh(&self) -> Arc<Mesh> {
+        Arc::clone(&self.box_mesh)
     }
 }
 

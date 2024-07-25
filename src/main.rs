@@ -25,7 +25,6 @@ mod mesh;
 mod physical_body;
 mod physics;
 mod player;
-mod render;
 mod render_tags;
 mod render_target;
 mod scene;
@@ -35,7 +34,6 @@ mod transform;
 // TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
 // update of winit to versions 0.29 - 0.30
 // TODO Grabbing objects with a cursor (when camera is not controlled).
-// TODO Some kind of ECS (or at least use arena).
 
 #[derive(Default)]
 struct State<'a> {

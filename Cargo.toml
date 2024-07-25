@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1.0.69"
 bytemuck = { version = "1.13.0", features = ["derive"] }
 ddsfile = "0.5.1"
+hecs = "0.10.5"
 image = { version = "0.25.1", features = ["png", "jpeg"], default-features = false }
 instant = "0.1.12"
 pollster = "0.3.0"

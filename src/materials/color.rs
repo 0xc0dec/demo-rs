@@ -1,12 +1,11 @@
 use crate::assets::Assets;
 use crate::camera::Camera;
-use crate::graphics::Graphics;
+use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::mesh::MeshVertex;
 use crate::transform::Transform;
 
 use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
-use super::utils::*;
 
 pub struct ColorMaterial {
     pipeline: wgpu::RenderPipeline,
@@ -19,18 +18,15 @@ impl ColorMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets) -> Self {
         let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
-            new_uniform_bind_group(gfx, bytemuck::cast_slice(&[matrices_uniform]));
+            gfx.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
 
-        let pipeline = new_render_pipeline(
-            gfx,
-            RenderPipelineParams {
-                shader_module: assets.color_shader(),
-                depth_write: true,
-                depth_enabled: true,
-                bind_group_layouts: &[&matrices_uniform_bind_group_layout],
-                vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
-            },
-        );
+        let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
+            shader_module: assets.color_shader(),
+            depth_write: true,
+            depth_enabled: true,
+            bind_group_layouts: &[&matrices_uniform_bind_group_layout],
+            vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
+        });
 
         Self {
             matrices_uniform,
