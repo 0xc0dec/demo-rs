@@ -2,13 +2,12 @@ use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
 use crate::camera::Camera;
-use crate::graphics::Graphics;
+use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::mesh::MeshVertex;
 use crate::texture::Texture;
 use crate::transform::Transform;
 
 use super::material::Material;
-use super::utils::*;
 
 pub struct PostProcessMaterial {
     pipeline: RenderPipeline,
@@ -18,18 +17,15 @@ pub struct PostProcessMaterial {
 impl PostProcessMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
-            new_texture_bind_group(gfx, texture, wgpu::TextureViewDimension::D2);
+            gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
-        let pipeline = new_render_pipeline(
-            gfx,
-            RenderPipelineParams {
-                shader_module: assets.postprocess_shader(),
-                depth_write: true,
-                depth_enabled: true,
-                bind_group_layouts: &[&texture_bind_group_layout],
-                vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
-            },
-        );
+        let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
+            shader_module: assets.postprocess_shader(),
+            depth_write: true,
+            depth_enabled: true,
+            bind_group_layouts: &[&texture_bind_group_layout],
+            vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
+        });
 
         Self {
             pipeline,
