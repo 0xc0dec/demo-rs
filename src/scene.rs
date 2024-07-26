@@ -32,9 +32,8 @@ pub struct Scene {
     materials: SlotMap<MaterialId, Box<dyn Material>>,
     // TODO Implement via components, like everything else
     player: Player,
-    pp_cam: Camera,
     player_target: Entity,
-    pp: Entity,
+    postprocessor: Entity,
     grabbed_body: Option<Entity>,
     grabbed_body_player_local_pos: Option<Vec3>,
     spawned_demo_box: bool,
@@ -44,16 +43,14 @@ impl Scene {
     pub fn new(gfx: &Graphics, assets: &Assets) -> Self {
         let mut physics = Physics::new();
         let player = Player::new(gfx, &mut physics);
-        let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
 
         let mut scene = Self {
             world: World::new(),
             materials: SlotMap::new(),
             physics,
             player,
-            pp_cam,
             player_target: Entity::DANGLING,
-            pp: Entity::DANGLING,
+            postprocessor: Entity::DANGLING,
             grabbed_body: None,
             grabbed_body_player_local_pos: None,
             spawned_demo_box: false,
@@ -96,8 +93,9 @@ impl Scene {
         let mat_id = scene
             .materials
             .insert(Box::new(PostProcessMaterial::new(gfx, assets, pp_src_tex)));
-        scene.pp = scene.world.spawn((
+        scene.postprocessor = scene.world.spawn((
             Transform::default(),
+            Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
             MeshCmp(assets.quad_mesh_id()),
             MaterialCmp(mat_id),
             RenderOrderCmp(100),
@@ -147,17 +145,24 @@ impl Scene {
         if new_canvas_size.is_some() {
             // Note: this seems to be relying on player having already updated its render target size.
             let color_tex = self.player.camera().target().as_ref().unwrap().color_tex();
-            let mat_id = self.world.query_one_mut::<&MaterialCmp>(self.pp).unwrap().0;
+            let mat_id = self
+                .world
+                .query_one_mut::<&MaterialCmp>(self.postprocessor)
+                .unwrap()
+                .0;
             self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
         }
     }
 
     pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
+        // gfx.render_pass(
+        //     &self.build_render_bundles(false, gfx, assets),
+        //     self.player.camera().target().as_ref(),
+        // );
         gfx.render_pass(
-            &self.build_render_bundles(false, gfx, assets),
-            self.player.camera().target().as_ref(),
+            &self.build_render_bundles(self.postprocessor, gfx, assets),
+            None,
         );
-        gfx.render_pass(&self.build_render_bundles(true, gfx, assets), None);
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
@@ -266,7 +271,6 @@ impl Scene {
                 .unwrap();
             target_transform.set_position(player_focus_pt);
             target_transform.set_scale(Vec3::from_element(scale));
-
             RENDER_TAG_SCENE
         } else {
             RENDER_TAG_HIDDEN
@@ -279,38 +283,44 @@ impl Scene {
 
     fn build_render_bundles(
         &mut self,
-        pp: bool,
+        camera: Entity,
         gfx: &Graphics,
         assets: &Assets,
     ) -> Vec<wgpu::RenderBundle> {
-        let (camera, camera_transform) = if pp {
-            (&self.pp_cam, Transform::default())
-        } else {
-            (self.player.camera(), *self.player.transform())
-        };
-
-        let mut renderables = self
+        #[allow(clippy::never_loop)]
+        for (_, (camera, camera_transform)) in &mut self
             .world
-            .query_mut::<(
+            .query::<(&Camera, &Transform)>()
+            .iter()
+            // TODO Iterate over all cameras properly, this is a workaround to always render via a single one
+            .filter(|(cam_ent, _)| *cam_ent == camera)
+        {
+            let mut renderables = self.world.query::<(
                 &MeshCmp,
                 &MaterialCmp,
                 &Transform,
                 &RenderOrderCmp,
                 &RenderTagCmp,
-            )>()
-            .into_iter()
-            .filter(|(_, (.., tag))| camera.should_render(tag.0))
-            .map(|(_, (mesh, material, transform, order, _))| (mesh, material, transform, order))
-            .collect::<Vec<_>>();
-        renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
-        renderables
-            .into_iter()
-            .map(|(mesh, material, transform, _)| {
-                let material = self.materials.get_mut(material.0).unwrap().as_mut();
-                let mesh = assets.mesh(mesh.0);
-                gfx.build_render_bundle(mesh, material, transform, (camera, &camera_transform))
-            })
-            .collect::<_>()
+            )>();
+            let mut renderables = renderables
+                .iter()
+                .filter(|(_, (.., tag))| camera.should_render(tag.0))
+                .map(|(_, (mesh, material, transform, order, _))| {
+                    (mesh, material, transform, order)
+                })
+                .collect::<Vec<_>>();
+            renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
+            return renderables
+                .into_iter()
+                .map(|(mesh, material, transform, _)| {
+                    let material = self.materials.get_mut(material.0).unwrap().as_mut();
+                    let mesh = assets.mesh(mesh.0);
+                    gfx.build_render_bundle(mesh, material, transform, (camera, &camera_transform))
+                })
+                .collect::<_>();
+        }
+
+        vec![]
     }
 
     fn sync_physics(&mut self) {
