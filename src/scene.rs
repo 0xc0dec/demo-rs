@@ -9,7 +9,7 @@ use crate::input::{Input, InputAction};
 use crate::materials::{
     ColorMaterial, DiffuseMaterial, Material, PostProcessMaterial, SkyboxMaterial,
 };
-use crate::math::{to_point, Vec3};
+use crate::math::Vec3;
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
 use crate::player::Player;
@@ -30,10 +30,11 @@ pub struct Scene {
     world: World,
     physics: Physics,
     materials: SlotMap<MaterialId, Box<dyn Material>>,
-    // TODO Implement via components, like everything else
-    player: Player,
+    player: Entity,
+    // TODO Store in Player?
     player_target: Entity,
     postprocessor: Entity,
+    // TODO Store in Player?
     grabbed_body: Option<Entity>,
     grabbed_body_player_local_pos: Option<Vec3>,
     spawned_demo_box: bool,
@@ -41,20 +42,20 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(gfx: &Graphics, assets: &Assets) -> Self {
-        let mut physics = Physics::new();
-        let player = Player::new(gfx, &mut physics);
-
         let mut scene = Self {
             world: World::new(),
             materials: SlotMap::new(),
-            physics,
-            player,
+            physics: Physics::new(),
+            player: Entity::DANGLING,
             player_target: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
             grabbed_body: None,
             grabbed_body_player_local_pos: None,
             spawned_demo_box: false,
         };
+
+        // Player
+        scene.player = Player::spawn(&mut scene.world, gfx, &mut scene.physics);
 
         // Player target
         let mat_id = scene
@@ -68,10 +69,10 @@ impl Scene {
             RenderTagCmp(RENDER_TAG_HIDDEN),
         ));
 
+        // Floor
         scene.spawn_floor(gfx, assets);
 
         // Skybox
-
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
         let mat_id = scene.materials.insert(Box::new(SkyboxMaterial::new(
@@ -88,8 +89,14 @@ impl Scene {
         ));
 
         // Post-processor
-
-        let pp_src_tex = scene.player.camera().target().as_ref().unwrap().color_tex();
+        let pp_src_tex = scene
+            .world
+            .query_one_mut::<&Camera>(scene.player)
+            .unwrap()
+            .target()
+            .as_ref()
+            .unwrap()
+            .color_tex();
         let mat_id = scene
             .materials
             .insert(Box::new(PostProcessMaterial::new(gfx, assets, pp_src_tex)));
@@ -124,14 +131,22 @@ impl Scene {
     ) {
         self.physics.update(dt);
 
-        self.player
-            .update(gfx, dt, input, window, &mut self.physics, new_canvas_size);
-        self.update_grabbed(input);
-        self.update_player_target();
+        Player::update(
+            &mut self.world,
+            &mut self.physics,
+            gfx,
+            input,
+            window,
+            dt,
+            new_canvas_size,
+        );
+        // self.update_grabbed(input);
+        // self.update_player_target();
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
+            let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
             let pos = if self.spawned_demo_box {
-                self.player.transform().position() + self.player.transform().forward().xyz() * 5.0
+                player_transform.position() + player_transform.forward().xyz() * 5.0
             } else {
                 self.spawned_demo_box = true;
                 Vec3::y_axis().xyz() * 5.0
@@ -144,10 +159,13 @@ impl Scene {
         // TODO Should this be inside `render()`? Same for the player updating its RT.
         if new_canvas_size.is_some() {
             // Note: this seems to be relying on player having already updated its render target size.
-            let color_tex = self.player.camera().target().as_ref().unwrap().color_tex();
+            let mut q = self.world.query_one::<&Camera>(self.player).unwrap();
+            let color_tex = q.get().unwrap().target().as_ref().unwrap().color_tex();
             let mat_id = self
                 .world
-                .query_one_mut::<&MaterialCmp>(self.postprocessor)
+                .query_one::<&MaterialCmp>(self.postprocessor)
+                .unwrap()
+                .get()
                 .unwrap()
                 .0;
             self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
@@ -155,10 +173,10 @@ impl Scene {
     }
 
     pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
-        // gfx.render_pass(
-        //     &self.build_render_bundles(false, gfx, assets),
-        //     self.player.camera().target().as_ref(),
-        // );
+        gfx.render_pass(
+            &self.build_render_bundles(self.player, gfx, assets),
+            self.player.camera().target().as_ref(),
+        );
         gfx.render_pass(
             &self.build_render_bundles(self.postprocessor, gfx, assets),
             None,
@@ -208,78 +226,78 @@ impl Scene {
         ));
     }
 
-    fn update_grabbed(&mut self, input: &Input) {
-        if input.action_active(InputAction::Grab) && self.player.controlled() {
-            if self.grabbed_body_player_local_pos.is_none() {
-                // Initiate grab
-                if let Some(focus_body_handle) = self.player.focus_body() {
-                    let (body_entity, body) = self
-                        .world
-                        .query_mut::<&PhysicalBody>()
-                        .into_iter()
-                        .find(|(_, body)| body.body_handle() == focus_body_handle)
-                        .unwrap();
-                    body.set_kinematic(&mut self.physics, true);
-                    let body = self.physics.bodies.get_mut(focus_body_handle).unwrap();
-                    let local_pos = self
-                        .player
-                        .transform()
-                        .matrix()
-                        .try_inverse()
-                        .unwrap()
-                        .transform_point(&to_point(*body.translation()))
-                        .coords;
-                    self.grabbed_body = Some(body_entity);
-                    self.grabbed_body_player_local_pos = Some(local_pos);
-                }
-            } else {
-                // Update the grabbed object
-                if let Some(grabbed_body) = self.grabbed_body {
-                    let body = self
-                        .world
-                        .query_one_mut::<&PhysicalBody>(grabbed_body)
-                        .unwrap();
-                    let body = self.physics.bodies.get_mut(body.body_handle()).unwrap();
-                    let new_pos =
-                        self.player.transform().matrix().transform_point(&to_point(
-                            self.grabbed_body_player_local_pos.unwrap(),
-                        ));
-                    body.set_translation(new_pos.coords, true);
-                }
-            }
-        } else {
-            // Release grab
-            if let Some(grabbed_body) = self.grabbed_body.take() {
-                let body = self
-                    .world
-                    .query_one_mut::<&PhysicalBody>(grabbed_body)
-                    .unwrap();
-                body.set_kinematic(&mut self.physics, false);
-                self.grabbed_body = None;
-                self.grabbed_body_player_local_pos = None;
-            }
-        }
-    }
+    // fn update_grabbed(&mut self, input: &Input) {
+    //     if input.action_active(InputAction::Grab) && self.player.controlled() {
+    //         if self.grabbed_body_player_local_pos.is_none() {
+    //             // Initiate grab
+    //             if let Some(focus_body_handle) = self.player.focus_body() {
+    //                 let (body_entity, body) = self
+    //                     .world
+    //                     .query_mut::<&PhysicalBody>()
+    //                     .into_iter()
+    //                     .find(|(_, body)| body.body_handle() == focus_body_handle)
+    //                     .unwrap();
+    //                 body.set_kinematic(&mut self.physics, true);
+    //                 let body = self.physics.bodies.get_mut(focus_body_handle).unwrap();
+    //                 let local_pos = self
+    //                     .player
+    //                     .transform()
+    //                     .matrix()
+    //                     .try_inverse()
+    //                     .unwrap()
+    //                     .transform_point(&to_point(*body.translation()))
+    //                     .coords;
+    //                 self.grabbed_body = Some(body_entity);
+    //                 self.grabbed_body_player_local_pos = Some(local_pos);
+    //             }
+    //         } else {
+    //             // Update the grabbed object
+    //             if let Some(grabbed_body) = self.grabbed_body {
+    //                 let body = self
+    //                     .world
+    //                     .query_one_mut::<&PhysicalBody>(grabbed_body)
+    //                     .unwrap();
+    //                 let body = self.physics.bodies.get_mut(body.body_handle()).unwrap();
+    //                 let new_pos =
+    //                     self.player.transform().matrix().transform_point(&to_point(
+    //                         self.grabbed_body_player_local_pos.unwrap(),
+    //                     ));
+    //                 body.set_translation(new_pos.coords, true);
+    //             }
+    //         }
+    //     } else {
+    //         // Release grab
+    //         if let Some(grabbed_body) = self.grabbed_body.take() {
+    //             let body = self
+    //                 .world
+    //                 .query_one_mut::<&PhysicalBody>(grabbed_body)
+    //                 .unwrap();
+    //             body.set_kinematic(&mut self.physics, false);
+    //             self.grabbed_body = None;
+    //             self.grabbed_body_player_local_pos = None;
+    //         }
+    //     }
+    // }
 
-    fn update_player_target(&mut self) {
-        let new_tag = if let Some(player_focus_pt) = self.player.focus_point() {
-            let dist_to_camera = (self.player.transform().position() - player_focus_pt).magnitude();
-            let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
-            let mut target_transform = self
-                .world
-                .get::<&mut Transform>(self.player_target)
-                .unwrap();
-            target_transform.set_position(player_focus_pt);
-            target_transform.set_scale(Vec3::from_element(scale));
-            RENDER_TAG_SCENE
-        } else {
-            RENDER_TAG_HIDDEN
-        };
-
-        self.world
-            .insert_one(self.player_target, RenderTagCmp(new_tag))
-            .unwrap();
-    }
+    // fn update_player_target(&mut self) {
+    //     let new_tag = if let Some(player_focus_pt) = self.player.focus_point() {
+    //         let dist_to_camera = (self.player.transform().position() - player_focus_pt).magnitude();
+    //         let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
+    //         let mut target_transform = self
+    //             .world
+    //             .get::<&mut Transform>(self.player_target)
+    //             .unwrap();
+    //         target_transform.set_position(player_focus_pt);
+    //         target_transform.set_scale(Vec3::from_element(scale));
+    //         RENDER_TAG_SCENE
+    //     } else {
+    //         RENDER_TAG_HIDDEN
+    //     };
+    //
+    //     self.world
+    //         .insert_one(self.player_target, RenderTagCmp(new_tag))
+    //         .unwrap();
+    // }
 
     fn build_render_bundles(
         &mut self,
@@ -315,7 +333,7 @@ impl Scene {
                 .map(|(mesh, material, transform, _)| {
                     let material = self.materials.get_mut(material.0).unwrap().as_mut();
                     let mesh = assets.mesh(mesh.0);
-                    gfx.build_render_bundle(mesh, material, transform, (camera, &camera_transform))
+                    gfx.build_render_bundle(mesh, material, transform, (camera, camera_transform))
                 })
                 .collect::<_>();
         }
