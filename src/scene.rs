@@ -1,7 +1,5 @@
-use std::ops::DerefMut;
-use std::sync::{Arc, Mutex};
-
 use hecs::{Entity, World};
+use slotmap::{DefaultKey, SlotMap};
 use winit::window::Window;
 
 use crate::assets::{Assets, MeshId};
@@ -20,15 +18,18 @@ use crate::render_tags::{
 };
 use crate::transform::Transform;
 
-// TODO Refactor, maybe remove `Cmp` suffix.
+// TODO Remove `Cmp` suffix?
 struct MeshCmp(MeshId);
-struct MaterialCmp(Arc<Mutex<dyn Material + Send + Sync>>);
+struct MaterialCmp(MaterialId);
 struct RenderOrderCmp(i32);
 struct RenderTagCmp(u32);
+
+type MaterialId = DefaultKey;
 
 pub struct Scene {
     world: World,
     physics: Physics,
+    materials: SlotMap<MaterialId, Box<dyn Material>>,
     // TODO Implement via components, like everything else
     player: Player,
     pp_cam: Camera,
@@ -46,6 +47,8 @@ impl Scene {
         let pp_cam = Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None);
 
         let mut scene = Self {
+            world: World::new(),
+            materials: SlotMap::new(),
             physics,
             player,
             pp_cam,
@@ -54,24 +57,62 @@ impl Scene {
             grabbed_body: None,
             grabbed_body_player_local_pos: None,
             spawned_demo_box: false,
-            world: World::new(),
         };
 
+        // Player target
+        let mat_id = scene
+            .materials
+            .insert(Box::new(ColorMaterial::new(gfx, assets)));
         scene.player_target = scene.world.spawn((
             Transform::default(),
             MeshCmp(assets.box_mesh_id()),
-            MaterialCmp(Arc::new(Mutex::new(ColorMaterial::new(gfx, assets)))),
+            MaterialCmp(mat_id),
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_HIDDEN),
         ));
 
         scene.spawn_floor(gfx, assets);
-        // Spawning skybox last to ensure the sorting by render order works and it still shows up
+
+        // Skybox
+
+        // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
-        scene.spawn_skybox(gfx, assets);
-        scene.pp = scene.spawn_post_process_overlay(gfx, assets);
+        let mat_id = scene.materials.insert(Box::new(SkyboxMaterial::new(
+            gfx,
+            assets,
+            assets.skybox_texture(),
+        )));
+        scene.world.spawn((
+            Transform::default(),
+            MeshCmp(assets.quad_mesh_id()),
+            MaterialCmp(mat_id),
+            RenderOrderCmp(-100),
+            RenderTagCmp(RENDER_TAG_SCENE),
+        ));
+
+        // Post-processor
+
+        let pp_src_tex = scene.player.camera().target().as_ref().unwrap().color_tex();
+        let mat_id = scene
+            .materials
+            .insert(Box::new(PostProcessMaterial::new(gfx, assets, pp_src_tex)));
+        scene.pp = scene.world.spawn((
+            Transform::default(),
+            MeshCmp(assets.quad_mesh_id()),
+            MaterialCmp(mat_id),
+            RenderOrderCmp(100),
+            RenderTagCmp(RENDER_TAG_POST_PROCESS),
+        ));
 
         scene
+    }
+
+    fn new_diffuse_mat(&mut self, gfx: &Graphics, assets: &Assets) -> MaterialId {
+        self.materials.insert(Box::new(DiffuseMaterial::new(
+            gfx,
+            assets,
+            assets.stone_texture(),
+        )))
     }
 
     pub fn update(
@@ -102,13 +143,12 @@ impl Scene {
 
         self.sync_physics();
 
+        // TODO Should this be inside `render()`? Same for the player updating its RT.
         if new_canvas_size.is_some() {
+            // Note: this seems to be relying on player having already updated its render target size.
             let color_tex = self.player.camera().target().as_ref().unwrap().color_tex();
-            self.world
-                .query_one_mut::<(&mut MaterialCmp,)>(self.pp)
-                .unwrap()
-                .0
-                 .0 = Arc::new(Mutex::new(PostProcessMaterial::new(gfx, assets, color_tex)));
+            let mat_id = self.world.query_one_mut::<&MaterialCmp>(self.pp).unwrap().0;
+            self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
         }
     }
 
@@ -132,14 +172,11 @@ impl Scene {
             &mut self.physics,
         );
 
+        let mat_id = self.new_diffuse_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
             MeshCmp(assets.box_mesh_id()),
-            MaterialCmp(Arc::new(Mutex::new(DiffuseMaterial::new(
-                gfx,
-                assets,
-                assets.stone_texture(),
-            )))),
+            MaterialCmp(mat_id),
             body,
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_SCENE),
@@ -155,48 +192,17 @@ impl Scene {
             },
             &mut self.physics,
         );
+        let mat_id = self.new_diffuse_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
             MeshCmp(assets.box_mesh_id()),
-            MaterialCmp(Arc::new(Mutex::new(DiffuseMaterial::new(
-                gfx,
-                assets,
-                assets.stone_texture(),
-            )))),
+            MaterialCmp(mat_id),
             body,
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_SCENE),
         ));
     }
 
-    fn spawn_skybox(&mut self, gfx: &Graphics, assets: &Assets) {
-        self.world.spawn((
-            Transform::default(),
-            MeshCmp(assets.quad_mesh_id()),
-            MaterialCmp(Arc::new(Mutex::new(SkyboxMaterial::new(
-                gfx,
-                assets,
-                assets.skybox_texture(),
-            )))),
-            RenderOrderCmp(-100),
-            RenderTagCmp(RENDER_TAG_SCENE),
-        ));
-    }
-
-    fn spawn_post_process_overlay(&mut self, gfx: &Graphics, assets: &Assets) -> Entity {
-        let source_color_tex = self.player.camera().target().as_ref().unwrap().color_tex();
-        self.world.spawn((
-            Transform::default(),
-            MeshCmp(assets.quad_mesh_id()),
-            MaterialCmp(Arc::new(Mutex::new(PostProcessMaterial::new(
-                gfx,
-                assets,
-                source_color_tex,
-            )))),
-            RenderOrderCmp(100),
-            RenderTagCmp(RENDER_TAG_POST_PROCESS),
-        ))
-    }
     fn update_grabbed(&mut self, input: &Input) {
         if input.action_active(InputAction::Grab) && self.player.controlled() {
             if self.grabbed_body_player_local_pos.is_none() {
@@ -287,7 +293,7 @@ impl Scene {
             .world
             .query_mut::<(
                 &MeshCmp,
-                &mut MaterialCmp,
+                &MaterialCmp,
                 &Transform,
                 &RenderOrderCmp,
                 &RenderTagCmp,
@@ -300,13 +306,9 @@ impl Scene {
         renderables
             .into_iter()
             .map(|(mesh, material, transform, _)| {
-                gfx.build_render_bundle(
-                    assets.mesh(mesh.0),
-                    // TODO Wtf refactor, it should not be this complex
-                    material.0.lock().unwrap().deref_mut(),
-                    transform,
-                    (camera, &camera_transform),
-                )
+                let material = self.materials.get_mut(material.0).unwrap().as_mut();
+                let mesh = assets.mesh(mesh.0);
+                gfx.build_render_bundle(mesh, material, transform, (camera, &camera_transform))
             })
             .collect::<_>()
     }

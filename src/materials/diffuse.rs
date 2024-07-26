@@ -8,6 +8,7 @@ use crate::transform::Transform;
 use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
 
+// TODO Rename to smth less generic
 pub struct DiffuseMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
