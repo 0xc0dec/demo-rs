@@ -21,7 +21,7 @@ impl ColorMaterial {
             gfx.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.color_shader(),
+            shader_module: assets.shader(assets.color_shader_id()),
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[&matrices_uniform_bind_group_layout],

@@ -6,15 +6,19 @@ use crate::mesh::Mesh;
 use crate::texture::Texture;
 
 pub type MeshId = DefaultKey;
+pub type ShaderId = DefaultKey;
 
-// TODO Store groups of assets in hash maps
 pub struct Assets {
+    // TODO Store in slotmap too
     skybox_tex: Texture,
     stone_tex: Texture,
-    color_shader: wgpu::ShaderModule,
-    textured_shader: wgpu::ShaderModule,
-    postprocess_shader: wgpu::ShaderModule,
-    skybox_shader: wgpu::ShaderModule,
+
+    shaders: SlotMap<ShaderId, wgpu::ShaderModule>,
+    color_shader_id: ShaderId,
+    textured_shader_id: ShaderId,
+    skybox_shader_id: ShaderId,
+    postprocess_shader_id: ShaderId,
+
     meshes: SlotMap<MeshId, Mesh>,
     box_mesh_id: MeshId,
     quad_mesh_id: MeshId,
@@ -50,13 +54,20 @@ impl Assets {
         let box_mesh_id = meshes.insert(box_mesh);
         let quad_mesh_id = meshes.insert(Mesh::quad(gfx));
 
+        let mut shaders = SlotMap::new();
+        let color_shader_id = shaders.insert(color_shader);
+        let textured_shader_id = shaders.insert(textured_shader);
+        let postprocess_shader_id = shaders.insert(postprocess_shader);
+        let skybox_shader_id = shaders.insert(skybox_shader);
+
         Self {
             skybox_tex,
             stone_tex,
-            color_shader,
-            textured_shader,
-            postprocess_shader,
-            skybox_shader,
+            shaders,
+            color_shader_id,
+            textured_shader_id,
+            postprocess_shader_id,
+            skybox_shader_id,
             meshes,
             box_mesh_id,
             quad_mesh_id,
@@ -71,20 +82,24 @@ impl Assets {
         &self.stone_tex
     }
 
-    pub fn color_shader(&self) -> &wgpu::ShaderModule {
-        &self.color_shader
+    pub fn color_shader_id(&self) -> ShaderId {
+        self.color_shader_id
     }
 
-    pub fn textured_shader(&self) -> &wgpu::ShaderModule {
-        &self.textured_shader
+    pub fn textured_shader_id(&self) -> ShaderId {
+        self.textured_shader_id
     }
 
-    pub fn postprocess_shader(&self) -> &wgpu::ShaderModule {
-        &self.postprocess_shader
+    pub fn postprocess_shader_id(&self) -> ShaderId {
+        self.postprocess_shader_id
     }
 
-    pub fn skybox_shader(&self) -> &wgpu::ShaderModule {
-        &self.skybox_shader
+    pub fn skybox_shader_id(&self) -> ShaderId {
+        self.skybox_shader_id
+    }
+
+    pub fn mesh(&self, id: MeshId) -> &Mesh {
+        self.meshes.get(id).unwrap()
     }
 
     pub fn box_mesh_id(&self) -> MeshId {
@@ -95,8 +110,8 @@ impl Assets {
         self.quad_mesh_id
     }
 
-    pub fn mesh(&self, id: MeshId) -> &Mesh {
-        self.meshes.get(id).unwrap()
+    pub fn shader(&self, id: ShaderId) -> &wgpu::ShaderModule {
+        self.shaders.get(id).unwrap()
     }
 }
 
