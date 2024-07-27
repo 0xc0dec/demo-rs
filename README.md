@@ -7,6 +7,9 @@ A simple graphics demo where you can fly around, spawn boxes and grab them.
 I made this project to learn Rust and try it in game development. There is no attempt to create an "engine", everything
 is pretty low level and abstractions are built along the way when needed.
 
+Even though this is a learning project, the code is not heavily commented.
+Hopefully it's clean enough to be readable and easy to navigate.
+
 ## Building and running
 
 ```
@@ -23,6 +26,7 @@ Controls:
 
 ## Features
 
+- [hecs](https://github.com/Ralith/hecs) ECS.
 - [wgpu](https://github.com/gfx-rs/wgpu) rendering.
 - [nalgebra](https://github.com/dimforge/nalgebra) math.
 - [Rapier](https://rapier.rs) physics
