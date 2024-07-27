@@ -8,8 +8,7 @@ use crate::transform::Transform;
 use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
 
-// TODO Rename to smth less generic
-pub struct DiffuseMaterial {
+pub struct TexturedMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
     matrices_uniform: WorldViewProjUniform,
@@ -17,7 +16,7 @@ pub struct DiffuseMaterial {
     matrices_uniform_bind_group: wgpu::BindGroup,
 }
 
-impl DiffuseMaterial {
+impl TexturedMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = WorldViewProjUniform::new();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
@@ -27,7 +26,7 @@ impl DiffuseMaterial {
             gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.diffuse_shader(),
+            shader_module: assets.textured_shader(),
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[
@@ -47,7 +46,7 @@ impl DiffuseMaterial {
     }
 }
 
-impl Material for DiffuseMaterial {
+impl Material for TexturedMaterial {
     fn apply<'a>(
         &'a mut self,
         encoder: &mut wgpu::RenderBundleEncoder<'a>,

@@ -7,7 +7,7 @@ use crate::camera::Camera;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::materials::{
-    ColorMaterial, DiffuseMaterial, Material, PostProcessMaterial, SkyboxMaterial,
+    ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
 use crate::math::{to_point, Vec3};
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
@@ -116,8 +116,8 @@ impl Scene {
         scene
     }
 
-    fn new_diffuse_mat(&mut self, gfx: &Graphics, assets: &Assets) -> MaterialId {
-        self.materials.insert(Box::new(DiffuseMaterial::new(
+    fn new_textured_mat(&mut self, gfx: &Graphics, assets: &Assets) -> MaterialId {
+        self.materials.insert(Box::new(TexturedMaterial::new(
             gfx,
             assets,
             assets.stone_texture(),
@@ -191,7 +191,7 @@ impl Scene {
             &mut self.physics,
         );
 
-        let mat_id = self.new_diffuse_mat(gfx, assets);
+        let mat_id = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
             MeshCmp(assets.box_mesh_id()),
@@ -211,7 +211,7 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_id = self.new_diffuse_mat(gfx, assets);
+        let mat_id = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
             MeshCmp(assets.box_mesh_id()),

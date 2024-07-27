@@ -12,7 +12,7 @@ pub struct Assets {
     skybox_tex: Texture,
     stone_tex: Texture,
     color_shader: wgpu::ShaderModule,
-    diffuse_shader: wgpu::ShaderModule,
+    textured_shader: wgpu::ShaderModule,
     postprocess_shader: wgpu::ShaderModule,
     skybox_shader: wgpu::ShaderModule,
     meshes: SlotMap<MeshId, Mesh>,
@@ -27,7 +27,7 @@ impl Assets {
             skybox_tex,
             stone_tex,
             color_shader,
-            diffuse_shader,
+            textured_shader,
             postprocess_shader,
             skybox_shader,
         ) = pollster::block_on(async {
@@ -40,7 +40,7 @@ impl Assets {
                     .await
                     .unwrap(),
                 new_shader_module(gfx, "color.wgsl").await,
-                new_shader_module(gfx, "diffuse.wgsl").await,
+                new_shader_module(gfx, "textured.wgsl").await,
                 new_shader_module(gfx, "post-process.wgsl").await,
                 new_shader_module(gfx, "skybox.wgsl").await,
             )
@@ -54,7 +54,7 @@ impl Assets {
             skybox_tex,
             stone_tex,
             color_shader,
-            diffuse_shader,
+            textured_shader,
             postprocess_shader,
             skybox_shader,
             meshes,
@@ -75,8 +75,8 @@ impl Assets {
         &self.color_shader
     }
 
-    pub fn diffuse_shader(&self) -> &wgpu::ShaderModule {
-        &self.diffuse_shader
+    pub fn textured_shader(&self) -> &wgpu::ShaderModule {
+        &self.textured_shader
     }
 
     pub fn postprocess_shader(&self) -> &wgpu::ShaderModule {

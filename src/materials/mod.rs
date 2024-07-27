@@ -1,12 +1,12 @@
 pub use color::ColorMaterial;
-pub use diffuse::DiffuseMaterial;
 pub use material::Material;
 pub use post_process::PostProcessMaterial;
 pub use skybox::SkyboxMaterial;
+pub use textured::TexturedMaterial;
 
 mod color;
-mod diffuse;
 mod material;
 mod post_process;
 mod skybox;
+mod textured;
 mod uniforms;
