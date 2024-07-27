@@ -9,7 +9,7 @@ use crate::input::{Input, InputAction};
 use crate::materials::{
     ColorMaterial, DiffuseMaterial, Material, PostProcessMaterial, SkyboxMaterial,
 };
-use crate::math::Vec3;
+use crate::math::{to_point, Vec3};
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
 use crate::player::Player;
@@ -30,11 +30,10 @@ pub struct Scene {
     world: World,
     physics: Physics,
     materials: SlotMap<MaterialId, Box<dyn Material>>,
+    postprocessor: Entity,
     player: Entity,
     // TODO Store in Player?
     player_target: Entity,
-    postprocessor: Entity,
-    // TODO Store in Player?
     grabbed_body: Option<Entity>,
     grabbed_body_player_local_pos: Option<Vec3>,
     spawned_demo_box: bool,
@@ -55,7 +54,12 @@ impl Scene {
         };
 
         // Player
-        scene.player = Player::spawn(&mut scene.world, gfx, &mut scene.physics);
+        scene.player = Player::spawn(
+            &mut scene.world,
+            gfx,
+            &mut scene.physics,
+            Vec3::new(7.0, 7.0, 7.0),
+        );
 
         // Player target
         let mat_id = scene
@@ -140,7 +144,7 @@ impl Scene {
             dt,
             new_canvas_size,
         );
-        // self.update_grabbed(input);
+        self.update_grabbed(input);
         self.update_player_target();
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
@@ -151,7 +155,7 @@ impl Scene {
                 self.spawned_demo_box = true;
                 Vec3::y_axis().xyz() * 5.0
             };
-            self.spawn_cube(pos, Vec3::from_element(1.0), gfx, assets);
+            self.spawn_box(pos, Vec3::from_element(1.0), gfx, assets);
         }
 
         self.sync_physics();
@@ -198,7 +202,7 @@ impl Scene {
         ));
     }
 
-    fn spawn_cube(&mut self, pos: Vec3, scale: Vec3, gfx: &Graphics, assets: &Assets) {
+    fn spawn_box(&mut self, pos: Vec3, scale: Vec3, gfx: &Graphics, assets: &Assets) {
         let body = PhysicalBody::cuboid(
             PhysicalBodyParams {
                 pos,
@@ -218,72 +222,81 @@ impl Scene {
         ));
     }
 
-    // fn update_grabbed(&mut self, input: &Input) {
-    //     if input.action_active(InputAction::Grab) && self.player.controlled() {
-    //         if self.grabbed_body_player_local_pos.is_none() {
-    //             // Initiate grab
-    //             if let Some(focus_body_handle) = self.player.focus_body() {
-    //                 let (body_entity, body) = self
-    //                     .world
-    //                     .query_mut::<&PhysicalBody>()
-    //                     .into_iter()
-    //                     .find(|(_, body)| body.body_handle() == focus_body_handle)
-    //                     .unwrap();
-    //                 body.set_kinematic(&mut self.physics, true);
-    //                 let body = self.physics.bodies.get_mut(focus_body_handle).unwrap();
-    //                 let local_pos = self
-    //                     .player
-    //                     .transform()
-    //                     .matrix()
-    //                     .try_inverse()
-    //                     .unwrap()
-    //                     .transform_point(&to_point(*body.translation()))
-    //                     .coords;
-    //                 self.grabbed_body = Some(body_entity);
-    //                 self.grabbed_body_player_local_pos = Some(local_pos);
-    //             }
-    //         } else {
-    //             // Update the grabbed object
-    //             if let Some(grabbed_body) = self.grabbed_body {
-    //                 let body = self
-    //                     .world
-    //                     .query_one_mut::<&PhysicalBody>(grabbed_body)
-    //                     .unwrap();
-    //                 let body = self.physics.bodies.get_mut(body.body_handle()).unwrap();
-    //                 let new_pos =
-    //                     self.player.transform().matrix().transform_point(&to_point(
-    //                         self.grabbed_body_player_local_pos.unwrap(),
-    //                     ));
-    //                 body.set_translation(new_pos.coords, true);
-    //             }
-    //         }
-    //     } else {
-    //         // Release grab
-    //         if let Some(grabbed_body) = self.grabbed_body.take() {
-    //             let body = self
-    //                 .world
-    //                 .query_one_mut::<&PhysicalBody>(grabbed_body)
-    //                 .unwrap();
-    //             body.set_kinematic(&mut self.physics, false);
-    //             self.grabbed_body = None;
-    //             self.grabbed_body_player_local_pos = None;
-    //         }
-    //     }
-    // }
+    // TODO Extract into a separate component
+    fn update_grabbed(&mut self, input: &Input) {
+        let mut q = self
+            .world
+            .query_one::<(&Player, &Transform)>(self.player)
+            .unwrap();
+        let (player, player_tr) = q.get().unwrap();
+        if input.action_active(InputAction::Grab) && player.controlled() {
+            if self.grabbed_body_player_local_pos.is_none() {
+                // Initiate grab
+                if let Some(look_at_body) = player.look_at_body() {
+                    let mut q = self.world.query::<&PhysicalBody>();
+                    let (body_entity, body) = q
+                        .into_iter()
+                        .find(|(_, body)| body.body_handle() == look_at_body)
+                        .unwrap();
+                    body.set_kinematic(&mut self.physics, true);
+                    let body = self.physics.bodies.get_mut(look_at_body).unwrap();
+                    let local_pos = player_tr
+                        .matrix()
+                        .try_inverse()
+                        .unwrap()
+                        .transform_point(&to_point(*body.translation()))
+                        .coords;
+                    self.grabbed_body = Some(body_entity);
+                    self.grabbed_body_player_local_pos = Some(local_pos);
+                }
+            } else {
+                // Update the grabbed object
+                if let Some(grabbed_body) = self.grabbed_body {
+                    let new_pos = player_tr
+                        .matrix()
+                        .transform_point(&to_point(self.grabbed_body_player_local_pos.unwrap()));
+                    let body = self
+                        .world
+                        .query_one::<&PhysicalBody>(grabbed_body)
+                        .unwrap()
+                        .get()
+                        .unwrap()
+                        .body_handle();
+                    self.physics
+                        .bodies
+                        .get_mut(body)
+                        .unwrap()
+                        .set_translation(new_pos.coords, true);
+                }
+            }
+        } else {
+            // Release grab
+            if let Some(grabbed_body) = self.grabbed_body.take() {
+                self.world
+                    .query_one::<&PhysicalBody>(grabbed_body)
+                    .unwrap()
+                    .get()
+                    .unwrap()
+                    .set_kinematic(&mut self.physics, false);
+                self.grabbed_body = None;
+                self.grabbed_body_player_local_pos = None;
+            }
+        }
+    }
 
     fn update_player_target(&mut self) {
         let (player, player_tr) = self
             .world
             .query_one_mut::<(&Player, &Transform)>(self.player)
             .unwrap();
-        let new_tag = if let Some(focus_pt) = player.focus_point() {
-            let dist_to_camera = (player_tr.position() - focus_pt).magnitude();
+        let new_tag = if let Some(look_at_pt) = player.look_at_point() {
+            let dist_to_camera = (player_tr.position() - look_at_pt).magnitude();
             let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
             let mut target_transform = self
                 .world
                 .get::<&mut Transform>(self.player_target)
                 .unwrap();
-            target_transform.set_position(focus_pt);
+            target_transform.set_position(look_at_pt);
             target_transform.set_scale(Vec3::from_element(scale));
             RENDER_TAG_SCENE
         } else {
@@ -296,12 +309,12 @@ impl Scene {
     }
 
     fn render_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {
-        #[allow(clippy::never_loop)]
         for (_, (camera, camera_transform)) in &mut self
             .world
             .query::<(&Camera, &Transform)>()
             .iter()
-            // TODO Iterate over all cameras properly, this is a workaround to always render via a single one
+            // TODO This is a workaround to always render via a single camera. We should iterate over all cameras
+            // based on their render order or smth similar.
             .filter(|(cam_ent, _)| *cam_ent == camera)
         {
             let mut renderables = self.world.query::<(
