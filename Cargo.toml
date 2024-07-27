@@ -14,5 +14,5 @@ pollster = "0.3.0"
 rapier3d = { version = "0.21.0", features = ["simd-stable"] }
 slotmap = "1.0.7"
 tobj = { version = "4.0.1", features = ["async"] }
-wgpu = "0.20.1"
+wgpu = "22.0.0"
 winit = { version = "0.30.3", features = ["rwh_05"] }
