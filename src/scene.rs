@@ -173,14 +173,8 @@ impl Scene {
     }
 
     pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
-        gfx.render_pass(
-            &self.build_render_bundles(self.player, gfx, assets),
-            self.player.camera().target().as_ref(),
-        );
-        gfx.render_pass(
-            &self.build_render_bundles(self.postprocessor, gfx, assets),
-            None,
-        );
+        self.render_camera(self.player, gfx, assets);
+        self.render_camera(self.postprocessor, gfx, assets);
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
@@ -299,12 +293,7 @@ impl Scene {
     //         .unwrap();
     // }
 
-    fn build_render_bundles(
-        &mut self,
-        camera: Entity,
-        gfx: &Graphics,
-        assets: &Assets,
-    ) -> Vec<wgpu::RenderBundle> {
+    fn render_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {
         #[allow(clippy::never_loop)]
         for (_, (camera, camera_transform)) in &mut self
             .world
@@ -328,17 +317,16 @@ impl Scene {
                 })
                 .collect::<Vec<_>>();
             renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
-            return renderables
+            let bundles = renderables
                 .into_iter()
                 .map(|(mesh, material, transform, _)| {
                     let material = self.materials.get_mut(material.0).unwrap().as_mut();
                     let mesh = assets.mesh(mesh.0);
                     gfx.build_render_bundle(mesh, material, transform, (camera, camera_transform))
                 })
-                .collect::<_>();
+                .collect::<Vec<wgpu::RenderBundle>>();
+            gfx.render_pass(&bundles, camera.target().as_ref());
         }
-
-        vec![]
     }
 
     fn sync_physics(&mut self) {
