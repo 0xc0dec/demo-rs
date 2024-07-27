@@ -159,13 +159,11 @@ impl Scene {
         // TODO Should this be inside `render()`? Same for the player updating its RT.
         if new_canvas_size.is_some() {
             // Note: this seems to be relying on player having already updated its render target size.
-            let mut q = self.world.query_one::<&Camera>(self.player).unwrap();
-            let color_tex = q.get().unwrap().target().as_ref().unwrap().color_tex();
+            let q = self.world.get::<&Camera>(self.player).unwrap();
+            let color_tex = q.target().as_ref().unwrap().color_tex();
             let mat_id = self
                 .world
-                .query_one::<&MaterialCmp>(self.postprocessor)
-                .unwrap()
-                .get()
+                .get::<&MaterialCmp>(self.postprocessor)
                 .unwrap()
                 .0;
             self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
