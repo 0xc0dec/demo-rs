@@ -5,7 +5,7 @@ use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
 use crate::camera::Camera;
-use crate::graphics::{Graphics, SurfaceSize};
+use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
@@ -72,28 +72,17 @@ impl Player {
     }
 
     pub fn update(
+        dt: f32,
         world: &mut World,
         physics: &mut Physics,
-        gfx: &Graphics,
         input: &Input,
         window: &Window,
-        dt: f32,
-        new_canvas_size: &Option<SurfaceSize>,
     ) {
         let (_, (cam, tr, player)) = world
             .query_mut::<(&mut Camera, &mut Transform, &mut Player)>()
             .into_iter()
             .next()
             .unwrap();
-
-        // TODO Extract this out of Player
-        // Update camera aspect and RT size
-        if let Some(&size) = new_canvas_size.as_ref() {
-            cam.set_aspect(size.width as f32 / size.height as f32);
-            if let Some(target) = cam.target_mut() {
-                target.resize((size.width, size.height), gfx);
-            }
-        }
 
         // Move and rotate
         if player.controlled {

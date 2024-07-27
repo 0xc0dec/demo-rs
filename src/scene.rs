@@ -36,7 +36,7 @@ pub struct Scene {
     player_target: Entity,
     grabbed_body: Option<Entity>,
     grabbed_body_player_local_pos: Option<Vec3>,
-    spawned_demo_box: bool,
+    spawned_box_at_startup: bool,
 }
 
 impl Scene {
@@ -50,7 +50,7 @@ impl Scene {
             postprocessor: Entity::DANGLING,
             grabbed_body: None,
             grabbed_body_player_local_pos: None,
-            spawned_demo_box: false,
+            spawned_box_at_startup: false,
         };
 
         // Player
@@ -135,24 +135,16 @@ impl Scene {
     ) {
         self.physics.update(dt);
 
-        Player::update(
-            &mut self.world,
-            &mut self.physics,
-            gfx,
-            input,
-            window,
-            dt,
-            new_canvas_size,
-        );
+        Player::update(dt, &mut self.world, &mut self.physics, input, window);
         self.update_grabbed(input);
         self.update_player_target();
 
-        if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
+        if input.action_activated(InputAction::Spawn) || !self.spawned_box_at_startup {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
-            let pos = if self.spawned_demo_box {
+            let pos = if self.spawned_box_at_startup {
                 player_transform.position() + player_transform.forward().xyz() * 5.0
             } else {
-                self.spawned_demo_box = true;
+                self.spawned_box_at_startup = true;
                 Vec3::y_axis().xyz() * 5.0
             };
             self.spawn_box(pos, Vec3::from_element(1.0), gfx, assets);
@@ -160,23 +152,31 @@ impl Scene {
 
         self.sync_physics();
 
-        // TODO Should this be inside `render()`? Same for the player updating its RT.
-        if new_canvas_size.is_some() {
-            // Note: this seems to be relying on player having already updated its render target size.
-            let q = self.world.get::<&Camera>(self.player).unwrap();
-            let color_tex = q.target().as_ref().unwrap().color_tex();
-            let mat_id = self
-                .world
-                .get::<&MaterialCmp>(self.postprocessor)
-                .unwrap()
-                .0;
-            self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
+        if let Some(new_size) = new_canvas_size {
+            self.handle_canvas_resize(new_size, gfx, assets);
         }
     }
 
     pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
         self.render_camera(self.player, gfx, assets);
         self.render_camera(self.postprocessor, gfx, assets);
+    }
+
+    fn handle_canvas_resize(&mut self, new_size: &SurfaceSize, gfx: &Graphics, assets: &Assets) {
+        let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
+        player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
+        player_cam
+            .target_mut()
+            .unwrap()
+            .resize((new_size.width, new_size.height), gfx);
+
+        let color_tex = player_cam.target().as_ref().unwrap().color_tex();
+        let mat_id = self
+            .world
+            .get::<&MaterialCmp>(self.postprocessor)
+            .unwrap()
+            .0;
+        self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
