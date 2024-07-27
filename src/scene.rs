@@ -67,7 +67,7 @@ impl Scene {
             .insert(Box::new(ColorMaterial::new(gfx, assets)));
         scene.player_target = scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.box_mesh_id()),
+            MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_HIDDEN),
@@ -82,11 +82,11 @@ impl Scene {
         let mat_id = scene.materials.insert(Box::new(SkyboxMaterial::new(
             gfx,
             assets,
-            assets.skybox_texture(),
+            assets.texture(assets.skybox_texture_id),
         )));
         scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.quad_mesh_id()),
+            MeshCmp(assets.quad_mesh_id),
             MaterialCmp(mat_id),
             RenderOrderCmp(-100),
             RenderTagCmp(RENDER_TAG_SCENE),
@@ -107,7 +107,7 @@ impl Scene {
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
-            MeshCmp(assets.quad_mesh_id()),
+            MeshCmp(assets.quad_mesh_id),
             MaterialCmp(mat_id),
             RenderOrderCmp(100),
             RenderTagCmp(RENDER_TAG_POST_PROCESS),
@@ -120,7 +120,7 @@ impl Scene {
         self.materials.insert(Box::new(TexturedMaterial::new(
             gfx,
             assets,
-            assets.stone_texture(),
+            assets.texture(assets.stone_texture_id),
         )))
     }
 
@@ -194,7 +194,7 @@ impl Scene {
         let mat_id = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_id()),
+            MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
             body,
             RenderOrderCmp(0),
@@ -214,7 +214,7 @@ impl Scene {
         let mat_id = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_id()),
+            MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
             body,
             RenderOrderCmp(0),

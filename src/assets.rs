@@ -7,21 +7,22 @@ use crate::texture::Texture;
 
 pub type MeshId = DefaultKey;
 pub type ShaderId = DefaultKey;
+pub type TextureId = DefaultKey;
 
 pub struct Assets {
-    // TODO Store in slotmap too
-    skybox_tex: Texture,
-    stone_tex: Texture,
+    pub stone_texture_id: TextureId,
+    pub skybox_texture_id: TextureId,
+    textures: SlotMap<TextureId, Texture>,
 
+    pub color_shader_id: ShaderId,
+    pub textured_shader_id: ShaderId,
+    pub skybox_shader_id: ShaderId,
+    pub postprocess_shader_id: ShaderId,
     shaders: SlotMap<ShaderId, wgpu::ShaderModule>,
-    color_shader_id: ShaderId,
-    textured_shader_id: ShaderId,
-    skybox_shader_id: ShaderId,
-    postprocess_shader_id: ShaderId,
 
+    pub box_mesh_id: MeshId,
+    pub quad_mesh_id: MeshId,
     meshes: SlotMap<MeshId, Mesh>,
-    box_mesh_id: MeshId,
-    quad_mesh_id: MeshId,
 }
 
 impl Assets {
@@ -60,9 +61,14 @@ impl Assets {
         let postprocess_shader_id = shaders.insert(postprocess_shader);
         let skybox_shader_id = shaders.insert(skybox_shader);
 
+        let mut textures = SlotMap::new();
+        let stone_texture_id = textures.insert(stone_tex);
+        let skybox_texture_id = textures.insert(skybox_tex);
+
         Self {
-            skybox_tex,
-            stone_tex,
+            textures,
+            stone_texture_id,
+            skybox_texture_id,
             shaders,
             color_shader_id,
             textured_shader_id,
@@ -74,40 +80,12 @@ impl Assets {
         }
     }
 
-    pub fn skybox_texture(&self) -> &Texture {
-        &self.skybox_tex
-    }
-
-    pub fn stone_texture(&self) -> &Texture {
-        &self.stone_tex
-    }
-
-    pub fn color_shader_id(&self) -> ShaderId {
-        self.color_shader_id
-    }
-
-    pub fn textured_shader_id(&self) -> ShaderId {
-        self.textured_shader_id
-    }
-
-    pub fn postprocess_shader_id(&self) -> ShaderId {
-        self.postprocess_shader_id
-    }
-
-    pub fn skybox_shader_id(&self) -> ShaderId {
-        self.skybox_shader_id
+    pub fn texture(&self, id: TextureId) -> &Texture {
+        self.textures.get(id).unwrap()
     }
 
     pub fn mesh(&self, id: MeshId) -> &Mesh {
         self.meshes.get(id).unwrap()
-    }
-
-    pub fn box_mesh_id(&self) -> MeshId {
-        self.box_mesh_id
-    }
-
-    pub fn quad_mesh_id(&self) -> MeshId {
-        self.quad_mesh_id
     }
 
     pub fn shader(&self, id: ShaderId) -> &wgpu::ShaderModule {
@@ -117,7 +95,6 @@ impl Assets {
 
 async fn new_shader_module(device: &wgpu::Device, src_file_path: &str) -> wgpu::ShaderModule {
     let src = load_string_asset(src_file_path).await.unwrap();
-
     device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: None,
         source: wgpu::ShaderSource::Wgsl(src.into()),
