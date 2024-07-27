@@ -78,8 +78,8 @@ impl Player {
         input: &Input,
         window: &Window,
     ) {
-        let (_, (cam, tr, player)) = world
-            .query_mut::<(&mut Camera, &mut Transform, &mut Player)>()
+        let (_, (tr, player)) = world
+            .query_mut::<(&mut Transform, &mut Player)>()
             .into_iter()
             .next()
             .unwrap();
