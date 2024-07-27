@@ -141,7 +141,7 @@ impl Scene {
             new_canvas_size,
         );
         // self.update_grabbed(input);
-        // self.update_player_target();
+        self.update_player_target();
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_demo_box {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
@@ -273,25 +273,29 @@ impl Scene {
     //     }
     // }
 
-    // fn update_player_target(&mut self) {
-    //     let new_tag = if let Some(player_focus_pt) = self.player.focus_point() {
-    //         let dist_to_camera = (self.player.transform().position() - player_focus_pt).magnitude();
-    //         let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
-    //         let mut target_transform = self
-    //             .world
-    //             .get::<&mut Transform>(self.player_target)
-    //             .unwrap();
-    //         target_transform.set_position(player_focus_pt);
-    //         target_transform.set_scale(Vec3::from_element(scale));
-    //         RENDER_TAG_SCENE
-    //     } else {
-    //         RENDER_TAG_HIDDEN
-    //     };
-    //
-    //     self.world
-    //         .insert_one(self.player_target, RenderTagCmp(new_tag))
-    //         .unwrap();
-    // }
+    fn update_player_target(&mut self) {
+        let (player, player_tr) = self
+            .world
+            .query_one_mut::<(&Player, &Transform)>(self.player)
+            .unwrap();
+        let new_tag = if let Some(focus_pt) = player.focus_point() {
+            let dist_to_camera = (player_tr.position() - focus_pt).magnitude();
+            let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
+            let mut target_transform = self
+                .world
+                .get::<&mut Transform>(self.player_target)
+                .unwrap();
+            target_transform.set_position(focus_pt);
+            target_transform.set_scale(Vec3::from_element(scale));
+            RENDER_TAG_SCENE
+        } else {
+            RENDER_TAG_HIDDEN
+        };
+
+        self.world
+            .insert_one(self.player_target, RenderTagCmp(new_tag))
+            .unwrap();
+    }
 
     fn render_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {
         #[allow(clippy::never_loop)]
