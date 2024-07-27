@@ -1,7 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
 
-use wgpu::{Gles3MinorVersion, InstanceFlags, RenderBundle, StoreOp};
 use wgpu::util::DeviceExt;
 
 use crate::camera::Camera;
@@ -53,8 +52,8 @@ impl<'a> Graphics<'a> {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             dx12_shader_compiler: Default::default(),
-            flags: InstanceFlags::DEBUG,
-            gles_minor_version: Gles3MinorVersion::Automatic,
+            flags: wgpu::InstanceFlags::DEBUG,
+            gles_minor_version: wgpu::Gles3MinorVersion::Automatic,
         });
 
         let surface = instance.create_surface(Arc::clone(&window)).unwrap();
@@ -132,14 +131,14 @@ impl<'a> Graphics<'a> {
         material: &mut dyn Material,
         transform: &Transform,
         camera: (&Camera, &Transform),
-    ) -> RenderBundle {
+    ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(camera.0.target().as_ref());
         material.apply(&mut encoder, self, camera, transform);
         encoder.draw_mesh(mesh);
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 
-    pub fn render_pass(&self, bundles: &[RenderBundle], target: Option<&RenderTarget>) {
+    pub fn render_pass(&self, bundles: &[wgpu::RenderBundle], target: Option<&RenderTarget>) {
         let surface_tex = target.is_none().then(|| {
             self.surface
                 .get_current_texture()
@@ -159,7 +158,7 @@ impl<'a> Graphics<'a> {
             resolve_target: None,
             ops: wgpu::Operations {
                 load: wgpu::LoadOp::Clear(wgpu::Color::RED),
-                store: StoreOp::Store,
+                store: wgpu::StoreOp::Store,
             },
         });
 
@@ -170,7 +169,7 @@ impl<'a> Graphics<'a> {
             view: depth_tex_view,
             depth_ops: Some(wgpu::Operations {
                 load: wgpu::LoadOp::Clear(1.0),
-                store: StoreOp::Store,
+                store: wgpu::StoreOp::Store,
             }),
             stencil_ops: None,
         });
