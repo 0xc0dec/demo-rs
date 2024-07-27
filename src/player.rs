@@ -164,7 +164,7 @@ impl Player {
     fn rotate(&mut self, dt: f32, transform: &mut Transform, input: &Input) {
         const MIN_TOP_ANGLE: f32 = 0.1;
         const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-        const SPEED: f32 = 25.0;
+        const SPEED: f32 = 30.0;
 
         let angle_to_top = transform.forward().angle(&Vec3::y_axis());
         self.v_rot_acc += input.mouse_delta().1 * dt;
