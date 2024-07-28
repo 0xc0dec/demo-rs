@@ -4,8 +4,8 @@ use winit::window::Window;
 
 use crate::assets::{Assets, MeshId};
 use crate::components::{
-    Camera, Grab, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
-    RENDER_TAG_SCENE, RenderOrder, RenderTags, Transform,
+    Camera, Grab, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE, RenderOrder,
+    RenderTags, RigidBody, RigidBodyParams, Transform,
 };
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
@@ -174,8 +174,8 @@ impl Scene {
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
-        let body = PhysicalBody::cuboid(
-            PhysicalBodyParams {
+        let body = RigidBody::cuboid(
+            RigidBodyParams {
                 pos,
                 scale,
                 movable: false,
@@ -194,8 +194,8 @@ impl Scene {
     }
 
     fn spawn_box(&mut self, pos: Vec3, scale: Vec3, gfx: &Graphics, assets: &Assets) {
-        let body = PhysicalBody::cuboid(
-            PhysicalBodyParams {
+        let body = RigidBody::cuboid(
+            RigidBodyParams {
                 pos,
                 scale,
                 movable: true,
@@ -274,7 +274,7 @@ impl Scene {
     }
 
     fn sync_physics(&mut self) {
-        for (_, (t, b)) in self.world.query_mut::<(&mut Transform, &PhysicalBody)>() {
+        for (_, (t, b)) in self.world.query_mut::<(&mut Transform, &RigidBody)>() {
             let body = self.physics.bodies.get(b.body_handle()).unwrap();
             t.set(*body.translation(), *body.rotation().inverse().quaternion());
         }

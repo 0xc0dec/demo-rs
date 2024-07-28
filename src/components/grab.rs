@@ -4,8 +4,8 @@ use crate::input::{Input, InputAction};
 use crate::math::{to_point, Vec3};
 use crate::physics::Physics;
 
-use super::PhysicalBody;
 use super::player::Player;
+use super::RigidBody;
 use super::transform::Transform;
 
 pub struct Grab {
@@ -32,7 +32,7 @@ impl Grab {
                 // Init a new grab if player is looking at something
                 if let Some(look_at_body) = player_look_at_body {
                     let body_entity = {
-                        let mut q = world.query::<&PhysicalBody>();
+                        let mut q = world.query::<&RigidBody>();
                         let (body_entity, body) = q
                             .into_iter()
                             .find(|(_, body)| body.body_handle() == look_at_body)
@@ -57,8 +57,7 @@ impl Grab {
                 }
             } else {
                 // Update the grabbed object
-                if let Some((_, (grab, body))) =
-                    world.query::<(&Grab, &PhysicalBody)>().iter().next()
+                if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next()
                 {
                     let new_pos =
                         player_tr_matrix.transform_point(&to_point(grab.pos_relative_to_player));
@@ -72,7 +71,7 @@ impl Grab {
         } else {
             // Release grab
             let entity = if let Some((entity, (_grab, body))) =
-                world.query::<(&Grab, &PhysicalBody)>().iter().next()
+                world.query::<(&Grab, &RigidBody)>().iter().next()
             {
                 body.set_kinematic(physics, false);
                 Some(entity)

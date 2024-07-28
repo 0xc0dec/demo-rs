@@ -3,20 +3,20 @@ use rapier3d::prelude::*;
 use crate::math::Vec3;
 use crate::physics::Physics;
 
-pub struct PhysicalBody {
+pub struct RigidBody {
     handle: RigidBodyHandle,
     movable: bool,
 }
 
-pub struct PhysicalBodyParams {
+pub struct RigidBodyParams {
     pub pos: Vec3,
     pub scale: Vec3,
     pub movable: bool,
 }
 
-impl PhysicalBody {
-    pub fn cuboid(params: PhysicalBodyParams, physics: &mut Physics) -> Self {
-        let PhysicalBodyParams {
+impl RigidBody {
+    pub fn cuboid(params: RigidBodyParams, physics: &mut Physics) -> Self {
+        let RigidBodyParams {
             pos,
             scale,
             movable,

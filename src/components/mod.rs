@@ -1,13 +1,13 @@
 pub use camera::Camera;
 pub use grab::Grab;
-pub use physical_body::{PhysicalBody, PhysicalBodyParams};
 pub use player::Player;
+pub use rigid_body::{RigidBody, RigidBodyParams};
 pub use transform::Transform;
 
 mod camera;
 mod grab;
-mod physical_body;
 mod player;
+mod rigid_body;
 mod transform;
 
 pub struct RenderTags(pub u32);
