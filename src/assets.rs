@@ -5,24 +5,24 @@ use crate::graphics::Graphics;
 use crate::mesh::Mesh;
 use crate::texture::Texture;
 
-pub type MeshId = DefaultKey;
-pub type ShaderId = DefaultKey;
-pub type TextureId = DefaultKey;
+pub type MeshHandle = DefaultKey;
+pub type ShaderHandle = DefaultKey;
+pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
-    pub stone_texture_id: TextureId,
-    pub skybox_texture_id: TextureId,
-    textures: SlotMap<TextureId, Texture>,
+    pub stone_texture_handle: TextureHandle,
+    pub skybox_texture_handle: TextureHandle,
+    textures: SlotMap<TextureHandle, Texture>,
 
-    pub color_shader_id: ShaderId,
-    pub textured_shader_id: ShaderId,
-    pub skybox_shader_id: ShaderId,
-    pub postprocess_shader_id: ShaderId,
-    shaders: SlotMap<ShaderId, wgpu::ShaderModule>,
+    pub color_shader_handle: ShaderHandle,
+    pub textured_shader_handle: ShaderHandle,
+    pub skybox_shader_handle: ShaderHandle,
+    pub postprocess_shader_handle: ShaderHandle,
+    shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
 
-    pub box_mesh_id: MeshId,
-    pub quad_mesh_id: MeshId,
-    meshes: SlotMap<MeshId, Mesh>,
+    pub box_mesh_handle: MeshHandle,
+    pub quad_mesh_handle: MeshHandle,
+    meshes: SlotMap<MeshHandle, Mesh>,
 }
 
 impl Assets {
@@ -52,44 +52,44 @@ impl Assets {
         });
 
         let mut meshes = SlotMap::new();
-        let box_mesh_id = meshes.insert(box_mesh);
-        let quad_mesh_id = meshes.insert(Mesh::quad(gfx));
+        let box_mesh_handle = meshes.insert(box_mesh);
+        let quad_mesh_handle = meshes.insert(Mesh::quad(gfx));
 
         let mut shaders = SlotMap::new();
-        let color_shader_id = shaders.insert(color_shader);
-        let textured_shader_id = shaders.insert(textured_shader);
-        let postprocess_shader_id = shaders.insert(postprocess_shader);
-        let skybox_shader_id = shaders.insert(skybox_shader);
+        let color_shader_handle = shaders.insert(color_shader);
+        let textured_shader_handle = shaders.insert(textured_shader);
+        let postprocess_shader_handle = shaders.insert(postprocess_shader);
+        let skybox_shader_handle = shaders.insert(skybox_shader);
 
         let mut textures = SlotMap::new();
-        let stone_texture_id = textures.insert(stone_tex);
-        let skybox_texture_id = textures.insert(skybox_tex);
+        let stone_texture_handle = textures.insert(stone_tex);
+        let skybox_texture_handle = textures.insert(skybox_tex);
 
         Self {
             textures,
-            stone_texture_id,
-            skybox_texture_id,
+            stone_texture_handle,
+            skybox_texture_handle,
             shaders,
-            color_shader_id,
-            textured_shader_id,
-            postprocess_shader_id,
-            skybox_shader_id,
+            color_shader_handle,
+            textured_shader_handle,
+            postprocess_shader_handle,
+            skybox_shader_handle,
             meshes,
-            box_mesh_id,
-            quad_mesh_id,
+            box_mesh_handle,
+            quad_mesh_handle,
         }
     }
 
-    pub fn texture(&self, id: TextureId) -> &Texture {
-        self.textures.get(id).unwrap()
+    pub fn texture(&self, handle: TextureHandle) -> &Texture {
+        self.textures.get(handle).unwrap()
     }
 
-    pub fn mesh(&self, id: MeshId) -> &Mesh {
-        self.meshes.get(id).unwrap()
+    pub fn mesh(&self, handle: MeshHandle) -> &Mesh {
+        self.meshes.get(handle).unwrap()
     }
 
-    pub fn shader(&self, id: ShaderId) -> &wgpu::ShaderModule {
-        self.shaders.get(id).unwrap()
+    pub fn shader(&self, handle: ShaderHandle) -> &wgpu::ShaderModule {
+        self.shaders.get(handle).unwrap()
     }
 }
 

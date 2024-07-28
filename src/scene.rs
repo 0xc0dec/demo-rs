@@ -2,7 +2,7 @@ use hecs::{Entity, World};
 use slotmap::{DefaultKey, SlotMap};
 use winit::window::Window;
 
-use crate::assets::{Assets, MeshId};
+use crate::assets::{Assets, MeshHandle};
 use crate::components::{
     Camera, Grab, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE, RenderOrder,
     RenderTags, RigidBody, RigidBodyParams, Transform,
@@ -16,15 +16,15 @@ use crate::math::Vec3;
 use crate::physics::Physics;
 
 // TODO Remove `Cmp` suffix?
-struct MeshCmp(MeshId);
-struct MaterialCmp(MaterialId);
+struct MeshCmp(MeshHandle);
+struct MaterialCmp(MaterialHandle);
 
-type MaterialId = DefaultKey;
+type MaterialHandle = DefaultKey;
 
 pub struct Scene {
     world: World,
     physics: Physics,
-    materials: SlotMap<MaterialId, Box<dyn Material>>,
+    materials: SlotMap<MaterialHandle, Box<dyn Material>>,
     postprocessor: Entity,
     player: Entity,
     // TODO Store in Player?
@@ -53,13 +53,13 @@ impl Scene {
         );
 
         // Player target
-        let mat_id = scene
+        let mat_handle = scene
             .materials
             .insert(Box::new(ColorMaterial::new(gfx, assets)));
         scene.player_target = scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.box_mesh_id),
-            MaterialCmp(mat_id),
+            MeshCmp(assets.box_mesh_handle),
+            MaterialCmp(mat_handle),
             RenderOrder(0),
             RenderTags(RENDER_TAG_HIDDEN),
         ));
@@ -70,15 +70,15 @@ impl Scene {
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
-        let mat_id = scene.materials.insert(Box::new(SkyboxMaterial::new(
+        let mat_handle = scene.materials.insert(Box::new(SkyboxMaterial::new(
             gfx,
             assets,
-            assets.texture(assets.skybox_texture_id),
+            assets.texture(assets.skybox_texture_handle),
         )));
         scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.quad_mesh_id),
-            MaterialCmp(mat_id),
+            MeshCmp(assets.quad_mesh_handle),
+            MaterialCmp(mat_handle),
             RenderOrder(-100),
             RenderTags(RENDER_TAG_SCENE),
         ));
@@ -92,14 +92,14 @@ impl Scene {
             .as_ref()
             .unwrap()
             .color_tex();
-        let mat_id = scene
+        let mat_handle = scene
             .materials
             .insert(Box::new(PostProcessMaterial::new(gfx, assets, pp_src_tex)));
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
-            MeshCmp(assets.quad_mesh_id),
-            MaterialCmp(mat_id),
+            MeshCmp(assets.quad_mesh_handle),
+            MaterialCmp(mat_handle),
             RenderOrder(100),
             RenderTags(RENDER_TAG_POST_PROCESS),
         ));
@@ -107,11 +107,11 @@ impl Scene {
         scene
     }
 
-    fn new_textured_mat(&mut self, gfx: &Graphics, assets: &Assets) -> MaterialId {
+    fn new_textured_mat(&mut self, gfx: &Graphics, assets: &Assets) -> MaterialHandle {
         self.materials.insert(Box::new(TexturedMaterial::new(
             gfx,
             assets,
-            assets.texture(assets.stone_texture_id),
+            assets.texture(assets.stone_texture_handle),
         )))
     }
 
@@ -163,12 +163,12 @@ impl Scene {
             .resize((new_size.width, new_size.height), gfx);
 
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
-        let mat_id = self
+        let mat_handle = self
             .world
             .get::<&MaterialCmp>(self.postprocessor)
             .unwrap()
             .0;
-        self.materials[mat_id] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
+        self.materials[mat_handle] = Box::new(PostProcessMaterial::new(gfx, assets, color_tex));
     }
 
     fn spawn_floor(&mut self, gfx: &Graphics, assets: &Assets) {
@@ -182,11 +182,11 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_id = self.new_textured_mat(gfx, assets);
+        let mat_handle = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_id),
-            MaterialCmp(mat_id),
+            MeshCmp(assets.box_mesh_handle),
+            MaterialCmp(mat_handle),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
@@ -202,11 +202,11 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_id = self.new_textured_mat(gfx, assets);
+        let mat_handle = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_id),
-            MaterialCmp(mat_id),
+            MeshCmp(assets.box_mesh_handle),
+            MaterialCmp(mat_handle),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
@@ -221,12 +221,12 @@ impl Scene {
         let new_tag = if let Some(look_at_pt) = player.look_at_point() {
             let dist_to_camera = (player_tr.position() - look_at_pt).magnitude();
             let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
-            let mut target_transform = self
+            let mut target_tr = self
                 .world
                 .get::<&mut Transform>(self.player_target)
                 .unwrap();
-            target_transform.set_position(look_at_pt);
-            target_transform.set_scale(Vec3::from_element(scale));
+            target_tr.set_position(look_at_pt);
+            target_tr.set_scale(Vec3::from_element(scale));
             RENDER_TAG_SCENE
         } else {
             RENDER_TAG_HIDDEN

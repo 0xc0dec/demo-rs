@@ -19,7 +19,7 @@ impl PostProcessMaterial {
             gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.postprocess_shader_id),
+            shader_module: assets.shader(assets.postprocess_shader_handle),
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[&texture_bind_group_layout],
