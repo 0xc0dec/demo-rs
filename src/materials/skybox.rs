@@ -1,9 +1,8 @@
 use crate::assets::Assets;
-use crate::camera::Camera;
+use crate::components::{Camera, Transform};
 use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::mesh::MeshVertex;
 use crate::texture::Texture;
-use crate::transform::Transform;
 
 use super::material::Material;
 use super::uniforms::ViewInvProjUniform;

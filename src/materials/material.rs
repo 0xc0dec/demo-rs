@@ -1,6 +1,5 @@
-use crate::camera::Camera;
+use crate::components::{Camera, Transform};
 use crate::graphics::Graphics;
-use crate::transform::Transform;
 
 pub trait Material {
     fn apply<'a>(

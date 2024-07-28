@@ -4,14 +4,15 @@ use hecs::{Entity, World};
 use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
-use crate::camera::Camera;
+use crate::components::RENDER_TAG_SCENE;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::Vec3;
 use crate::physics::Physics;
-use crate::render_tags::RENDER_TAG_SCENE;
 use crate::render_target::RenderTarget;
-use crate::transform::{Transform, TransformSpace};
+
+use super::camera::Camera;
+use super::transform::{Transform, TransformSpace};
 
 pub struct Player {
     // Point and physics body at which the player is currently looking at

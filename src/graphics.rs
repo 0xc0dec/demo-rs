@@ -3,12 +3,11 @@ use std::sync::Arc;
 
 use wgpu::util::DeviceExt;
 
-use crate::camera::Camera;
+use crate::components::{Camera, Transform};
 use crate::materials::Material;
 use crate::mesh::{DrawMesh, Mesh};
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
-use crate::transform::Transform;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 

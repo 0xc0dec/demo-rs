@@ -2,10 +2,11 @@ use hecs::World;
 
 use crate::input::{Input, InputAction};
 use crate::math::{to_point, Vec3};
-use crate::physical_body::PhysicalBody;
 use crate::physics::Physics;
-use crate::player::Player;
-use crate::transform::Transform;
+
+use super::PhysicalBody;
+use super::player::Player;
+use super::transform::Transform;
 
 pub struct Grab {
     pos_relative_to_player: Vec3,

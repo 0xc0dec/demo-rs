@@ -14,23 +14,18 @@ use crate::input::{Input, InputAction};
 use crate::scene::Scene;
 
 mod assets;
-mod camera;
+mod components;
 mod frame_time;
 mod fs;
-mod grab;
 mod graphics;
 mod input;
 mod materials;
 mod math;
 mod mesh;
-mod physical_body;
 mod physics;
-mod player;
-mod render_tags;
 mod render_target;
 mod scene;
 mod texture;
-mod transform;
 
 // TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
 // update of winit to versions 0.29 - 0.30

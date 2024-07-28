@@ -3,27 +3,21 @@ use slotmap::{DefaultKey, SlotMap};
 use winit::window::Window;
 
 use crate::assets::{Assets, MeshId};
-use crate::camera::Camera;
-use crate::grab::Grab;
+use crate::components::{
+    Camera, Grab, PhysicalBody, PhysicalBodyParams, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS,
+    RENDER_TAG_SCENE, RenderOrder, RenderTags, Transform,
+};
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
 use crate::math::Vec3;
-use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
-use crate::player::Player;
-use crate::render_tags::{
-    RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
-};
-use crate::transform::Transform;
 
 // TODO Remove `Cmp` suffix?
 struct MeshCmp(MeshId);
 struct MaterialCmp(MaterialId);
-struct RenderOrderCmp(i32);
-struct RenderTagCmp(u32);
 
 type MaterialId = DefaultKey;
 
@@ -66,8 +60,8 @@ impl Scene {
             Transform::default(),
             MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
-            RenderOrderCmp(0),
-            RenderTagCmp(RENDER_TAG_HIDDEN),
+            RenderOrder(0),
+            RenderTags(RENDER_TAG_HIDDEN),
         ));
 
         // Floor
@@ -85,8 +79,8 @@ impl Scene {
             Transform::default(),
             MeshCmp(assets.quad_mesh_id),
             MaterialCmp(mat_id),
-            RenderOrderCmp(-100),
-            RenderTagCmp(RENDER_TAG_SCENE),
+            RenderOrder(-100),
+            RenderTags(RENDER_TAG_SCENE),
         ));
 
         // Post-processor
@@ -106,8 +100,8 @@ impl Scene {
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
             MeshCmp(assets.quad_mesh_id),
             MaterialCmp(mat_id),
-            RenderOrderCmp(100),
-            RenderTagCmp(RENDER_TAG_POST_PROCESS),
+            RenderOrder(100),
+            RenderTags(RENDER_TAG_POST_PROCESS),
         ));
 
         scene
@@ -194,8 +188,8 @@ impl Scene {
             MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
             body,
-            RenderOrderCmp(0),
-            RenderTagCmp(RENDER_TAG_SCENE),
+            RenderOrder(0),
+            RenderTags(RENDER_TAG_SCENE),
         ));
     }
 
@@ -214,8 +208,8 @@ impl Scene {
             MeshCmp(assets.box_mesh_id),
             MaterialCmp(mat_id),
             body,
-            RenderOrderCmp(0),
-            RenderTagCmp(RENDER_TAG_SCENE),
+            RenderOrder(0),
+            RenderTags(RENDER_TAG_SCENE),
         ));
     }
 
@@ -239,7 +233,7 @@ impl Scene {
         };
 
         self.world
-            .insert_one(self.player_target, RenderTagCmp(new_tag))
+            .insert_one(self.player_target, RenderTags(new_tag))
             .unwrap();
     }
 
@@ -256,8 +250,8 @@ impl Scene {
                 &MeshCmp,
                 &MaterialCmp,
                 &Transform,
-                &RenderOrderCmp,
-                &RenderTagCmp,
+                &RenderOrder,
+                &RenderTags,
             )>();
             let mut renderables = renderables
                 .iter()
