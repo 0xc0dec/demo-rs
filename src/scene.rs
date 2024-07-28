@@ -5,8 +5,7 @@ use winit::window::Window;
 use crate::assets::{Assets, MaterialHandle};
 use crate::components::{
     Camera, Grab, Material, Mesh, Player, PlayerTarget, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
-    RenderOrder, RenderTags, RigidBody, RigidBodyParams,
-    Transform,
+    RenderOrder, RenderTags, RigidBody, RigidBodyParams, Transform,
 };
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
@@ -18,6 +17,7 @@ use crate::physics::Physics;
 pub struct Scene {
     world: World,
     physics: Physics,
+    // TODO Store in assets?
     materials: SlotMap<MaterialHandle, Box<dyn materials::Material>>,
     postprocessor: Entity,
     player: Entity,
@@ -135,8 +135,8 @@ impl Scene {
     }
 
     pub fn render(&mut self, gfx: &Graphics, assets: &Assets) {
-        self.render_camera(self.player, gfx, assets);
-        self.render_camera(self.postprocessor, gfx, assets);
+        self.render_with_camera(self.player, gfx, assets);
+        self.render_with_camera(self.postprocessor, gfx, assets);
     }
 
     fn handle_canvas_resize(&mut self, new_size: &SurfaceSize, gfx: &Graphics, assets: &Assets) {
@@ -194,7 +194,7 @@ impl Scene {
         ));
     }
 
-    fn render_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {
+    fn render_with_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {
         for (_, (camera, camera_transform)) in &mut self
             .world
             .query::<(&Camera, &Transform)>()

@@ -1,7 +1,7 @@
 use hecs::World;
 
 use crate::input::{Input, InputAction};
-use crate::math::{to_point, Vec3};
+use crate::math::{to_point3, Vec3};
 use crate::physics::Physics;
 
 use super::player::Player;
@@ -44,7 +44,7 @@ impl Grab {
                     let local_pos = player_tr_matrix
                         .try_inverse()
                         .unwrap()
-                        .transform_point(&to_point(*body.translation()))
+                        .transform_point(&to_point3(*body.translation()))
                         .coords;
                     world
                         .insert(
@@ -60,7 +60,7 @@ impl Grab {
                 if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next()
                 {
                     let new_pos =
-                        player_tr_matrix.transform_point(&to_point(grab.pos_relative_to_player));
+                        player_tr_matrix.transform_point(&to_point3(grab.pos_relative_to_player));
                     physics
                         .bodies
                         .get_mut(body.body_handle())

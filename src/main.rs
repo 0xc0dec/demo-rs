@@ -131,14 +131,29 @@ impl<'a> ApplicationHandler for State<'a> {
                 self.input
                     .as_mut()
                     .unwrap()
-                    .handle_keyboard_event(code, state == ElementState::Pressed);
+                    .consume_keyboard_event(code, state == ElementState::Pressed);
             }
 
             WindowEvent::MouseInput { button, state, .. } => {
                 self.input
                     .as_mut()
                     .unwrap()
-                    .handle_mouse_button_event(button, state == ElementState::Pressed);
+                    .consume_mouse_button_event(button, state == ElementState::Pressed);
+            }
+
+            WindowEvent::CursorEntered { .. } => {
+                self.input.as_mut().unwrap().consume_cursor_entrance(true);
+            }
+
+            WindowEvent::CursorLeft { .. } => {
+                self.input.as_mut().unwrap().consume_cursor_entrance(false);
+            }
+
+            WindowEvent::CursorMoved { position, .. } => {
+                self.input
+                    .as_mut()
+                    .unwrap()
+                    .consume_cursor_position(position.x as f32, position.y as f32);
             }
 
             WindowEvent::CloseRequested => event_loop.exit(),
@@ -160,7 +175,7 @@ impl<'a> ApplicationHandler for State<'a> {
                 .input
                 .as_mut()
                 .unwrap()
-                .handle_mouse_move_event(delta.0 as f32, delta.1 as f32),
+                .consume_mouse_delta(delta.0 as f32, delta.1 as f32),
 
             DeviceEvent::MouseWheel { .. } => (),
 

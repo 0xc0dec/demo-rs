@@ -7,7 +7,7 @@ use winit::window::{CursorGrabMode, Window};
 use crate::components::RENDER_TAG_SCENE;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
-use crate::math::Vec3;
+use crate::math::{to_point3, Vec2, Vec3};
 use crate::physics::Physics;
 use crate::render_target::RenderTarget;
 
@@ -79,8 +79,8 @@ impl Player {
         input: &Input,
         window: &Window,
     ) {
-        let (_, (tr, player)) = world
-            .query_mut::<(&mut Transform, &mut Player)>()
+        let (_, (tr, cam, player)) = world
+            .query_mut::<(&mut Transform, &mut Camera, &mut Player)>()
             .into_iter()
             .next()
             .unwrap();
@@ -98,7 +98,7 @@ impl Player {
             toggle_cursor(player.controlled, window);
         }
 
-        player.update_look_at(tr, physics);
+        player.update_look_at(tr, cam, input, window, physics);
     }
 
     fn translate(
@@ -178,25 +178,68 @@ impl Player {
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn update_look_at(&mut self, transform: &Transform, physics: &Physics) {
-        if let Some((hit_pt, _, hit_collider)) = physics.cast_ray(
-            transform.position(),
-            transform.forward(),
-            Some(self.collider),
-        ) {
-            self.look_at_pt = Some(hit_pt);
-            self.look_at_body = Some(
-                physics
-                    .colliders
-                    .get(hit_collider)
-                    .unwrap()
-                    .parent()
-                    .unwrap(),
+    // TODO Rename
+    fn update_look_at(
+        &mut self,
+        tr: &Transform,
+        cam: &Camera,
+        input: &Input,
+        window: &Window,
+        physics: &Physics,
+    ) {
+        // TODO Fix these conditions, they should rely on player being controlled
+        let ray = if self.controlled {
+            // From screen center
+            Some((tr.position(), tr.forward()))
+        } else if let Some(cursor_pos) = input.cursor_position() {
+            // From cursor position
+            let cursor_pos = Vec2::new(cursor_pos.0, cursor_pos.1);
+            let canvas_size = Vec2::new(
+                window.inner_size().width as f32,
+                window.inner_size().height as f32,
             );
+            // Normalized device coordinates (-1..1)
+            let mut cursor_ndc_pos =
+                (cursor_pos.component_div(&canvas_size)) * 2.0 - Vec2::from_element(1.0);
+            // Needed for some reason... Is there a bug somewhere that gets compensated by this, or is wgpu
+            // NDC origin in the lower left window corner?
+            cursor_ndc_pos.y *= -1.0;
+            let m = tr.matrix() * cam.proj_matrix().try_inverse().unwrap();
+            let cursor_world_pos = m.transform_point(&to_point3(Vec3::new(
+                cursor_ndc_pos.x,
+                cursor_ndc_pos.y,
+                -1.0,
+            )));
+            let cursor_world_pos =
+                Vec3::new(cursor_world_pos.x, cursor_world_pos.y, cursor_world_pos.z);
+
+            let orig = tr.position();
+            let dir = (cursor_world_pos - orig).normalize();
+
+            Some((tr.position(), dir))
         } else {
-            self.look_at_pt = None;
-            self.look_at_body = None;
+            None
+        };
+
+        if let Some((orig, dir)) = ray {
+            if let Some((hit_pt, _, hit_collider)) =
+                physics.cast_ray(orig, dir, Some(self.collider))
+            {
+                self.look_at_pt = Some(hit_pt);
+                self.look_at_body = Some(
+                    physics
+                        .colliders
+                        .get(hit_collider)
+                        .unwrap()
+                        .parent()
+                        .unwrap(),
+                );
+                return;
+            }
         }
+
+        self.look_at_pt = None;
+        self.look_at_body = None;
     }
 }
 
