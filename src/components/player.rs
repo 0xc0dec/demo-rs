@@ -8,7 +8,7 @@ use crate::components::RENDER_TAG_SCENE;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Vec2, Vec3};
-use crate::physics::Physics;
+use crate::physics::{Physics, RaycastResult};
 use crate::render_target::RenderTarget;
 
 use super::camera::Camera;
@@ -217,18 +217,13 @@ impl Player {
         };
 
         if let Some((orig, dir)) = ray {
-            if let Some((hit_pt, _, hit_collider)) =
-                physics.cast_ray(orig, dir, Some(self.collider))
+            if let Some(RaycastResult {
+                point, collider, ..
+            }) = physics.cast_ray(orig, dir, Some(self.collider))
             {
-                self.focus_at_pt = Some(hit_pt);
-                self.focus_at_body = Some(
-                    physics
-                        .colliders
-                        .get(hit_collider)
-                        .unwrap()
-                        .parent()
-                        .unwrap(),
-                );
+                self.focus_at_pt = Some(point);
+                self.focus_at_body =
+                    Some(physics.colliders.get(collider).unwrap().parent().unwrap());
                 return;
             }
         }
