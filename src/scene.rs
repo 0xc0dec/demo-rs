@@ -2,9 +2,9 @@ use hecs::{Entity, World};
 use slotmap::{DefaultKey, SlotMap};
 use winit::window::Window;
 
-use crate::assets::{Assets, MeshHandle};
+use crate::assets::Assets;
 use crate::components::{
-    Camera, Grab, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE, RenderOrder,
+    Camera, Grab, Mesh, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE, RenderOrder,
     RenderTags, RigidBody, RigidBodyParams, Transform,
 };
 use crate::graphics::{Graphics, SurfaceSize};
@@ -16,7 +16,6 @@ use crate::math::Vec3;
 use crate::physics::Physics;
 
 // TODO Remove `Cmp` suffix?
-struct MeshCmp(MeshHandle);
 struct MaterialCmp(MaterialHandle);
 
 type MaterialHandle = DefaultKey;
@@ -58,7 +57,7 @@ impl Scene {
             .insert(Box::new(ColorMaterial::new(gfx, assets)));
         scene.player_target = scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.box_mesh_handle),
+            Mesh(assets.box_mesh_handle),
             MaterialCmp(mat_handle),
             RenderOrder(0),
             RenderTags(RENDER_TAG_HIDDEN),
@@ -77,7 +76,7 @@ impl Scene {
         )));
         scene.world.spawn((
             Transform::default(),
-            MeshCmp(assets.quad_mesh_handle),
+            Mesh(assets.quad_mesh_handle),
             MaterialCmp(mat_handle),
             RenderOrder(-100),
             RenderTags(RENDER_TAG_SCENE),
@@ -98,7 +97,7 @@ impl Scene {
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
-            MeshCmp(assets.quad_mesh_handle),
+            Mesh(assets.quad_mesh_handle),
             MaterialCmp(mat_handle),
             RenderOrder(100),
             RenderTags(RENDER_TAG_POST_PROCESS),
@@ -185,7 +184,7 @@ impl Scene {
         let mat_handle = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_handle),
+            Mesh(assets.box_mesh_handle),
             MaterialCmp(mat_handle),
             body,
             RenderOrder(0),
@@ -205,7 +204,7 @@ impl Scene {
         let mat_handle = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
-            MeshCmp(assets.box_mesh_handle),
+            Mesh(assets.box_mesh_handle),
             MaterialCmp(mat_handle),
             body,
             RenderOrder(0),
@@ -246,13 +245,9 @@ impl Scene {
             // based on their render order or smth similar.
             .filter(|(cam_ent, _)| *cam_ent == camera)
         {
-            let mut renderables = self.world.query::<(
-                &MeshCmp,
-                &MaterialCmp,
-                &Transform,
-                &RenderOrder,
-                &RenderTags,
-            )>();
+            let mut renderables =
+                self.world
+                    .query::<(&Mesh, &MaterialCmp, &Transform, &RenderOrder, &RenderTags)>();
             let mut renderables = renderables
                 .iter()
                 .filter(|(_, (.., tag))| camera.should_render(tag.0))
