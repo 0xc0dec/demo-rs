@@ -6,7 +6,7 @@ use crate::components::{
 };
 use crate::math::Vec3;
 
-// A visual guide showing the current look-at point of the player
+// A visual guide showing the current focus point of the player
 pub struct PlayerTarget;
 
 impl PlayerTarget {
@@ -22,16 +22,16 @@ impl PlayerTarget {
     }
 
     pub fn update(world: &mut World) {
-        let (player_look_at_pt, player_pos) = {
+        let (player_focus_at_pt, player_pos) = {
             let (_, (player, player_tr)) = world
                 .query_mut::<(&Player, &Transform)>()
                 .into_iter()
                 .next()
                 .unwrap();
-            (player.look_at_point(), player_tr.position())
+            (player.focus_point(), player_tr.position())
         };
 
-        let (new_tag, new_pos, new_scale) = if let Some(pos) = player_look_at_pt {
+        let (new_tag, new_pos, new_scale) = if let Some(pos) = player_focus_at_pt {
             let dist_to_camera = (player_pos - pos).magnitude();
             let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
             (RENDER_TAG_SCENE, pos, scale)

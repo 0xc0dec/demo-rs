@@ -17,8 +17,8 @@ use super::transform::{Transform, TransformSpace};
 pub struct Player {
     // Point and physics body at which the player is currently looking at
     // (ray cast from the screen center).
-    look_at_pt: Option<Vec3>,
-    look_at_body: Option<RigidBodyHandle>,
+    focus_at_pt: Option<Vec3>,
+    focus_at_body: Option<RigidBodyHandle>,
     // TODO Extract into a component
     collider: ColliderHandle,
     h_rot_acc: f32,
@@ -48,8 +48,8 @@ impl Player {
         w.spawn((
             Self {
                 collider,
-                look_at_pt: None,
-                look_at_body: None,
+                focus_at_pt: None,
+                focus_at_body: None,
                 h_rot_acc: 0.0,
                 v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
@@ -60,16 +60,12 @@ impl Player {
         ))
     }
 
-    pub fn look_at_point(&self) -> Option<Vec3> {
-        self.look_at_pt
+    pub fn focus_point(&self) -> Option<Vec3> {
+        self.focus_at_pt
     }
 
-    pub fn look_at_body(&self) -> Option<RigidBodyHandle> {
-        self.look_at_body
-    }
-
-    pub fn controlled(&self) -> bool {
-        self.controlled
+    pub fn focus_body(&self) -> Option<RigidBodyHandle> {
+        self.focus_at_body
     }
 
     pub fn update(
@@ -98,7 +94,7 @@ impl Player {
             toggle_cursor(player.controlled, window);
         }
 
-        player.update_look_at(tr, cam, input, window, physics);
+        player.update_focus(tr, cam, input, window, physics);
     }
 
     fn translate(
@@ -178,8 +174,7 @@ impl Player {
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    // TODO Rename
-    fn update_look_at(
+    fn update_focus(
         &mut self,
         tr: &Transform,
         cam: &Camera,
@@ -225,8 +220,8 @@ impl Player {
             if let Some((hit_pt, _, hit_collider)) =
                 physics.cast_ray(orig, dir, Some(self.collider))
             {
-                self.look_at_pt = Some(hit_pt);
-                self.look_at_body = Some(
+                self.focus_at_pt = Some(hit_pt);
+                self.focus_at_body = Some(
                     physics
                         .colliders
                         .get(hit_collider)
@@ -238,8 +233,8 @@ impl Player {
             }
         }
 
-        self.look_at_pt = None;
-        self.look_at_body = None;
+        self.focus_at_pt = None;
+        self.focus_at_body = None;
     }
 }
 
