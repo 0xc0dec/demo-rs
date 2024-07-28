@@ -17,6 +17,7 @@ mod assets;
 mod camera;
 mod frame_time;
 mod fs;
+mod grab;
 mod graphics;
 mod input;
 mod materials;

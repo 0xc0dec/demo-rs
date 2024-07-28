@@ -4,12 +4,13 @@ use winit::window::Window;
 
 use crate::assets::{Assets, MeshId};
 use crate::camera::Camera;
+use crate::grab::Grab;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
-use crate::math::{to_point, Vec3};
+use crate::math::Vec3;
 use crate::physical_body::{PhysicalBody, PhysicalBodyParams};
 use crate::physics::Physics;
 use crate::player::Player;
@@ -34,8 +35,6 @@ pub struct Scene {
     player: Entity,
     // TODO Store in Player?
     player_target: Entity,
-    grabbed_body: Option<Entity>,
-    grabbed_body_player_local_pos: Option<Vec3>,
     spawned_box_at_startup: bool,
 }
 
@@ -48,8 +47,6 @@ impl Scene {
             player: Entity::DANGLING,
             player_target: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
-            grabbed_body: None,
-            grabbed_body_player_local_pos: None,
             spawned_box_at_startup: false,
         };
 
@@ -136,7 +133,8 @@ impl Scene {
         self.physics.update(dt);
 
         Player::update(dt, &mut self.world, &mut self.physics, input, window);
-        self.update_grabbed(input);
+        Grab::update(&mut self.world, input, &mut self.physics);
+        // self.update_grabbed(input);
         self.update_player_target();
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_box_at_startup {
@@ -190,7 +188,6 @@ impl Scene {
             },
             &mut self.physics,
         );
-
         let mat_id = self.new_textured_mat(gfx, assets);
         self.world.spawn((
             Transform::new(pos, scale),
@@ -220,68 +217,6 @@ impl Scene {
             RenderOrderCmp(0),
             RenderTagCmp(RENDER_TAG_SCENE),
         ));
-    }
-
-    // TODO Extract into a separate component
-    fn update_grabbed(&mut self, input: &Input) {
-        let mut q = self
-            .world
-            .query_one::<(&Player, &Transform)>(self.player)
-            .unwrap();
-        let (player, player_tr) = q.get().unwrap();
-        if input.action_active(InputAction::Grab) && player.controlled() {
-            if self.grabbed_body_player_local_pos.is_none() {
-                // Initiate grab
-                if let Some(look_at_body) = player.look_at_body() {
-                    let mut q = self.world.query::<&PhysicalBody>();
-                    let (body_entity, body) = q
-                        .into_iter()
-                        .find(|(_, body)| body.body_handle() == look_at_body)
-                        .unwrap();
-                    body.set_kinematic(&mut self.physics, true);
-                    let body = self.physics.bodies.get_mut(look_at_body).unwrap();
-                    let local_pos = player_tr
-                        .matrix()
-                        .try_inverse()
-                        .unwrap()
-                        .transform_point(&to_point(*body.translation()))
-                        .coords;
-                    self.grabbed_body = Some(body_entity);
-                    self.grabbed_body_player_local_pos = Some(local_pos);
-                }
-            } else {
-                // Update the grabbed object
-                if let Some(grabbed_body) = self.grabbed_body {
-                    let new_pos = player_tr
-                        .matrix()
-                        .transform_point(&to_point(self.grabbed_body_player_local_pos.unwrap()));
-                    let body = self
-                        .world
-                        .query_one::<&PhysicalBody>(grabbed_body)
-                        .unwrap()
-                        .get()
-                        .unwrap()
-                        .body_handle();
-                    self.physics
-                        .bodies
-                        .get_mut(body)
-                        .unwrap()
-                        .set_translation(new_pos.coords, true);
-                }
-            }
-        } else {
-            // Release grab
-            if let Some(grabbed_body) = self.grabbed_body.take() {
-                self.world
-                    .query_one::<&PhysicalBody>(grabbed_body)
-                    .unwrap()
-                    .get()
-                    .unwrap()
-                    .set_kinematic(&mut self.physics, false);
-                self.grabbed_body = None;
-                self.grabbed_body_player_local_pos = None;
-            }
-        }
     }
 
     fn update_player_target(&mut self) {
