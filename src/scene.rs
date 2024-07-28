@@ -4,8 +4,9 @@ use winit::window::Window;
 
 use crate::assets::{Assets, MaterialHandle};
 use crate::components::{
-    Camera, Grab, Material, Mesh, Player, RENDER_TAG_DEBUG_UI, RENDER_TAG_HIDDEN, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
-    RenderOrder, RenderTags, RigidBody, RigidBodyParams, Transform,
+    Camera, Grab, Material, Mesh, Player, PlayerTarget, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
+    RenderOrder, RenderTags, RigidBody, RigidBodyParams,
+    Transform,
 };
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
@@ -20,8 +21,6 @@ pub struct Scene {
     materials: SlotMap<MaterialHandle, Box<dyn materials::Material>>,
     postprocessor: Entity,
     player: Entity,
-    // TODO Store in Player?
-    player_target: Entity,
     spawned_box_at_startup: bool,
 }
 
@@ -32,7 +31,6 @@ impl Scene {
             materials: SlotMap::new(),
             physics: Physics::new(),
             player: Entity::DANGLING,
-            player_target: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
             spawned_box_at_startup: false,
         };
@@ -46,16 +44,11 @@ impl Scene {
         );
 
         // Player target
+        // TODO Move material creation into the component
         let mat_handle = scene
             .materials
             .insert(Box::new(ColorMaterial::new(gfx, assets)));
-        scene.player_target = scene.world.spawn((
-            Transform::default(),
-            Mesh(assets.box_mesh_handle),
-            Material(mat_handle),
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_HIDDEN),
-        ));
+        PlayerTarget::spawn(mat_handle, &mut scene.world, assets);
 
         // Floor
         scene.spawn_floor(gfx, assets);
@@ -121,8 +114,7 @@ impl Scene {
 
         Player::update(dt, &mut self.world, &mut self.physics, input, window);
         Grab::update(&mut self.world, input, &mut self.physics);
-        // self.update_grabbed(input);
-        self.update_player_target();
+        PlayerTarget::update(&mut self.world);
 
         if input.action_activated(InputAction::Spawn) || !self.spawned_box_at_startup {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
@@ -200,30 +192,6 @@ impl Scene {
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
         ));
-    }
-
-    fn update_player_target(&mut self) {
-        let (player, player_tr) = self
-            .world
-            .query_one_mut::<(&Player, &Transform)>(self.player)
-            .unwrap();
-        let new_tag = if let Some(look_at_pt) = player.look_at_point() {
-            let dist_to_camera = (player_tr.position() - look_at_pt).magnitude();
-            let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
-            let mut target_tr = self
-                .world
-                .get::<&mut Transform>(self.player_target)
-                .unwrap();
-            target_tr.set_position(look_at_pt);
-            target_tr.set_scale(Vec3::from_element(scale));
-            RENDER_TAG_SCENE
-        } else {
-            RENDER_TAG_HIDDEN
-        };
-
-        self.world
-            .insert_one(self.player_target, RenderTags(new_tag))
-            .unwrap();
     }
 
     fn render_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &Assets) {

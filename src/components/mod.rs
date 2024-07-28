@@ -1,6 +1,7 @@
 pub use camera::Camera;
 pub use grab::Grab;
 pub use player::Player;
+pub use player_target::PlayerTarget;
 pub use rigid_body::{RigidBody, RigidBodyParams};
 pub use transform::Transform;
 
@@ -9,6 +10,7 @@ use crate::assets::{MaterialHandle, MeshHandle};
 mod camera;
 mod grab;
 mod player;
+mod player_target;
 mod rigid_body;
 mod transform;
 
