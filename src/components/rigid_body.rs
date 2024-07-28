@@ -30,7 +30,7 @@ impl RigidBody {
             .friction(0.7)
             .build();
 
-        let (handle, _) = physics.add_body(body, collider);
+        let handle = physics.add_body(body, collider);
 
         Self { handle, movable }
     }
