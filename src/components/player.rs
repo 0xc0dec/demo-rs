@@ -14,6 +14,9 @@ use crate::render_target::RenderTarget;
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
 
+// TODO Return focus info in a struct
+// TODO Fix dragging via free mouse - doesn't work because the player does not move and the body is attached to it.
+
 pub struct Player {
     // Point and physics body at which the player is currently looking at
     // (ray cast from the screen center).
