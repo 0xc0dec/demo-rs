@@ -4,7 +4,7 @@ pub use player::Player;
 pub use rigid_body::{RigidBody, RigidBodyParams};
 pub use transform::Transform;
 
-use crate::assets::MeshHandle;
+use crate::assets::{MaterialHandle, MeshHandle};
 
 mod camera;
 mod grab;
@@ -15,6 +15,7 @@ mod transform;
 pub struct RenderTags(pub u32);
 pub struct RenderOrder(pub i32);
 pub struct Mesh(pub MeshHandle);
+pub struct Material(pub MaterialHandle);
 
 pub const RENDER_TAG_SCENE: u32 = 0b00000001;
 pub const RENDER_TAG_POST_PROCESS: u32 = 0b00000010;
