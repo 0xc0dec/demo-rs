@@ -35,7 +35,7 @@ impl RigidBody {
         Self { handle, movable }
     }
 
-    pub fn body_handle(&self) -> RigidBodyHandle {
+    pub fn handle(&self) -> RigidBodyHandle {
         self.handle
     }
 

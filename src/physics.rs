@@ -18,9 +18,7 @@ pub struct Physics {
     char_controller: KinematicCharacterController,
 }
 
-pub struct RaycastResult {
-    // Hit point in world coordinates
-    pub point: Vec3,
+pub struct RayCastResult {
     // Distance of the hit along the ray
     pub distance: f32,
     // Body that was hit
@@ -86,7 +84,7 @@ impl Physics {
         from: Vec3,
         dir: Vec3,
         exclude: Option<ColliderHandle>,
-    ) -> Option<RaycastResult> {
+    ) -> Option<RayCastResult> {
         let ray = Ray {
             origin: from.into(),
             dir,
@@ -105,9 +103,7 @@ impl Physics {
             true,
             filter,
         ) {
-            let hit_pt = ray.point_at(intersection.time_of_impact);
-            return Some(RaycastResult {
-                point: hit_pt.coords,
+            return Some(RayCastResult {
                 distance: intersection.time_of_impact,
                 collider: handle,
             });

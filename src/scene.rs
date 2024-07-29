@@ -228,7 +228,7 @@ impl Scene {
 
     fn sync_physics(&mut self) {
         for (_, (t, b)) in self.world.query_mut::<(&mut Transform, &RigidBody)>() {
-            let body = self.physics.bodies.get(b.body_handle()).unwrap();
+            let body = self.physics.bodies.get(b.handle()).unwrap();
             t.set(*body.translation(), *body.rotation().inverse().quaternion());
         }
     }

@@ -22,16 +22,16 @@ impl PlayerTarget {
     }
 
     pub fn update(world: &mut World) {
-        let (player_focus_at_pt, player_pos) = {
+        let (pos, player_pos) = {
             let (_, (player, player_tr)) = world
                 .query_mut::<(&Player, &Transform)>()
                 .into_iter()
                 .next()
                 .unwrap();
-            (player.focus_point(), player_tr.position())
+            (player.focus().map(|f| f.point), player_tr.position())
         };
 
-        let (new_tag, new_pos, new_scale) = if let Some(pos) = player_focus_at_pt {
+        let (new_tag, new_pos, new_scale) = if let Some(pos) = pos {
             let dist_to_camera = (player_pos - pos).magnitude();
             let scale = (dist_to_camera / 10.0).clamp(0.01, 0.1);
             (RENDER_TAG_SCENE, pos, scale)

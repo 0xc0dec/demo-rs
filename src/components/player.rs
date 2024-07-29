@@ -8,26 +8,32 @@ use crate::components::RENDER_TAG_SCENE;
 use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Vec2, Vec3};
-use crate::physics::{Physics, RaycastResult};
+use crate::physics::{Physics, RayCastResult};
 use crate::render_target::RenderTarget;
 
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
 
-// TODO Return focus info in a struct
 // TODO Fix dragging via free mouse - doesn't work because the player does not move and the body is attached to it.
 
+#[derive(Copy, Clone)]
+pub struct PlayerFocus {
+    // TODO Make all fields except `ray` optional?
+    // It's possible that the ray is cast but there's no hit - the ray on itself could still be useful.
+    pub ray: Ray,
+    pub point: Vec3,
+    pub distance: f32,
+    pub body: RigidBodyHandle,
+}
+
 pub struct Player {
-    // Point and physics body at which the player is currently looking at
-    // (ray cast from the screen center).
-    focus_at_pt: Option<Vec3>,
-    focus_at_body: Option<RigidBodyHandle>,
     // TODO Extract into a component
     collider: ColliderHandle,
     h_rot_acc: f32,
     v_rot_acc: f32,
     translation_acc: Vec3,
     controlled: bool,
+    focus: Option<PlayerFocus>,
 }
 
 impl Player {
@@ -51,24 +57,19 @@ impl Player {
         w.spawn((
             Self {
                 collider,
-                focus_at_pt: None,
-                focus_at_body: None,
                 h_rot_acc: 0.0,
                 v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
                 controlled: false,
+                focus: None,
             },
             camera,
             transform,
         ))
     }
 
-    pub fn focus_point(&self) -> Option<Vec3> {
-        self.focus_at_pt
-    }
-
-    pub fn focus_body(&self) -> Option<RigidBodyHandle> {
-        self.focus_at_body
+    pub fn focus(&self) -> Option<PlayerFocus> {
+        self.focus
     }
 
     pub fn update(
@@ -97,7 +98,7 @@ impl Player {
             toggle_cursor(player.controlled, window);
         }
 
-        player.update_focus(tr, cam, input, window, physics);
+        player.focus = player.new_focus(tr, cam, input, window, physics);
     }
 
     fn translate(
@@ -177,15 +178,14 @@ impl Player {
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn update_focus(
-        &mut self,
+    fn new_focus(
+        &self,
         tr: &Transform,
         cam: &Camera,
         input: &Input,
         window: &Window,
         physics: &Physics,
-    ) {
-        // TODO Fix these conditions, they should rely on player being controlled
+    ) -> Option<PlayerFocus> {
         let ray = if self.controlled {
             // From screen center
             Some((tr.position(), tr.forward()))
@@ -220,19 +220,21 @@ impl Player {
         };
 
         if let Some((orig, dir)) = ray {
-            if let Some(RaycastResult {
-                point, collider, ..
-            }) = physics.cast_ray(orig, dir, Some(self.collider))
+            if let Some(RayCastResult { distance, collider }) =
+                physics.cast_ray(orig, dir, Some(self.collider))
             {
-                self.focus_at_pt = Some(point);
-                self.focus_at_body =
-                    Some(physics.colliders.get(collider).unwrap().parent().unwrap());
-                return;
+                let body = physics.colliders.get(collider).unwrap().parent().unwrap();
+                let ray = Ray::new(to_point3(orig), dir);
+                return Some(PlayerFocus {
+                    point: ray.point_at(distance).coords,
+                    ray,
+                    distance,
+                    body,
+                });
             }
         }
 
-        self.focus_at_pt = None;
-        self.focus_at_body = None;
+        None
     }
 }
 
