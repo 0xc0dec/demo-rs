@@ -9,8 +9,6 @@ use crate::mesh::Mesh;
 use crate::texture::Texture;
 
 pub type MeshHandle = DefaultKey;
-// Materials are not stored in Assets because they're scene-specific, however I don't know a better place where
-// to put this type.
 pub type MaterialHandle = DefaultKey;
 pub type ShaderHandle = DefaultKey;
 pub type TextureHandle = DefaultKey;
@@ -87,10 +85,6 @@ impl Assets {
             quad_mesh_handle,
             materials: SlotMap::new(),
         }
-    }
-
-    pub fn texture(&self, handle: TextureHandle) -> &Texture {
-        self.textures.get(handle).unwrap()
     }
 
     pub fn mesh(&self, handle: MeshHandle) -> &Mesh {

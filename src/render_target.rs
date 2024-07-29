@@ -1,7 +1,6 @@
 use crate::graphics::Graphics;
 use crate::texture::{Texture, TextureSize};
 
-// Perhaps not the best module for it
 pub struct RenderTarget {
     color_tex: Texture,
     depth_tex: Texture,

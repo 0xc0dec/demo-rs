@@ -4,7 +4,7 @@ use crate::graphics::Graphics;
 pub trait Material {
     fn update(
         &mut self,
-        gfx: &Graphics,
+        _gfx: &Graphics,
         _camera: &Camera,
         _camera_transform: &Transform,
         _transform: &Transform,
