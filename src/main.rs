@@ -27,9 +27,10 @@ mod render_target;
 mod scene;
 mod texture;
 
-// TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI. Currently they all seem unusable after the recent
-// update of winit to versions 0.29 - 0.30
-// TODO Grabbing objects with a cursor (when camera is not controlled).
+// TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI.
+// Currently they all seem unusable after the recent update of winit to versions 0.29 - 0.30
+
+// TODO Better models and textures. E.g. boxes should be wooden ;)
 
 #[derive(Default)]
 struct State<'a> {
