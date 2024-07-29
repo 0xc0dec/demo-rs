@@ -18,9 +18,6 @@ use super::transform::{Transform, TransformSpace};
 
 #[derive(Copy, Clone)]
 pub struct PlayerFocus {
-    // TODO Make all fields except `ray` optional?
-    // It's possible that the ray is cast but there's no hit - the ray on itself could still be useful.
-    pub ray: Ray,
     pub point: Vec3,
     pub distance: f32,
     pub body: RigidBodyHandle,
@@ -33,6 +30,9 @@ pub struct Player {
     v_rot_acc: f32,
     translation_acc: Vec3,
     controlled: bool,
+    // Ray and focus are separate because it's possible to have the ray but no focus (nothing is hit).
+    // Ray is optional because the mouse cursor can go outside the window.
+    focus_ray: Option<Ray>,
     focus: Option<PlayerFocus>,
 }
 
@@ -61,11 +61,16 @@ impl Player {
                 v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
                 controlled: false,
+                focus_ray: None,
                 focus: None,
             },
             camera,
             transform,
         ))
+    }
+
+    pub fn focus_ray(&self) -> Option<Ray> {
+        self.focus_ray
     }
 
     pub fn focus(&self) -> Option<PlayerFocus> {
@@ -98,7 +103,7 @@ impl Player {
             toggle_cursor(player.controlled, window);
         }
 
-        player.focus = player.new_focus(tr, cam, input, window, physics);
+        player.update_focus(tr, cam, input, window, physics);
     }
 
     fn translate(
@@ -178,14 +183,14 @@ impl Player {
         transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
     }
 
-    fn new_focus(
-        &self,
+    fn update_focus(
+        &mut self,
         tr: &Transform,
         cam: &Camera,
         input: &Input,
         window: &Window,
         physics: &Physics,
-    ) -> Option<PlayerFocus> {
+    ) {
         let ray = if self.controlled {
             // From screen center
             Some((tr.position(), tr.forward()))
@@ -219,22 +224,24 @@ impl Player {
             None
         };
 
+        self.focus_ray = None;
+        self.focus = None;
+
         if let Some((orig, dir)) = ray {
+            let ray = Ray::new(to_point3(orig), dir);
+            self.focus_ray = Some(ray);
+
             if let Some(RayCastResult { distance, collider }) =
                 physics.cast_ray(orig, dir, Some(self.collider))
             {
                 let body = physics.colliders.get(collider).unwrap().parent().unwrap();
-                let ray = Ray::new(to_point3(orig), dir);
-                return Some(PlayerFocus {
+                self.focus = Some(PlayerFocus {
                     point: ray.point_at(distance).coords,
-                    ray,
                     distance,
                     body,
                 });
             }
         }
-
-        None
     }
 }
 

@@ -16,9 +16,9 @@ pub struct Grab {
 
 impl Grab {
     pub fn update(world: &mut World, input: &Input, physics: &mut Physics) {
-        let player_focus = {
+        let (player_focus, player_focus_ray) = {
             let (_, player) = world.query_mut::<&Player>().into_iter().next().unwrap();
-            player.focus()
+            (player.focus(), player.focus_ray())
         };
 
         if input.action_active(InputAction::Grab) {
@@ -51,8 +51,8 @@ impl Grab {
                 // Update the grabbed object
                 if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next()
                 {
-                    if let Some(player_focus) = player_focus {
-                        let new_pos = player_focus.ray.point_at(grab.distance) + grab.offset;
+                    if let Some(player_focus_ray) = player_focus_ray {
+                        let new_pos = player_focus_ray.point_at(grab.distance) + grab.offset;
                         physics
                             .bodies
                             .get_mut(body.handle())
