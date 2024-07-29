@@ -63,11 +63,11 @@ impl<'a> ApplicationHandler for State<'a> {
         );
 
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
-        let assets = Assets::load(&gfx);
+        let mut assets = Assets::load(&gfx);
 
         window.request_redraw();
 
-        self.scene = Some(Scene::new(&gfx, &assets));
+        self.scene = Some(Scene::new(&gfx, &mut assets));
         self.frame_time = Some(FrameTime::new());
         self.input = Some(Input::new());
         self.window = Some(window);
@@ -86,6 +86,7 @@ impl<'a> ApplicationHandler for State<'a> {
                 let mut scene = self.scene.take().unwrap();
                 let mut gfx = self.gfx.take().unwrap();
                 let mut input = self.input.take().unwrap();
+                let mut assets = self.assets.take().unwrap();
                 let window = self.window.take().unwrap();
 
                 if input.action_activated(InputAction::Escape) {
@@ -103,16 +104,17 @@ impl<'a> ApplicationHandler for State<'a> {
                     &gfx,
                     &input,
                     &window,
-                    self.assets.as_ref().unwrap(),
+                    &mut assets,
                     &self.new_canvas_size,
                 );
 
-                scene.render(&gfx, self.assets.as_ref().unwrap());
+                scene.render(&gfx, &mut assets);
 
                 input.clear();
                 // TODO Needed? Is there a better way?
                 window.request_redraw();
 
+                self.assets = Some(assets);
                 self.input = Some(input);
                 self.window = Some(window);
                 self.gfx = Some(gfx);

@@ -3,9 +3,8 @@ use std::sync::Arc;
 
 use wgpu::util::DeviceExt;
 
-use crate::components::{Camera, Transform};
-use crate::materials::Material;
-use crate::mesh::{DrawMesh, Mesh};
+use crate::assets::{Assets, MaterialHandle, MeshHandle};
+use crate::mesh::DrawMesh;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
 
@@ -127,14 +126,14 @@ impl<'a> Graphics<'a> {
 
     pub fn build_render_bundle(
         &self,
-        mesh: &Mesh,
-        material: &mut dyn Material,
-        transform: &Transform,
-        camera: (&Camera, &Transform),
+        mesh: MeshHandle,
+        material: MaterialHandle,
+        rt: Option<&RenderTarget>,
+        assets: &mut Assets,
     ) -> wgpu::RenderBundle {
-        let mut encoder = self.new_bundle_encoder(camera.0.target().as_ref());
-        material.apply(&mut encoder, self, camera, transform);
-        encoder.draw_mesh(mesh);
+        let mut encoder = self.new_bundle_encoder(rt);
+        assets.material(material).apply(&mut encoder);
+        encoder.draw_mesh(assets.mesh(mesh));
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 

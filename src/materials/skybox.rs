@@ -46,21 +46,23 @@ impl SkyboxMaterial {
 }
 
 impl Material for SkyboxMaterial {
-    fn apply<'a>(
-        &'a mut self,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
+    fn update(
+        &mut self,
         gfx: &Graphics,
-        camera: (&Camera, &Transform),
+        camera: &Camera,
+        camera_transform: &Transform,
         _transform: &Transform,
     ) {
         self.matrices_uniform
-            .update(&camera.1.view_matrix(), &camera.0.proj_matrix());
+            .update(&camera_transform.view_matrix(), &camera.proj_matrix());
         gfx.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
+    }
 
+    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.texture_bind_group, &[]);

@@ -1,7 +1,6 @@
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
-use crate::components::{Camera, Transform};
 use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::mesh::MeshVertex;
 use crate::texture::Texture;
@@ -34,13 +33,7 @@ impl PostProcessMaterial {
 }
 
 impl Material for PostProcessMaterial {
-    fn apply<'a>(
-        &'a mut self,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
-        _gfx: &Graphics,
-        _camera: (&Camera, &Transform),
-        _transform: &Transform,
-    ) {
+    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
     }

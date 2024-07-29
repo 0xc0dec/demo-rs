@@ -2,6 +2,9 @@ use slotmap::{DefaultKey, SlotMap};
 
 use crate::fs::load_string_asset;
 use crate::graphics::Graphics;
+use crate::materials::{
+    ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
+};
 use crate::mesh::Mesh;
 use crate::texture::Texture;
 
@@ -26,6 +29,8 @@ pub struct Assets {
     pub box_mesh_handle: MeshHandle,
     pub quad_mesh_handle: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
+
+    materials: SlotMap<MaterialHandle, Box<dyn Material>>,
 }
 
 impl Assets {
@@ -80,6 +85,7 @@ impl Assets {
             meshes,
             box_mesh_handle,
             quad_mesh_handle,
+            materials: SlotMap::new(),
         }
     }
 
@@ -93,6 +99,56 @@ impl Assets {
 
     pub fn shader(&self, handle: ShaderHandle) -> &wgpu::ShaderModule {
         self.shaders.get(handle).unwrap()
+    }
+
+    pub fn add_color_material(&mut self, gfx: &Graphics) -> MaterialHandle {
+        self.materials
+            .insert(Box::new(ColorMaterial::new(gfx, self)))
+    }
+
+    pub fn add_skybox_material(
+        &mut self,
+        gfx: &Graphics,
+        texture: TextureHandle,
+    ) -> MaterialHandle {
+        self.materials.insert(Box::new(SkyboxMaterial::new(
+            gfx,
+            self,
+            &self.textures[texture],
+        )))
+    }
+
+    pub fn add_textured_material(
+        &mut self,
+        gfx: &Graphics,
+        texture: TextureHandle,
+    ) -> MaterialHandle {
+        self.materials.insert(Box::new(TexturedMaterial::new(
+            gfx,
+            self,
+            &self.textures[texture],
+        )))
+    }
+
+    pub fn add_postprocess_material(
+        &mut self,
+        gfx: &Graphics,
+        src_texture: &Texture,
+    ) -> MaterialHandle {
+        self.materials
+            .insert(Box::new(PostProcessMaterial::new(gfx, self, src_texture)))
+    }
+
+    pub fn remove_material(&mut self, handle: MaterialHandle) {
+        self.materials.remove(handle);
+    }
+
+    pub fn material(&self, handle: MaterialHandle) -> &dyn Material {
+        self.materials[handle].as_ref()
+    }
+
+    pub fn material_mut(&mut self, handle: MaterialHandle) -> &mut dyn Material {
+        self.materials[handle].as_mut()
     }
 }
 

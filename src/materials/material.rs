@@ -2,11 +2,14 @@ use crate::components::{Camera, Transform};
 use crate::graphics::Graphics;
 
 pub trait Material {
-    fn apply<'a>(
-        &'a mut self,
-        encoder: &mut wgpu::RenderBundleEncoder<'a>,
+    fn update(
+        &mut self,
         gfx: &Graphics,
-        camera: (&Camera, &Transform),
-        transform: &Transform,
-    );
+        _camera: &Camera,
+        _camera_transform: &Transform,
+        _transform: &Transform,
+    ) {
+    }
+
+    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>);
 }
