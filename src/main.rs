@@ -89,7 +89,7 @@ impl<'a> ApplicationHandler for State<'a> {
                 let mut assets = self.assets.take().unwrap();
                 let window = self.window.take().unwrap();
 
-                if input.action_activated(InputAction::Escape) {
+                if input.action_activated(InputAction::Quit) {
                     event_loop.exit();
                 }
 
