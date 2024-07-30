@@ -2,7 +2,7 @@ use std::io::{BufReader, Cursor};
 
 use wgpu::util::DeviceExt;
 
-use crate::fs::load_string_asset;
+use crate::file;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -113,7 +113,7 @@ impl Mesh {
     }
 
     pub async fn from_file(file_name: &str, device: &wgpu::Device) -> Mesh {
-        let text = load_string_asset(file_name).await.unwrap();
+        let text = file::read_string_asset(file_name).await.unwrap();
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);
 
@@ -125,7 +125,7 @@ impl Mesh {
                 ..Default::default()
             },
             |p| async move {
-                let mat_text = load_string_asset(&p).await.unwrap();
+                let mat_text = file::read_string_asset(&p).await.unwrap();
                 tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
             },
         )

@@ -15,8 +15,8 @@ use crate::scene::Scene;
 
 mod assets;
 mod components;
+mod file;
 mod frame_time;
-mod fs;
 mod graphics;
 mod input;
 mod materials;

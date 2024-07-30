@@ -1,6 +1,6 @@
 use slotmap::{DefaultKey, SlotMap};
 
-use crate::fs::load_string_asset;
+use crate::file;
 use crate::graphics::Graphics;
 use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
@@ -147,7 +147,7 @@ impl Assets {
 }
 
 async fn new_shader_module(device: &wgpu::Device, src_file_path: &str) -> wgpu::ShaderModule {
-    let src = load_string_asset(src_file_path).await.unwrap();
+    let src = file::read_string_asset(src_file_path).await.unwrap();
     device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: None,
         source: wgpu::ShaderSource::Wgsl(src.into()),

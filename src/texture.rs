@@ -2,7 +2,7 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::{DeviceExt, TextureDataOrder};
 
-use crate::fs::load_binary_asset;
+use crate::file;
 use crate::graphics::Graphics;
 
 pub type TextureSize = (u32, u32);
@@ -114,12 +114,12 @@ impl Texture {
     }
 
     pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
-        let data = load_binary_asset(file_name).await?;
+        let data = file::read_binary_asset(file_name).await?;
         Self::new_2d_from_mem(gfx, &data)
     }
 
     pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
-        let data = load_binary_asset(file_name).await?;
+        let data = file::read_binary_asset(file_name).await?;
         Self::new_cube_from_mem(gfx, &data)
     }
 
