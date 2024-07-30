@@ -14,7 +14,8 @@ pub type ShaderHandle = DefaultKey;
 pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
-    pub stone_texture_handle: TextureHandle,
+    pub bricks_texture_handle: TextureHandle,
+    pub crate_texture_handle: TextureHandle,
     pub skybox_texture_handle: TextureHandle,
     textures: SlotMap<TextureHandle, Texture>,
 
@@ -36,7 +37,8 @@ impl Assets {
         let (
             box_mesh,
             skybox_tex,
-            stone_tex,
+            bricks_tex,
+            crate_tex,
             color_shader,
             textured_shader,
             postprocess_shader,
@@ -47,9 +49,8 @@ impl Assets {
                 Texture::new_cube_from_file("skybox_bgra.dds", gfx)
                     .await
                     .unwrap(),
-                Texture::new_2d_from_file("stonewall.jpg", gfx)
-                    .await
-                    .unwrap(),
+                Texture::new_2d_from_file("bricks.png", gfx).await.unwrap(),
+                Texture::new_2d_from_file("crate.png", gfx).await.unwrap(),
                 new_shader_module(gfx, "color.wgsl").await,
                 new_shader_module(gfx, "textured.wgsl").await,
                 new_shader_module(gfx, "post-process.wgsl").await,
@@ -68,12 +69,14 @@ impl Assets {
         let skybox_shader_handle = shaders.insert(skybox_shader);
 
         let mut textures = SlotMap::new();
-        let stone_texture_handle = textures.insert(stone_tex);
+        let bricks_texture_handle = textures.insert(bricks_tex);
         let skybox_texture_handle = textures.insert(skybox_tex);
+        let crate_texture_handle = textures.insert(crate_tex);
 
         Self {
             textures,
-            stone_texture_handle,
+            bricks_texture_handle,
+            crate_texture_handle,
             skybox_texture_handle,
             shaders,
             color_shader_handle,

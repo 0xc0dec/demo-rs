@@ -145,7 +145,7 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_handle = assets.add_textured_material(gfx, assets.stone_texture_handle);
+        let mat_handle = assets.add_textured_material(gfx, assets.bricks_texture_handle);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh_handle),
@@ -165,7 +165,7 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_handle = assets.add_textured_material(gfx, assets.stone_texture_handle);
+        let mat_handle = assets.add_textured_material(gfx, assets.crate_texture_handle);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh_handle),
