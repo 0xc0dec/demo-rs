@@ -16,13 +16,28 @@ pub struct Grab {
 
 impl Grab {
     pub fn update(world: &mut World, input: &Input, physics: &mut Physics) {
+        fn release_grab(world: &mut World, physics: &mut Physics) {
+            let entity = if let Some((entity, (_grab, body))) =
+                world.query::<(&Grab, &RigidBody)>().iter().next()
+            {
+                body.set_kinematic(physics, false);
+                Some(entity)
+            } else {
+                None
+            };
+
+            if let Some(entity) = entity {
+                world.remove_one::<Grab>(entity).unwrap();
+            }
+        }
+
         let (player_focus, player_focus_ray) = {
             let (_, player) = world.query_mut::<&Player>().into_iter().next().unwrap();
             (player.focus(), player.focus_ray())
         };
 
         if input.action_active(InputAction::Grab) {
-            // Nothing grabbed yet
+            // Nothing grabbed yet?
             if world.query::<&Grab>().iter().next().is_none() {
                 // Init a new grab if there's something in player's focus
                 if let Some(player_focus) = player_focus {
@@ -49,32 +64,29 @@ impl Grab {
                 }
             } else {
                 // Update the grabbed object
-                if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next()
+                let existing_grab = if let Some((_, (grab, body))) =
+                    world.query::<(&Grab, &RigidBody)>().iter().next()
                 {
-                    if let Some(player_focus_ray) = player_focus_ray {
-                        let new_pos = player_focus_ray.point_at(grab.distance) + grab.offset;
+                    Some((grab.distance, grab.offset, body.handle()))
+                } else {
+                    None
+                };
+
+                if let Some(player_focus_ray) = player_focus_ray {
+                    if let Some((grab_distance, grab_offset, body)) = existing_grab {
+                        let new_pos = player_focus_ray.point_at(grab_distance) + grab_offset;
                         physics
                             .bodies
-                            .get_mut(body.handle())
+                            .get_mut(body)
                             .unwrap()
                             .set_translation(new_pos.coords, true);
                     }
+                } else {
+                    release_grab(world, physics);
                 }
             }
         } else {
-            // Release grab
-            let entity = if let Some((entity, (_grab, body))) =
-                world.query::<(&Grab, &RigidBody)>().iter().next()
-            {
-                body.set_kinematic(physics, false);
-                Some(entity)
-            } else {
-                None
-            };
-
-            if let Some(entity) = entity {
-                world.remove_one::<Grab>(entity).unwrap();
-            }
+            release_grab(world, physics);
         }
     }
 }
