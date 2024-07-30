@@ -82,6 +82,15 @@ impl Input {
 
     pub fn consume_cursor_entrance(&mut self, entered: bool) {
         self.cursor_in_window = entered;
+        // Reset all pressed mouse buttons when the cursor leaves
+        if !entered {
+            let keys = self.key_pressed.keys().cloned().collect::<Vec<_>>();
+            for key in keys {
+                if let Key::MouseButton(_) = key {
+                    self.key_pressed.remove(&key);
+                }
+            }
+        }
     }
 
     pub fn clear(&mut self) {
