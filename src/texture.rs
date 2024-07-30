@@ -14,28 +14,6 @@ pub struct Texture {
     format: wgpu::TextureFormat,
 }
 
-fn new_sampler(
-    device: &wgpu::Device,
-    filter: wgpu::FilterMode,
-    mipmap_filter: wgpu::FilterMode,
-    compare: Option<wgpu::CompareFunction>,
-) -> wgpu::Sampler {
-    device.create_sampler(&wgpu::SamplerDescriptor {
-        label: None,
-        address_mode_u: wgpu::AddressMode::ClampToEdge,
-        address_mode_v: wgpu::AddressMode::ClampToEdge,
-        address_mode_w: wgpu::AddressMode::ClampToEdge,
-        mag_filter: filter,
-        min_filter: filter,
-        mipmap_filter,
-        lod_min_clamp: 0.0,
-        lod_max_clamp: 100.0,
-        compare,
-        ..Default::default()
-    })
-}
-
-// TODO Reduce copypasta
 impl Texture {
     pub fn new_depth(
         device: &wgpu::Device,
@@ -56,7 +34,7 @@ impl Texture {
             dimension: wgpu::TextureDimension::D2,
             format,
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-            view_formats: &[format],
+            view_formats: &[],
         });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
@@ -135,13 +113,8 @@ impl Texture {
         self.format
     }
 
-    #[allow(dead_code)]
-    pub fn size(&self) -> TextureSize {
-        (self.texture.size().width, self.texture.size().height)
-    }
-
-    fn new_2d_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
-        let img = image::load_from_memory(bytes)?;
+    fn new_2d_from_mem(gfx: &Graphics, data: &[u8]) -> Result<Self> {
+        let img = image::load_from_memory(data)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
         let size = wgpu::Extent3d {
@@ -183,8 +156,8 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(gfx: &Graphics, bytes: &[u8]) -> Result<Self> {
-        let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&bytes)).unwrap();
+    fn new_cube_from_mem(gfx: &Graphics, data: &[u8]) -> Result<Self> {
+        let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&data)).unwrap();
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb; // TODO Configurable
 
@@ -198,13 +171,12 @@ impl Texture {
             depth_or_array_layers: 1,
             ..size
         };
-        let max_mips = layer_size.max_mips(wgpu::TextureDimension::D2);
 
         let texture = gfx.create_texture_with_data(
             gfx.queue(),
             &wgpu::TextureDescriptor {
                 size,
-                mip_level_count: max_mips,
+                mip_level_count: layer_size.max_mips(wgpu::TextureDimension::D2),
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
                 format,
@@ -236,4 +208,25 @@ impl Texture {
             format,
         })
     }
+}
+
+fn new_sampler(
+    device: &wgpu::Device,
+    filter: wgpu::FilterMode,
+    mipmap_filter: wgpu::FilterMode,
+    compare: Option<wgpu::CompareFunction>,
+) -> wgpu::Sampler {
+    device.create_sampler(&wgpu::SamplerDescriptor {
+        label: None,
+        address_mode_u: wgpu::AddressMode::ClampToEdge,
+        address_mode_v: wgpu::AddressMode::ClampToEdge,
+        address_mode_w: wgpu::AddressMode::ClampToEdge,
+        mag_filter: filter,
+        min_filter: filter,
+        mipmap_filter,
+        lod_min_clamp: 0.0,
+        lod_max_clamp: 100.0,
+        compare,
+        ..Default::default()
+    })
 }
