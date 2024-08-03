@@ -3,6 +3,7 @@ use crate::components::{Camera, Transform};
 use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
+
 use super::material::Material;
 use super::uniforms::ViewInvProjUniform;
 
@@ -16,7 +17,7 @@ pub struct SkyboxMaterial {
 
 impl SkyboxMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
-        let matrices_uniform = ViewInvProjUniform::new();
+        let matrices_uniform = ViewInvProjUniform::default();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             gfx.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
 

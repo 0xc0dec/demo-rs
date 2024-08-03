@@ -14,7 +14,7 @@ pub struct ColorMaterial {
 
 impl ColorMaterial {
     pub fn new(gfx: &Graphics, assets: &Assets) -> Self {
-        let matrices_uniform = WorldViewProjUniform::new();
+        let matrices_uniform = WorldViewProjUniform::default();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             gfx.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
 

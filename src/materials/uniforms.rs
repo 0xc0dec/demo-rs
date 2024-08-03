@@ -8,16 +8,18 @@ pub struct WorldViewProjUniform {
 }
 
 impl WorldViewProjUniform {
-    pub fn new() -> Self {
+    pub fn update(&mut self, world: &Mat4, view: &Mat4, proj: &Mat4) {
+        self.world = (*world).into();
+        self.view_proj = (OPENGL_TO_WGPU_MATRIX * proj * view).into();
+    }
+}
+
+impl Default for WorldViewProjUniform {
+    fn default() -> Self {
         Self {
             world: Mat4::identity().into(),
             view_proj: Mat4::identity().into(),
         }
-    }
-
-    pub fn update(&mut self, world: &Mat4, view: &Mat4, proj: &Mat4) {
-        self.world = (*world).into();
-        self.view_proj = (OPENGL_TO_WGPU_MATRIX * proj * view).into();
     }
 }
 
@@ -30,15 +32,17 @@ pub struct ViewInvProjUniform {
 }
 
 impl ViewInvProjUniform {
-    pub fn new() -> Self {
+    pub fn update(&mut self, view: &Mat4, proj: &Mat4) {
+        self.view_mat = (*view).into();
+        self.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * proj).try_inverse().unwrap().into();
+    }
+}
+
+impl Default for ViewInvProjUniform {
+    fn default() -> Self {
         Self {
             view_mat: Mat4::identity().into(),
             proj_mat_inv: Mat4::identity().into(),
         }
-    }
-
-    pub fn update(&mut self, view: &Mat4, proj: &Mat4) {
-        self.view_mat = (*view).into();
-        self.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * proj).try_inverse().unwrap().into();
     }
 }
