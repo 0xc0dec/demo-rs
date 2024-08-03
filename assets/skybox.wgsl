@@ -1,12 +1,12 @@
 // Vertex shader
 
-struct MatricesUniform {
+struct Matrices {
     view_mat: mat4x4<f32>,
     proj_mat_inv: mat4x4<f32>,
 }
 
 @group(0) @binding(0)
-var<uniform> matrices: MatricesUniform;
+var<uniform> matrices: Matrices;
 
 struct VertexInput {
     @location(0)
