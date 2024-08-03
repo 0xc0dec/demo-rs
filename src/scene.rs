@@ -177,38 +177,39 @@ impl Scene {
     }
 
     fn render_with_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &mut Assets) {
-        for (_, (camera, camera_transform)) in &mut self
+        if let Some((cam, cam_tr)) = self
             .world
-            .query::<(&Camera, &Transform)>()
-            .iter()
-            // TODO This is a workaround to always render via a single camera. We should iterate over all cameras
-            // based on their render order or smth similar.
-            .filter(|(cam_ent, _)| *cam_ent == camera)
+            .query_one::<(&Camera, &Transform)>(camera)
+            .unwrap()
+            .get()
         {
             let mut renderables =
                 self.world
                     .query::<(&Mesh, &Material, &Transform, &RenderOrder, &RenderTags)>();
+
+            // Pick what should be rendered by the camera
             let mut renderables = renderables
                 .iter()
-                .filter(|(_, (.., tag))| camera.should_render(tag.0))
+                .filter(|(_, (.., tag))| cam.should_render(tag.0))
                 .map(|(_, (mesh, material, transform, order, _))| {
                     (mesh, material, transform, order)
                 })
                 .collect::<Vec<_>>();
+
+            // Sort by render order
             renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
+
             let bundles = renderables
                 .into_iter()
                 .map(|(mesh, material, transform, _)| {
-                    assets.material_mut(material.0).update_wvp(
-                        gfx,
-                        camera,
-                        camera_transform,
-                        transform,
-                    );
-                    gfx.build_render_bundle(mesh.0, material.0, camera.target().as_ref(), assets)
+                    assets
+                        .material_mut(material.0)
+                        .update_wvp(gfx, cam, cam_tr, transform);
+                    gfx.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)
                 })
                 .collect::<Vec<wgpu::RenderBundle>>();
-            gfx.render_pass(&bundles, camera.target().as_ref());
+            
+            gfx.render_pass(&bundles, cam.target().as_ref());
         }
     }
 
