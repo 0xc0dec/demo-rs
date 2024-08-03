@@ -36,10 +36,8 @@ impl Grab {
             (player.focus(), player.focus_ray())
         };
 
-        if input.action_active(InputAction::Grab) {
-            // Nothing grabbed yet?
+        if input.action_activated(InputAction::Grab) {
             if world.query::<&Grab>().iter().next().is_none() {
-                // Init a new grab if there's something in player's focus
                 if let Some(player_focus) = player_focus {
                     let body_entity = {
                         let mut q = world.query::<&RigidBody>();
@@ -63,29 +61,22 @@ impl Grab {
                         .unwrap();
                 }
             } else {
-                // Update the grabbed object
-                let existing_grab = if let Some((_, (grab, body))) =
-                    world.query::<(&Grab, &RigidBody)>().iter().next()
-                {
-                    Some((grab.distance, grab.offset, body.handle()))
-                } else {
-                    None
-                };
+                release_grab(world, physics);
+            }
+        }
 
-                if let Some(player_focus_ray) = player_focus_ray {
-                    if let Some((grab_distance, grab_offset, body)) = existing_grab {
-                        let new_pos = player_focus_ray.point_at(grab_distance) + grab_offset;
-                        physics
-                            .bodies
-                            .get_mut(body)
-                            .unwrap()
-                            .set_translation(new_pos.coords, true);
-                    }
-                } else {
-                    release_grab(world, physics);
-                }
+        // Update the grabbed object if any
+        if let Some(player_focus_ray) = player_focus_ray {
+            if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next() {
+                let new_pos = player_focus_ray.point_at(grab.distance) + grab.offset;
+                physics
+                    .bodies
+                    .get_mut(body.handle())
+                    .unwrap()
+                    .set_translation(new_pos.coords, true);
             }
         } else {
+            // Release grab if there's no player focus anymore
             release_grab(world, physics);
         }
     }

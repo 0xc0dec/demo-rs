@@ -20,7 +20,7 @@ Controls:
 
 - Toggle camera control: `Tab`
 - Move: `WASDQE`
-- Grab objects: focus on an object and hold `LMB`
+- Grab/drop boxes: left mouse click
 - Spawn new box: `F`
 - Quit: `Esc`
 
