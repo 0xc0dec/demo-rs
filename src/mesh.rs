@@ -37,7 +37,7 @@ impl MeshPart {
     }
 
     // TODO Use different vertex description and remove unused attributes
-    fn quad(device: &wgpu::Device) -> MeshPart {
+    fn new_quad(device: &wgpu::Device) -> MeshPart {
         let vertices = vec![
             // Bottom left
             PosTexCoordNormalVertex {
@@ -76,13 +76,13 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn quad(device: &wgpu::Device) -> Self {
+    pub fn new_quad(device: &wgpu::Device) -> Self {
         Self {
-            parts: vec![MeshPart::quad(device)],
+            parts: vec![MeshPart::new_quad(device)],
         }
     }
 
-    pub async fn from_file(file_name: &str, device: &wgpu::Device) -> Mesh {
+    pub async fn from_file(device: &wgpu::Device, file_name: &str) -> Mesh {
         let text = file::read_string_asset(file_name).await.unwrap();
         let cursor = Cursor::new(text);
         let mut reader = BufReader::new(cursor);

@@ -45,7 +45,7 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Mesh::from_file("cube.obj", gfx).await,
+                Mesh::from_file(gfx, "cube.obj").await,
                 Texture::new_cube_from_file("skybox_bgra.dds", gfx)
                     .await
                     .unwrap(),
@@ -60,7 +60,7 @@ impl Assets {
 
         let mut meshes = SlotMap::new();
         let box_mesh_handle = meshes.insert(box_mesh);
-        let quad_mesh_handle = meshes.insert(Mesh::quad(gfx));
+        let quad_mesh_handle = meshes.insert(Mesh::new_quad(gfx));
 
         let mut shaders = SlotMap::new();
         let color_shader_handle = shaders.insert(color_shader);
