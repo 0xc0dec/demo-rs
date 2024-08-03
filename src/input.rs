@@ -95,7 +95,7 @@ impl Input {
 
     pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
-        self.key_prev_pressed = self.key_pressed.clone();
+        self.key_prev_pressed.clone_from(&self.key_pressed);
     }
 
     fn key_pressed_first(&self, key: Key) -> bool {
