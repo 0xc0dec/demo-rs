@@ -8,7 +8,6 @@ use crate::graphics::Graphics;
 pub type TextureSize = (u32, u32);
 
 pub struct Texture {
-    texture: wgpu::Texture,
     view: wgpu::TextureView,
     sampler: wgpu::Sampler,
     format: wgpu::TextureFormat,
@@ -46,7 +45,6 @@ impl Texture {
         );
 
         Self {
-            texture,
             view,
             sampler,
             format,
@@ -84,7 +82,6 @@ impl Texture {
         );
 
         Self {
-            texture,
             view,
             sampler,
             format,
@@ -149,7 +146,6 @@ impl Texture {
         );
 
         Ok(Self {
-            texture,
             view,
             sampler,
             format,
@@ -202,7 +198,6 @@ impl Texture {
         );
 
         Ok(Self {
-            texture,
             view,
             sampler,
             format,
