@@ -119,7 +119,7 @@ fn action_key(action: InputAction) -> Key {
         InputAction::MoveDown => Key::Keyboard(KeyCode::KeyQ),
         InputAction::Quit => Key::Keyboard(KeyCode::Escape),
         InputAction::ControlPlayer => Key::Keyboard(KeyCode::Tab),
-        InputAction::Spawn => Key::Keyboard(KeyCode::Space),
+        InputAction::Spawn => Key::Keyboard(KeyCode::KeyF),
         InputAction::Grab => Key::MouseButton(MouseButton::Left),
     }
 }
