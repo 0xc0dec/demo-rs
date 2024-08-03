@@ -25,7 +25,7 @@ impl SkyboxMaterial {
             gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.skybox_shader_handle),
+            shader_module: assets.shader(assets.skybox_shader),
             depth_write: false,
             depth_enabled: true,
             bind_group_layouts: &[
@@ -46,7 +46,7 @@ impl SkyboxMaterial {
 }
 
 impl Material for SkyboxMaterial {
-    fn update(
+    fn update_wvp(
         &mut self,
         gfx: &Graphics,
         camera: &Camera,

@@ -15,7 +15,7 @@ impl PlayerTarget {
         world.spawn((
             PlayerTarget,
             Transform::default(),
-            Mesh(assets.box_mesh_handle),
+            Mesh(assets.box_mesh),
             Material(assets.add_color_material(gfx)),
             RenderOrder(0),
             RenderTags(RENDER_TAG_HIDDEN),

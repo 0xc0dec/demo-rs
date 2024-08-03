@@ -46,11 +46,11 @@ impl Scene {
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
-        let mat_handle = assets.add_skybox_material(gfx, assets.skybox_texture_handle);
+        let material = assets.add_skybox_material(gfx, assets.skybox_texture);
         scene.world.spawn((
             Transform::default(),
-            Mesh(assets.quad_mesh_handle),
-            Material(mat_handle),
+            Mesh(assets.quad_mesh),
+            Material(material),
             RenderOrder(-100),
             RenderTags(RENDER_TAG_SCENE),
         ));
@@ -64,12 +64,12 @@ impl Scene {
             .as_ref()
             .unwrap()
             .color_tex();
-        let mat_handle = assets.add_postprocess_material(gfx, pp_src_tex);
+        let material = assets.add_postprocess_material(gfx, pp_src_tex);
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
-            Mesh(assets.quad_mesh_handle),
-            Material(mat_handle),
+            Mesh(assets.quad_mesh),
+            Material(material),
             RenderOrder(100),
             RenderTags(RENDER_TAG_POST_PROCESS),
         ));
@@ -145,11 +145,11 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_handle = assets.add_textured_material(gfx, assets.bricks_texture_handle);
+        let material = assets.add_textured_material(gfx, assets.bricks_texture);
         self.world.spawn((
             Transform::new(pos, scale),
-            Mesh(assets.box_mesh_handle),
-            Material(mat_handle),
+            Mesh(assets.box_mesh),
+            Material(material),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
@@ -165,11 +165,11 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let mat_handle = assets.add_textured_material(gfx, assets.crate_texture_handle);
+        let material = assets.add_textured_material(gfx, assets.crate_texture);
         self.world.spawn((
             Transform::new(pos, scale),
-            Mesh(assets.box_mesh_handle),
-            Material(mat_handle),
+            Mesh(assets.box_mesh),
+            Material(material),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
@@ -199,7 +199,7 @@ impl Scene {
             let bundles = renderables
                 .into_iter()
                 .map(|(mesh, material, transform, _)| {
-                    assets.material_mut(material.0).update(
+                    assets.material_mut(material.0).update_wvp(
                         gfx,
                         camera,
                         camera_transform,

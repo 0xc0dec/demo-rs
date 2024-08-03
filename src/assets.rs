@@ -14,19 +14,19 @@ pub type ShaderHandle = DefaultKey;
 pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
-    pub bricks_texture_handle: TextureHandle,
-    pub crate_texture_handle: TextureHandle,
-    pub skybox_texture_handle: TextureHandle,
+    pub bricks_texture: TextureHandle,
+    pub crate_texture: TextureHandle,
+    pub skybox_texture: TextureHandle,
     textures: SlotMap<TextureHandle, Texture>,
 
-    pub color_shader_handle: ShaderHandle,
-    pub textured_shader_handle: ShaderHandle,
-    pub skybox_shader_handle: ShaderHandle,
-    pub postprocess_shader_handle: ShaderHandle,
+    pub color_shader: ShaderHandle,
+    pub textured_shader: ShaderHandle,
+    pub skybox_shader: ShaderHandle,
+    pub postprocess_shader: ShaderHandle,
     shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
 
-    pub box_mesh_handle: MeshHandle,
-    pub quad_mesh_handle: MeshHandle,
+    pub box_mesh: MeshHandle,
+    pub quad_mesh: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
 
     materials: SlotMap<MaterialHandle, Box<dyn Material>>,
@@ -59,33 +59,33 @@ impl Assets {
         });
 
         let mut meshes = SlotMap::new();
-        let box_mesh_handle = meshes.insert(box_mesh);
-        let quad_mesh_handle = meshes.insert(Mesh::new_quad(gfx));
+        let box_mesh = meshes.insert(box_mesh);
+        let quad_mesh = meshes.insert(Mesh::new_quad(gfx));
 
         let mut shaders = SlotMap::new();
-        let color_shader_handle = shaders.insert(color_shader);
-        let textured_shader_handle = shaders.insert(textured_shader);
-        let postprocess_shader_handle = shaders.insert(postprocess_shader);
-        let skybox_shader_handle = shaders.insert(skybox_shader);
+        let color_shader = shaders.insert(color_shader);
+        let textured_shader = shaders.insert(textured_shader);
+        let postprocess_shader = shaders.insert(postprocess_shader);
+        let skybox_shader = shaders.insert(skybox_shader);
 
         let mut textures = SlotMap::new();
-        let bricks_texture_handle = textures.insert(bricks_tex);
-        let skybox_texture_handle = textures.insert(skybox_tex);
-        let crate_texture_handle = textures.insert(crate_tex);
+        let bricks_texture = textures.insert(bricks_tex);
+        let skybox_texture = textures.insert(skybox_tex);
+        let crate_texture = textures.insert(crate_tex);
 
         Self {
             textures,
-            bricks_texture_handle,
-            crate_texture_handle,
-            skybox_texture_handle,
+            bricks_texture,
+            crate_texture,
+            skybox_texture,
             shaders,
-            color_shader_handle,
-            textured_shader_handle,
-            postprocess_shader_handle,
-            skybox_shader_handle,
+            color_shader,
+            textured_shader,
+            postprocess_shader,
+            skybox_shader,
             meshes,
-            box_mesh_handle,
-            quad_mesh_handle,
+            box_mesh,
+            quad_mesh,
             materials: SlotMap::new(),
         }
     }

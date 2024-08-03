@@ -43,21 +43,21 @@ impl Physics {
     }
 
     pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> RigidBodyHandle {
-        let body_handle = self.bodies.insert(body);
+        let body = self.bodies.insert(body);
         self.colliders
-            .insert_with_parent(collider, body_handle, &mut self.bodies);
-        body_handle
+            .insert_with_parent(collider, body, &mut self.bodies);
+        body
     }
 
     pub fn move_character(
         &self,
         dt: f32,
         desired_translation: Vec3,
-        collider_handle: ColliderHandle,
+        collider: ColliderHandle,
     ) -> (Vec3, Vec3) {
         let (EffectiveCharacterMovement { translation, .. }, collider_current_pos) = {
             let (collider_pos, collider_shape) = {
-                let collider = self.colliders.get(collider_handle).unwrap();
+                let collider = self.colliders.get(collider).unwrap();
                 (collider.position(), collider.shape())
             };
 
@@ -69,7 +69,7 @@ impl Physics {
                 collider_shape,
                 collider_pos,
                 desired_translation,
-                QueryFilter::default().exclude_collider(collider_handle),
+                QueryFilter::default().exclude_collider(collider),
                 |_| {},
             );
 
@@ -91,8 +91,8 @@ impl Physics {
         };
 
         let mut filter = QueryFilter::default();
-        if let Some(exclude_collider_handle) = exclude {
-            filter = filter.exclude_collider(exclude_collider_handle);
+        if let Some(exclude_collider) = exclude {
+            filter = filter.exclude_collider(exclude_collider);
         }
 
         if let Some((handle, intersection)) = self.query_pipeline.cast_ray_and_get_normal(

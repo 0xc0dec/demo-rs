@@ -4,6 +4,7 @@ use crate::assets::Assets;
 use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
+
 use super::material::Material;
 
 pub struct PostProcessMaterial {
@@ -17,7 +18,7 @@ impl PostProcessMaterial {
             gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.postprocess_shader_handle),
+            shader_module: assets.shader(assets.postprocess_shader),
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[&texture_bind_group_layout],

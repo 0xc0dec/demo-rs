@@ -25,7 +25,7 @@ impl TexturedMaterial {
             gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.textured_shader_handle),
+            shader_module: assets.shader(assets.textured_shader),
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[
@@ -46,7 +46,7 @@ impl TexturedMaterial {
 }
 
 impl Material for TexturedMaterial {
-    fn update(
+    fn update_wvp(
         &mut self,
         gfx: &Graphics,
         camera: &Camera,

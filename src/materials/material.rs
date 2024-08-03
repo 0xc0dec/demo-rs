@@ -2,7 +2,7 @@ use crate::components::{Camera, Transform};
 use crate::graphics::Graphics;
 
 pub trait Material {
-    fn update(
+    fn update_wvp(
         &mut self,
         _gfx: &Graphics,
         _camera: &Camera,
