@@ -1,9 +1,8 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::graphics::{Graphics, RenderPipelineParams};
-use crate::mesh::MeshVertex;
 use crate::texture::Texture;
-
+use crate::vertex::PosTexCoordNormalVertex;
 use super::material::Material;
 use super::uniforms::WorldViewProjUniform;
 
@@ -32,7 +31,7 @@ impl TexturedMaterial {
                 &texture_bind_group_layout,
                 &matrices_uniform_bind_group_layout,
             ],
-            vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
+            vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });
 
         Self {

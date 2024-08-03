@@ -3,41 +3,7 @@ use std::io::{BufReader, Cursor};
 use wgpu::util::DeviceExt;
 
 use crate::file;
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct MeshVertex {
-    position: [f32; 3],
-    tex_coords: [f32; 2],
-    normal: [f32; 3],
-}
-
-impl MeshVertex {
-    pub fn buffer_layout<'a>() -> wgpu::VertexBufferLayout<'a> {
-        use std::mem;
-        wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<MeshVertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
-                    shader_location: 1,
-                    format: wgpu::VertexFormat::Float32x2,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 5]>() as wgpu::BufferAddress,
-                    shader_location: 2,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-            ],
-        }
-    }
-}
+use crate::vertex::PosTexCoordNormalVertex;
 
 struct MeshPart {
     vertex_buffer: wgpu::Buffer,
@@ -46,7 +12,11 @@ struct MeshPart {
 }
 
 impl MeshPart {
-    fn from_buffers(device: &wgpu::Device, vertices: &[MeshVertex], indices: &[u32]) -> Self {
+    fn from_buffers(
+        device: &wgpu::Device,
+        vertices: &[PosTexCoordNormalVertex],
+        indices: &[u32],
+    ) -> Self {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(vertices),
@@ -70,25 +40,25 @@ impl MeshPart {
     fn quad(device: &wgpu::Device) -> MeshPart {
         let vertices = vec![
             // Bottom left
-            MeshVertex {
+            PosTexCoordNormalVertex {
                 position: [-1.0, -1.0, 0.0],
                 tex_coords: [0.0, 0.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Top left
-            MeshVertex {
+            PosTexCoordNormalVertex {
                 position: [-1.0, 1.0, 0.0],
                 tex_coords: [0.0, 1.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Top right
-            MeshVertex {
+            PosTexCoordNormalVertex {
                 position: [1.0, 1.0, 0.0],
                 tex_coords: [1.0, 1.0],
                 normal: [0.0, 0.0, 0.0], // unused
             },
             // Bottom right
-            MeshVertex {
+            PosTexCoordNormalVertex {
                 position: [1.0, -1.0, 0.0],
                 tex_coords: [1.0, 0.0],
                 normal: [0.0, 0.0, 0.0], // unused
@@ -136,7 +106,7 @@ impl Mesh {
             .into_iter()
             .map(|m| {
                 let vertices = (0..m.mesh.positions.len() / 3)
-                    .map(|i| MeshVertex {
+                    .map(|i| PosTexCoordNormalVertex {
                         position: [
                             m.mesh.positions[i * 3],
                             m.mesh.positions[i * 3 + 1],

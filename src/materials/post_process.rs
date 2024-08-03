@@ -2,9 +2,8 @@ use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
 use crate::graphics::{Graphics, RenderPipelineParams};
-use crate::mesh::MeshVertex;
 use crate::texture::Texture;
-
+use crate::vertex::PosTexCoordNormalVertex;
 use super::material::Material;
 
 pub struct PostProcessMaterial {
@@ -22,7 +21,7 @@ impl PostProcessMaterial {
             depth_write: true,
             depth_enabled: true,
             bind_group_layouts: &[&texture_bind_group_layout],
-            vertex_buffer_layouts: &[MeshVertex::buffer_layout()],
+            vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });
 
         Self {

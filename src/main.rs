@@ -26,9 +26,14 @@ mod physics;
 mod render_target;
 mod scene;
 mod texture;
+mod vertex;
 
 // TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI.
 // Currently they all seem unusable after the recent update of winit to versions 0.29 - 0.30
+
+// TODO Spawned boxes should be rotated based on the camera view.
+
+// TODO Dragging should keep box rotation relative to the camera.
 
 #[derive(Default)]
 struct State<'a> {
