@@ -15,7 +15,7 @@ pub struct Texture {
 
 impl Texture {
     pub fn new_depth(
-        device: &wgpu::Device,
+        gfx: &wgpu::Device,
         format: wgpu::TextureFormat,
         size: TextureSize,
     ) -> Self {
@@ -25,44 +25,7 @@ impl Texture {
             depth_or_array_layers: 1,
         };
 
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING,
-            view_formats: &[],
-        });
-
-        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = new_sampler(
-            device,
-            wgpu::FilterMode::Nearest,
-            wgpu::FilterMode::Nearest,
-            Some(wgpu::CompareFunction::LessEqual),
-        );
-
-        Self {
-            view,
-            sampler,
-            format,
-        }
-    }
-
-    pub fn new_render_attachment(
-        device: &wgpu::Device,
-        format: wgpu::TextureFormat,
-        size: TextureSize,
-    ) -> Self {
-        let size = wgpu::Extent3d {
-            width: size.0,
-            height: size.1,
-            depth_or_array_layers: 1,
-        };
-
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
+        let texture = gfx.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -74,12 +37,46 @@ impl Texture {
         });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = new_sampler(
-            device,
+        let sampler = gfx.create_sampler(&new_sampler_descriptor(wgpu::FilterMode::Nearest,
+            wgpu::FilterMode::Nearest,
+            Some(wgpu::CompareFunction::LessEqual),
+        ));
+
+        Self {
+            view,
+            sampler,
+            format,
+        }
+    }
+
+    pub fn new_render_attachment(
+        gfx: &wgpu::Device,
+        format: wgpu::TextureFormat,
+        size: TextureSize,
+    ) -> Self {
+        let size = wgpu::Extent3d {
+            width: size.0,
+            height: size.1,
+            depth_or_array_layers: 1,
+        };
+
+        let texture = gfx.create_texture(&wgpu::TextureDescriptor {
+            label: None,
+            size,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        });
+
+        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let sampler = gfx.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
             None,
-        );
+        ));
 
         Self {
             view,
@@ -138,12 +135,11 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = new_sampler(
-            gfx,
+        let sampler = gfx.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
             None,
-        );
+        ));
 
         Ok(Self {
             view,
@@ -190,12 +186,11 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = new_sampler(
-            gfx,
+        let sampler = gfx.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Linear,
             wgpu::FilterMode::Linear,
             None,
-        );
+        ));
 
         Ok(Self {
             view,
@@ -205,13 +200,12 @@ impl Texture {
     }
 }
 
-fn new_sampler(
-    device: &wgpu::Device,
+fn new_sampler_descriptor<'a>(
     filter: wgpu::FilterMode,
     mipmap_filter: wgpu::FilterMode,
     compare: Option<wgpu::CompareFunction>,
-) -> wgpu::Sampler {
-    device.create_sampler(&wgpu::SamplerDescriptor {
+) -> wgpu::SamplerDescriptor<'a> {
+    wgpu::SamplerDescriptor {
         label: None,
         address_mode_u: wgpu::AddressMode::ClampToEdge,
         address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -223,5 +217,5 @@ fn new_sampler(
         lod_max_clamp: 100.0,
         compare,
         ..Default::default()
-    })
+    }
 }
