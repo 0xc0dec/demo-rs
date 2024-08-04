@@ -1,15 +1,8 @@
-use crate::components::{Camera, Transform};
-use crate::graphics::Graphics;
+use super::{ColorMaterial, PostProcessMaterial, SkyboxMaterial, TexturedMaterial};
 
-pub trait Material {
-    fn update_wvp(
-        &mut self,
-        _gfx: &Graphics,
-        _camera: &Camera,
-        _camera_transform: &Transform,
-        _transform: &Transform,
-    ) {
-    }
-
-    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>);
+pub enum Material {
+    Color(ColorMaterial),
+    Skybox(SkyboxMaterial),
+    Textured(TexturedMaterial),
+    PostProcess(PostProcessMaterial),
 }

@@ -4,6 +4,7 @@ use std::sync::Arc;
 use wgpu::util::DeviceExt;
 
 use crate::assets::{Assets, MaterialHandle, MeshHandle};
+use crate::materials::{ApplyMaterial, Material};
 use crate::mesh::DrawMesh;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
@@ -132,7 +133,12 @@ impl<'a> Graphics<'a> {
         assets: &mut Assets,
     ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(rt);
-        assets.material(material).apply(&mut encoder);
+        match assets.material(material) {
+            Material::Color(m) => m.apply(&mut encoder),
+            Material::Skybox(m) => m.apply(&mut encoder),
+            Material::Textured(m) => m.apply(&mut encoder),
+            Material::PostProcess(m) => m.apply(&mut encoder),
+        }
         encoder.draw_mesh(assets.mesh(mesh));
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }

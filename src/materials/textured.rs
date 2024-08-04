@@ -4,7 +4,7 @@ use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 
-use super::material::Material;
+use super::apply_material::ApplyMaterial;
 use super::uniforms::WorldViewProjUniform;
 
 pub struct TexturedMaterial {
@@ -45,8 +45,8 @@ impl TexturedMaterial {
     }
 }
 
-impl Material for TexturedMaterial {
-    fn update_wvp(
+impl TexturedMaterial {
+    pub fn set_wvp(
         &mut self,
         gfx: &Graphics,
         camera: &Camera,
@@ -64,7 +64,9 @@ impl Material for TexturedMaterial {
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
+}
 
+impl ApplyMaterial for TexturedMaterial {
     fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);

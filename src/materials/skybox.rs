@@ -4,7 +4,7 @@ use crate::graphics::{Graphics, RenderPipelineParams};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 
-use super::material::Material;
+use super::apply_material::ApplyMaterial;
 use super::uniforms::ViewInvProjUniform;
 
 pub struct SkyboxMaterial {
@@ -45,14 +45,8 @@ impl SkyboxMaterial {
     }
 }
 
-impl Material for SkyboxMaterial {
-    fn update_wvp(
-        &mut self,
-        gfx: &Graphics,
-        camera: &Camera,
-        camera_transform: &Transform,
-        _transform: &Transform,
-    ) {
+impl SkyboxMaterial {
+    pub fn set_wvp(&mut self, gfx: &Graphics, camera: &Camera, camera_transform: &Transform) {
         self.matrices_uniform
             .update(&camera_transform.view_matrix(), &camera.proj_matrix());
         gfx.queue().write_buffer(
@@ -61,7 +55,9 @@ impl Material for SkyboxMaterial {
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
+}
 
+impl ApplyMaterial for SkyboxMaterial {
     fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);

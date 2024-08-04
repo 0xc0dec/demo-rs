@@ -29,7 +29,7 @@ pub struct Assets {
     pub quad_mesh: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
 
-    materials: SlotMap<MaterialHandle, Box<dyn Material>>,
+    materials: SlotMap<MaterialHandle, Material>,
 }
 
 impl Assets {
@@ -100,7 +100,7 @@ impl Assets {
 
     pub fn add_color_material(&mut self, gfx: &Graphics) -> MaterialHandle {
         self.materials
-            .insert(Box::new(ColorMaterial::new(gfx, self)))
+            .insert(Material::Color(ColorMaterial::new(gfx, self)))
     }
 
     pub fn add_skybox_material(
@@ -108,7 +108,7 @@ impl Assets {
         gfx: &Graphics,
         texture: TextureHandle,
     ) -> MaterialHandle {
-        self.materials.insert(Box::new(SkyboxMaterial::new(
+        self.materials.insert(Material::Skybox(SkyboxMaterial::new(
             gfx,
             self,
             &self.textures[texture],
@@ -120,11 +120,12 @@ impl Assets {
         gfx: &Graphics,
         texture: TextureHandle,
     ) -> MaterialHandle {
-        self.materials.insert(Box::new(TexturedMaterial::new(
-            gfx,
-            self,
-            &self.textures[texture],
-        )))
+        self.materials
+            .insert(Material::Textured(TexturedMaterial::new(
+                gfx,
+                self,
+                &self.textures[texture],
+            )))
     }
 
     pub fn add_postprocess_material(
@@ -133,19 +134,23 @@ impl Assets {
         src_texture: &Texture,
     ) -> MaterialHandle {
         self.materials
-            .insert(Box::new(PostProcessMaterial::new(gfx, self, src_texture)))
+            .insert(Material::PostProcess(PostProcessMaterial::new(
+                gfx,
+                self,
+                src_texture,
+            )))
     }
 
     pub fn remove_material(&mut self, handle: MaterialHandle) {
         self.materials.remove(handle);
     }
 
-    pub fn material(&self, handle: MaterialHandle) -> &dyn Material {
-        self.materials[handle].as_ref()
+    pub fn material(&self, handle: MaterialHandle) -> &Material {
+        &self.materials[handle]
     }
 
-    pub fn material_mut(&mut self, handle: MaterialHandle) -> &mut dyn Material {
-        self.materials[handle].as_mut()
+    pub fn material_mut(&mut self, handle: MaterialHandle) -> &mut Material {
+        &mut self.materials[handle]
     }
 }
 

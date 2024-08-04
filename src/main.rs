@@ -32,7 +32,7 @@ mod vertex;
 // Currently they all seem unusable after the recent update of winit to versions 0.29 - 0.30
 
 // TODO Spawned boxes should be rotated based on the camera view.
-// TODO Dragging should keep box rotation relative to the camera.
+// TODO Dragging should maintain box rotation relative to the camera.
 // TODO Customisable color shader color.
 
 #[derive(Default)]

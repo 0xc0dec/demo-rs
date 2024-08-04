@@ -8,6 +8,7 @@ use crate::components::{
 };
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
+use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
 
@@ -188,7 +189,7 @@ impl Scene {
                     .query::<(&Mesh, &Material, &Transform, &RenderOrder, &RenderTags)>();
 
             // Pick what should be rendered by the camera
-            let mut renderables = renderables
+            let mut meshes = renderables
                 .iter()
                 .filter(|(_, (.., tag))| cam.should_render(tag.0))
                 .map(|(_, (mesh, material, transform, order, _))| {
@@ -197,18 +198,22 @@ impl Scene {
                 .collect::<Vec<_>>();
 
             // Sort by render order
-            renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
+            meshes.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
 
-            let bundles = renderables
+            let bundles = meshes
                 .into_iter()
                 .map(|(mesh, material, transform, _)| {
-                    assets
-                        .material_mut(material.0)
-                        .update_wvp(gfx, cam, cam_tr, transform);
+                    match assets.material_mut(material.0) {
+                        materials::Material::Color(m) => m.set_wvp(gfx, cam, cam_tr, transform),
+                        materials::Material::Skybox(m) => m.set_wvp(gfx, cam, cam_tr),
+                        materials::Material::Textured(m) => m.set_wvp(gfx, cam, cam_tr, transform),
+                        materials::Material::PostProcess(_) => (),
+                    }
                     gfx.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)
                 })
+                // TODO Avoid vec allocation
                 .collect::<Vec<wgpu::RenderBundle>>();
-            
+
             gfx.render_pass(&bundles, cam.target().as_ref());
         }
     }

@@ -1,9 +1,10 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::graphics::{Graphics, RenderPipelineParams};
+use crate::math::Vec3;
 use crate::vertex::PosTexCoordNormalVertex;
 
-use super::material::Material;
+use super::apply_material::ApplyMaterial;
 use super::uniforms::WorldViewProjUniform;
 
 pub struct ColorMaterial {
@@ -36,8 +37,12 @@ impl ColorMaterial {
     }
 }
 
-impl Material for ColorMaterial {
-    fn update_wvp(
+impl ColorMaterial {
+    pub fn set_color(&self, _color: Vec3) {
+        todo!()
+    }
+
+    pub fn set_wvp(
         &mut self,
         gfx: &Graphics,
         camera: &Camera,
@@ -55,7 +60,9 @@ impl Material for ColorMaterial {
             bytemuck::cast_slice(&[self.matrices_uniform]),
         );
     }
+}
 
+impl ApplyMaterial for ColorMaterial {
     fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
