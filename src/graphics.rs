@@ -214,10 +214,10 @@ impl<'a> Graphics<'a> {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
-        let group_layout = self.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        let layout = self.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             entries: &[wgpu::BindGroupLayoutEntry {
                 binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Uniform,
                     has_dynamic_offset: false,
@@ -229,7 +229,7 @@ impl<'a> Graphics<'a> {
         });
 
         let group = self.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &group_layout,
+            layout: &layout,
             entries: &[wgpu::BindGroupEntry {
                 binding: 0,
                 resource: buffer.as_entire_binding(),
@@ -237,7 +237,7 @@ impl<'a> Graphics<'a> {
             label: None,
         });
 
-        (group_layout, group, buffer)
+        (layout, group, buffer)
     }
 
     pub fn new_texture_bind_group(

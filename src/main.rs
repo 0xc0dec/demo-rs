@@ -33,7 +33,7 @@ mod vertex;
 
 // TODO Spawned boxes should be rotated based on the camera view.
 // TODO Dragging should maintain box rotation relative to the camera.
-// TODO Customisable color shader color.
+// TODO Gizmos (e.g. axes instead of a box representing the player's target)
 
 #[derive(Default)]
 struct State<'a> {

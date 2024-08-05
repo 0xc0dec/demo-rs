@@ -1,4 +1,20 @@
-use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX};
+use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX, Vec3};
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct Vec3Uniform([f32; 3]);
+
+impl Vec3Uniform {
+    pub fn update(&mut self, value: Vec3) {
+        self.0 = [value.x, value.y, value.z];
+    }
+}
+
+impl Default for Vec3Uniform {
+    fn default() -> Self {
+        Self([0.0, 0.0, 1.0])
+    }
+}
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
