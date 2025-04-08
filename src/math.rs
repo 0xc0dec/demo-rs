@@ -2,7 +2,6 @@ use std::ops::Add;
 
 use rapier3d::na;
 use rapier3d::na::Point3;
-use rapier3d::prelude::Real;
 
 pub type Vec2 = na::Vector2<f32>;
 pub type Vec3 = na::Vector3<f32>;
@@ -19,6 +18,6 @@ pub const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::new(
 );
 
 // TODO Is there a better way to cast?
-pub fn to_point3(v: Vec3) -> Point3<Real> {
+pub fn to_point3(v: Vec3) -> Point3<f32> {
     Point3::origin().add(v)
 }
