@@ -47,7 +47,7 @@ struct State<'a> {
     new_canvas_size: Option<SurfaceSize>,
 }
 
-impl<'a> ApplicationHandler for State<'a> {
+impl ApplicationHandler for State<'_> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.window.is_some() {
             return;

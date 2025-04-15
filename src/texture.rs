@@ -15,7 +15,7 @@ pub struct Texture {
 
 impl Texture {
     pub fn new_depth(
-        gfx: &wgpu::Device,
+        device: &wgpu::Device,
         format: wgpu::TextureFormat,
         size: TextureSize,
     ) -> Self {
@@ -25,7 +25,7 @@ impl Texture {
             depth_or_array_layers: 1,
         };
 
-        let texture = gfx.create_texture(&wgpu::TextureDescriptor {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -37,7 +37,8 @@ impl Texture {
         });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.create_sampler(&new_sampler_descriptor(wgpu::FilterMode::Nearest,
+        let sampler = device.create_sampler(&new_sampler_descriptor(
+            wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
             Some(wgpu::CompareFunction::LessEqual),
         ));
@@ -50,7 +51,7 @@ impl Texture {
     }
 
     pub fn new_render_attachment(
-        gfx: &wgpu::Device,
+        device: &wgpu::Device,
         format: wgpu::TextureFormat,
         size: TextureSize,
     ) -> Self {
@@ -60,7 +61,7 @@ impl Texture {
             depth_or_array_layers: 1,
         };
 
-        let texture = gfx.create_texture(&wgpu::TextureDescriptor {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: None,
             size,
             mip_level_count: 1,
@@ -72,7 +73,7 @@ impl Texture {
         });
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.create_sampler(&new_sampler_descriptor(
+        let sampler = device.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
             None,
