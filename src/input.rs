@@ -30,7 +30,7 @@ pub struct Input {
     // TODO Use something stack-based instead of HashMap?
     key_pressed: HashMap<Key, bool>,
     // Key presses from the previous frame
-    key_prev_pressed: HashMap<Key, bool>,
+    key_pressed_prev: HashMap<Key, bool>,
 }
 
 impl Input {
@@ -40,7 +40,7 @@ impl Input {
             last_cursor_position: (0.0, 0.0),
             cursor_in_window: false,
             key_pressed: HashMap::new(),
-            key_prev_pressed: HashMap::new(),
+            key_pressed_prev: HashMap::new(),
         }
     }
 
@@ -95,12 +95,12 @@ impl Input {
 
     pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
-        self.key_prev_pressed.clone_from(&self.key_pressed);
+        self.key_pressed_prev.clone_from(&self.key_pressed);
     }
 
     fn key_pressed_first(&self, key: Key) -> bool {
         let pressed = *self.key_pressed.get(&key).unwrap_or(&false);
-        let last_pressed = *self.key_prev_pressed.get(&key).unwrap_or(&false);
+        let last_pressed = *self.key_pressed_prev.get(&key).unwrap_or(&false);
         pressed && !last_pressed
     }
 
