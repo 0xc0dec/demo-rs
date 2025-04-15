@@ -99,7 +99,7 @@ impl Physics {
             &self.bodies,
             &self.colliders,
             &ray,
-            Real::MAX,
+            f32::MAX,
             true,
             filter,
         ) {
