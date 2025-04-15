@@ -360,7 +360,7 @@ impl<'a> Graphics<'a> {
     }
 }
 
-impl<'a> Deref for Graphics<'a> {
+impl Deref for Graphics<'_> {
     type Target = wgpu::Device;
 
     fn deref(&self) -> &Self::Target {
