@@ -297,13 +297,13 @@ impl<'a> Graphics<'a> {
             layout: Some(&layout),
             vertex: wgpu::VertexState {
                 module: params.shader_module,
-                entry_point: "vs_main",
+                entry_point: Some("vs_main"),
                 buffers: params.vertex_buffer_layouts,
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 module: params.shader_module,
-                entry_point: "fs_main",
+                entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
                 targets: &[Some(wgpu::ColorTargetState {
                     format: self.surface_config.format,
