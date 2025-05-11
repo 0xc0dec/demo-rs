@@ -2,7 +2,7 @@ use imgui::Condition;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
-use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, ElementState, Event, KeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::PhysicalKey::Code;
 use winit::window::{Window, WindowId};
@@ -107,7 +107,6 @@ impl State<'_> {
         scene.render(&gfx, &mut assets, &mut ui);
 
         input.clear();
-        // TODO Needed? Is there a better way?
         window.request_redraw();
 
         self.assets = Some(assets);
@@ -160,7 +159,7 @@ impl ApplicationHandler for State<'_> {
             return;
         }
 
-        match event {
+        match &event {
             WindowEvent::RedrawRequested => self.render(event_loop),
 
             WindowEvent::KeyboardInput {
@@ -175,14 +174,14 @@ impl ApplicationHandler for State<'_> {
                 self.input
                     .as_mut()
                     .unwrap()
-                    .consume_keyboard_event(code, state == ElementState::Pressed);
+                    .consume_keyboard_event(*code, *state == ElementState::Pressed);
             }
 
             WindowEvent::MouseInput { button, state, .. } => {
                 self.input
                     .as_mut()
                     .unwrap()
-                    .consume_mouse_button_event(button, state == ElementState::Pressed);
+                    .consume_mouse_button_event(*button, *state == ElementState::Pressed);
             }
 
             WindowEvent::CursorEntered { .. } => {
@@ -202,9 +201,19 @@ impl ApplicationHandler for State<'_> {
 
             WindowEvent::CloseRequested => event_loop.exit(),
 
-            WindowEvent::Resized(size) => self.new_canvas_size = Some(size),
+            WindowEvent::Resized(size) => self.new_canvas_size = Some(*size),
 
             _ => {}
+        }
+
+        if self.ui.is_some() {
+            self.ui.as_mut().unwrap().handle_event::<()>(
+                &Event::WindowEvent {
+                    window_id: id,
+                    event,
+                },
+                self.window.as_ref().unwrap(),
+            );
         }
     }
 

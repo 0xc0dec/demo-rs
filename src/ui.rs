@@ -4,6 +4,7 @@ use imgui_wgpu::{Renderer, RendererConfig};
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
 use wgpu::{Device, Queue, RenderPass};
+use winit::event::Event;
 use winit::window::Window;
 
 pub struct Ui {
@@ -72,6 +73,11 @@ impl Ui {
             self.last_cursor = frame.mouse_cursor();
             self.platform.prepare_render(frame, window);
         }
+    }
+
+    pub fn handle_event<T>(&mut self, event: &Event<T>, window: &Window) {
+        self.platform
+            .handle_event(self.context.io_mut(), window, event)
     }
 
     pub fn render<'a>(&'a mut self, device: &Device, queue: &Queue, pass: &mut RenderPass<'a>) {
