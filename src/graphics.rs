@@ -1,6 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
-use wgpu::BackendOptions;
+use wgpu::{BackendOptions, Trace};
 use wgpu::util::DeviceExt;
 
 use crate::assets::{Assets, MaterialHandle, MeshHandle};
@@ -72,8 +72,8 @@ impl<'a> Graphics<'a> {
                     required_features: wgpu::Features::empty(),
                     required_limits: wgpu::Limits::default(),
                     memory_hints: wgpu::MemoryHints::default(),
+                    trace: Trace::Off,
                 },
-                None,
             )
             .await
             .unwrap();
