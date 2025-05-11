@@ -50,6 +50,49 @@ struct State<'a> {
     ui: Option<Ui>,
 }
 
+impl State<'_> {
+    fn render(&mut self, event_loop: &ActiveEventLoop) {
+        // TODO Avoid this moving-out-and-moving-back-in
+        let mut scene = self.scene.take().unwrap();
+        let mut gfx = self.gfx.take().unwrap();
+        let mut input = self.input.take().unwrap();
+        let mut assets = self.assets.take().unwrap();
+        let window = self.window.take().unwrap();
+
+        if input.action_activated(InputAction::Quit) {
+            event_loop.exit();
+        }
+
+        if let Some(&size) = self.new_canvas_size.as_ref() {
+            gfx.resize(size);
+        }
+
+        let dt = self.frame_time.as_mut().unwrap().advance();
+
+        scene.update(
+            dt,
+            &gfx,
+            &input,
+            &window,
+            &mut assets,
+            &self.new_canvas_size,
+        );
+
+        scene.render(&gfx, &mut assets);
+
+        input.clear();
+        // TODO Needed? Is there a better way?
+        window.request_redraw();
+
+        self.assets = Some(assets);
+        self.input = Some(input);
+        self.window = Some(window);
+        self.gfx = Some(gfx);
+        self.scene = Some(scene);
+        self.new_canvas_size = None;
+    }
+}
+
 impl ApplicationHandler for State<'_> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.window.is_some() {
@@ -97,46 +140,7 @@ impl ApplicationHandler for State<'_> {
         }
 
         match event {
-            WindowEvent::RedrawRequested => {
-                // TODO Avoid this moving-out-and-moving-back-in
-                let mut scene = self.scene.take().unwrap();
-                let mut gfx = self.gfx.take().unwrap();
-                let mut input = self.input.take().unwrap();
-                let mut assets = self.assets.take().unwrap();
-                let window = self.window.take().unwrap();
-
-                if input.action_activated(InputAction::Quit) {
-                    event_loop.exit();
-                }
-
-                if let Some(&size) = self.new_canvas_size.as_ref() {
-                    gfx.resize(size);
-                }
-
-                let dt = self.frame_time.as_mut().unwrap().advance();
-
-                scene.update(
-                    dt,
-                    &gfx,
-                    &input,
-                    &window,
-                    &mut assets,
-                    &self.new_canvas_size,
-                );
-
-                scene.render(&gfx, &mut assets);
-
-                input.clear();
-                // TODO Needed? Is there a better way?
-                window.request_redraw();
-
-                self.assets = Some(assets);
-                self.input = Some(input);
-                self.window = Some(window);
-                self.gfx = Some(gfx);
-                self.scene = Some(scene);
-                self.new_canvas_size = None;
-            }
+            WindowEvent::RedrawRequested => self.render(event_loop),
 
             WindowEvent::KeyboardInput {
                 event:
