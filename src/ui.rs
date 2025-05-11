@@ -14,6 +14,8 @@ pub struct Ui {
 }
 
 impl Ui {
+    const FONT_SIZE: f64 = 13.0;
+
     pub fn new(
         device: &Device,
         queue: &Queue,
@@ -31,7 +33,7 @@ impl Ui {
         );
         context.set_ini_filename(None);
 
-        let font_size = (13.0 * hidpi_factor) as f32;
+        let font_size = (Self::FONT_SIZE * hidpi_factor) as f32;
         context.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
 
         context.fonts().add_font(&[FontSource::DefaultFontData {
