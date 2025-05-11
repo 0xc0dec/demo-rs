@@ -104,8 +104,8 @@ impl State<'_> {
                 });
         });
 
-        scene.render(&gfx, &mut assets);
-        gfx.render_ui(&mut ui);
+        scene.render(&gfx, &mut assets, &mut ui);
+        // gfx.render_ui(&mut ui);
 
         input.clear();
         // TODO Needed? Is there a better way?

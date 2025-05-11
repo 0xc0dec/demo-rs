@@ -142,7 +142,12 @@ impl<'a> Graphics<'a> {
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 
-    pub fn render_pass(&self, bundles: &[wgpu::RenderBundle], target: Option<&RenderTarget>) {
+    pub fn render_pass(
+        &self,
+        bundles: &[wgpu::RenderBundle],
+        target: Option<&RenderTarget>,
+        ui: Option<&mut Ui>,
+    ) {
         let surface_tex = target.is_none().then(|| {
             self.surface
                 .get_current_texture()
@@ -192,6 +197,9 @@ impl<'a> Graphics<'a> {
                 });
 
                 pass.execute_bundles(bundles.iter());
+                if let Some(ui) = ui {
+                    ui.render(&self, self.queue(), &mut pass);
+                }
             }
 
             encoder.finish()

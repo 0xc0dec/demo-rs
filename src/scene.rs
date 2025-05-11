@@ -3,14 +3,16 @@ use winit::window::Window;
 
 use crate::assets::Assets;
 use crate::components::{
-    Camera, Grab, Material, Mesh, Player, PlayerTarget, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS, RENDER_TAG_SCENE,
-    RenderOrder, RenderTags, RigidBody, RigidBodyParams, Transform,
+    Camera, Grab, Material, Mesh, Player, PlayerTarget, RenderOrder,
+    RenderTags, RigidBody, RigidBodyParams, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS,
+    RENDER_TAG_SCENE,
 };
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
+use crate::ui::Ui;
 
 pub struct Scene {
     world: World,
@@ -111,9 +113,9 @@ impl Scene {
         }
     }
 
-    pub fn render(&mut self, gfx: &Graphics, assets: &mut Assets) {
-        self.render_with_camera(self.player, gfx, assets);
-        self.render_with_camera(self.postprocessor, gfx, assets);
+    pub fn render(&mut self, gfx: &Graphics, assets: &mut Assets, ui: &mut Ui) {
+        self.render_with_camera(self.player, gfx, assets, None);
+        self.render_with_camera(self.postprocessor, gfx, assets, Some(ui));
     }
 
     fn handle_canvas_resize(
@@ -177,7 +179,13 @@ impl Scene {
         ));
     }
 
-    fn render_with_camera(&mut self, camera: Entity, gfx: &Graphics, assets: &mut Assets) {
+    fn render_with_camera(
+        &mut self,
+        camera: Entity,
+        gfx: &Graphics,
+        assets: &mut Assets,
+        ui: Option<&mut Ui>,
+    ) {
         if let Some((cam, cam_tr)) = self
             .world
             .query_one::<(&Camera, &Transform)>(camera)
@@ -214,7 +222,7 @@ impl Scene {
                 // TODO Avoid vec allocation
                 .collect::<Vec<wgpu::RenderBundle>>();
 
-            gfx.render_pass(&bundles, cam.target().as_ref());
+            gfx.render_pass(&bundles, cam.target().as_ref(), ui);
         }
     }
 
