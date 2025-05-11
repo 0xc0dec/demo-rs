@@ -1,7 +1,7 @@
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::{Renderer, RendererConfig};
 use imgui_winit_support::WinitPlatform;
-use std::time::Instant;
+use std::time::Duration;
 use wgpu::{Device, Queue, TextureFormat};
 use winit::window::Window;
 
@@ -9,9 +9,7 @@ pub struct Ui {
     context: Context,
     platform: WinitPlatform,
     renderer: Renderer,
-    clear_color: wgpu::Color,
     demo_open: bool,
-    last_frame: Instant,
     last_cursor: Option<MouseCursor>,
 }
 
@@ -45,20 +43,12 @@ impl Ui {
             }),
         }]);
 
-        let clear_color = wgpu::Color {
-            r: 0.1,
-            g: 0.2,
-            b: 0.3,
-            a: 1.0,
-        };
-
         let renderer_config = RendererConfig {
             texture_format,
             ..Default::default()
         };
 
         let renderer = Renderer::new(&mut context, device, &queue, renderer_config);
-        let last_frame = Instant::now();
         let last_cursor = None;
         let demo_open = true;
 
@@ -66,10 +56,23 @@ impl Ui {
             context,
             platform,
             renderer,
-            clear_color,
             demo_open,
-            last_frame,
             last_cursor,
+        }
+    }
+
+    pub fn new_frame(&mut self, dt: f32, window: &Window) {
+        self.context
+            .io_mut()
+            .update_delta_time(Duration::from_secs_f32(dt)); // TODO Avoid the conversion.
+        self.platform
+            .prepare_frame(self.context.io_mut(), &window)
+            .expect("Failed to prepare UI frame");
+        let frame = self.context.new_frame();
+
+        if self.last_cursor != frame.mouse_cursor() {
+            self.last_cursor = frame.mouse_cursor();
+            self.platform.prepare_render(frame, &window);
         }
     }
 }

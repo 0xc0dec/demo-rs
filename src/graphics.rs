@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::sync::Arc;
-use wgpu::{BackendOptions, Trace};
 use wgpu::util::DeviceExt;
+use wgpu::{BackendOptions, Trace};
 
 use crate::assets::{Assets, MaterialHandle, MeshHandle};
 use crate::materials::{ApplyMaterial, Material};
@@ -19,6 +19,7 @@ pub struct RenderPipelineParams<'a> {
     pub vertex_buffer_layouts: &'a [wgpu::VertexBufferLayout<'a>],
 }
 
+// TODO Rename to Renderer.
 pub struct Graphics<'a> {
     surface: wgpu::Surface<'a>,
     surface_config: wgpu::SurfaceConfiguration,
@@ -66,15 +67,13 @@ impl<'a> Graphics<'a> {
             .unwrap();
 
         let (device, queue) = adapter
-            .request_device(
-                &wgpu::DeviceDescriptor {
-                    label: None,
-                    required_features: wgpu::Features::empty(),
-                    required_limits: wgpu::Limits::default(),
-                    memory_hints: wgpu::MemoryHints::default(),
-                    trace: Trace::Off,
-                },
-            )
+            .request_device(&wgpu::DeviceDescriptor {
+                label: None,
+                required_features: wgpu::Features::empty(),
+                required_limits: wgpu::Limits::default(),
+                memory_hints: wgpu::MemoryHints::default(),
+                trace: Trace::Off,
+            })
             .await
             .unwrap();
 
@@ -198,6 +197,7 @@ impl<'a> Graphics<'a> {
         };
 
         self.queue.submit(Some(cmd_buffer));
+
         if let Some(t) = surface_tex {
             t.present()
         }

@@ -57,6 +57,7 @@ impl State<'_> {
         let mut gfx = self.gfx.take().unwrap();
         let mut input = self.input.take().unwrap();
         let mut assets = self.assets.take().unwrap();
+        let mut ui = self.ui.take().unwrap();
         let window = self.window.take().unwrap();
 
         if input.action_activated(InputAction::Quit) {
@@ -78,6 +79,8 @@ impl State<'_> {
             &self.new_canvas_size,
         );
 
+        ui.new_frame(dt, &window);
+
         scene.render(&gfx, &mut assets);
 
         input.clear();
@@ -89,6 +92,7 @@ impl State<'_> {
         self.window = Some(window);
         self.gfx = Some(gfx);
         self.scene = Some(scene);
+        self.ui = Some(ui);
         self.new_canvas_size = None;
     }
 }
