@@ -9,7 +9,6 @@ pub struct Ui {
     context: Context,
     platform: WinitPlatform,
     renderer: Renderer,
-    demo_open: bool,
     last_cursor: Option<MouseCursor>,
 }
 
@@ -23,7 +22,7 @@ impl Ui {
         hidpi_factor: f64,
         texture_format: TextureFormat,
     ) -> Self {
-        let mut context = imgui::Context::create();
+        let mut context = Context::create();
 
         let mut platform = WinitPlatform::new(&mut context);
         platform.attach_window(
@@ -52,13 +51,11 @@ impl Ui {
 
         let renderer = Renderer::new(&mut context, device, queue, renderer_config);
         let last_cursor = None;
-        let demo_open = true;
 
         Ui {
             context,
             platform,
             renderer,
-            demo_open,
             last_cursor,
         }
     }

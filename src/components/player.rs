@@ -14,8 +14,6 @@ use crate::render_target::RenderTarget;
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
 
-// TODO Fix dragging via free mouse - doesn't work because the player does not move and the body is attached to it.
-
 #[derive(Copy, Clone)]
 pub struct PlayerFocus {
     pub point: Vec3,
