@@ -204,15 +204,13 @@ impl ApplicationHandler for State<'_> {
             _ => {}
         }
 
-        if self.ui.is_some() {
-            self.ui.as_mut().unwrap().handle_event::<()>(
-                &Event::WindowEvent {
-                    window_id: id,
-                    event,
-                },
-                self.window.as_ref().unwrap(),
-            );
-        }
+        self.ui.as_mut().unwrap().handle_event::<()>(
+            &Event::WindowEvent {
+                window_id: id,
+                event,
+            },
+            self.window.as_ref().unwrap(),
+        );
     }
 
     fn device_event(
