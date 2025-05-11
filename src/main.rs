@@ -80,7 +80,7 @@ impl State<'_> {
             &self.new_canvas_size,
         );
 
-        ui.new_frame(dt, &window, |frame| {
+        ui.prepare_frame(dt, &window, |frame| {
             let window = frame.window("Hello world");
             window
                 .size([300.0, 100.0], Condition::FirstUseEver)

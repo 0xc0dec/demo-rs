@@ -218,7 +218,7 @@ impl<'a> Graphics<'a> {
             view: &tex_view,
             resolve_target: None,
             ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+                load: wgpu::LoadOp::Load,
                 store: wgpu::StoreOp::Store,
             },
         });
