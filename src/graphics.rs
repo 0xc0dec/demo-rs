@@ -1,6 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
-
+use wgpu::BackendOptions;
 use wgpu::util::DeviceExt;
 
 use crate::assets::{Assets, MaterialHandle, MeshHandle};
@@ -48,11 +48,10 @@ impl<'a> Graphics<'a> {
     }
 
     pub async fn new(window: Arc<winit::window::Window>) -> Graphics<'a> {
-        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
-            dx12_shader_compiler: Default::default(),
             flags: wgpu::InstanceFlags::DEBUG,
-            gles_minor_version: wgpu::Gles3MinorVersion::Automatic,
+            backend_options: BackendOptions::default(),
         });
 
         let surface = instance.create_surface(Arc::clone(&window)).unwrap();

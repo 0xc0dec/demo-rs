@@ -28,6 +28,7 @@ mod scene;
 mod texture;
 mod vertex;
 
+// TODO Switch to raw Vulkan? It at least has stable API.
 // TODO egui (https://github.com/ejb004/egui-wgpu-demo) or other UI.
 // Currently they all seem unusable after the recent update of winit to versions 0.29 - 0.30
 

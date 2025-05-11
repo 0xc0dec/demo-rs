@@ -30,7 +30,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
     var pos_unprojected = matrices.proj_mat_inv * out.clip_position;
     // Couldn't pass a 3x3 matrix in the uniform so transforming it into 3x3 here.
     // Also just using the raw 4x4 view matrix does not work because of its position component, apparently.
-    var view_mat_inv = transpose(mat3x3<f32>(matrices.view_mat.x.xyz, matrices.view_mat.y.xyz, matrices.view_mat.z.xyz));
+    var view_mat_inv = transpose(mat3x3<f32>(matrices.view_mat[0].xyz, matrices.view_mat[1].xyz, matrices.view_mat[2].xyz));
     out.uv = view_mat_inv * pos_unprojected.xyz;
 
     return out;
