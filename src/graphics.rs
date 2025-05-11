@@ -8,6 +8,7 @@ use crate::materials::{ApplyMaterial, Material};
 use crate::mesh::DrawMesh;
 use crate::render_target::RenderTarget;
 use crate::texture::Texture;
+use crate::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -201,6 +202,48 @@ impl<'a> Graphics<'a> {
         if let Some(t) = surface_tex {
             t.present()
         }
+    }
+
+    // TODO Refactor
+    pub fn render_ui(&self, ui: &mut Ui) {
+        let tex = self
+            .surface
+            .get_current_texture()
+            .expect("Missing surface texture");
+        let tex_view = tex
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+
+        let color_attachment = Some(wgpu::RenderPassColorAttachment {
+            view: &tex_view,
+            resolve_target: None,
+            ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(wgpu::Color::RED),
+                store: wgpu::StoreOp::Store,
+            },
+        });
+
+        let cmd_buffer = {
+            let mut encoder =
+                self.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+
+            {
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: None,
+                    color_attachments: &[color_attachment],
+                    depth_stencil_attachment: None,
+                    occlusion_query_set: None,
+                    timestamp_writes: None,
+                });
+
+                ui.render(&self.device, &self.queue, &mut pass);
+            }
+
+            encoder.finish()
+        };
+
+        self.queue.submit(Some(cmd_buffer));
+        tex.present();
     }
 
     pub fn new_uniform_bind_group(

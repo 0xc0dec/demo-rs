@@ -2,7 +2,7 @@ use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::{Renderer, RendererConfig};
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
-use wgpu::{Device, Queue, TextureFormat};
+use wgpu::{Device, Queue, RenderPass, TextureFormat};
 use winit::window::Window;
 
 pub struct Ui {
@@ -61,18 +61,25 @@ impl Ui {
         }
     }
 
-    pub fn new_frame(&mut self, dt: f32, window: &Window) {
+    pub fn new_frame(&mut self, dt: f32, window: &Window, build: impl FnOnce(&mut imgui::Ui)) {
         self.context
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(dt)); // TODO Avoid the conversion.
         self.platform
-            .prepare_frame(self.context.io_mut(), &window)
+            .prepare_frame(self.context.io_mut(), window)
             .expect("Failed to prepare UI frame");
         let frame = self.context.new_frame();
+        build(frame);
 
         if self.last_cursor != frame.mouse_cursor() {
             self.last_cursor = frame.mouse_cursor();
-            self.platform.prepare_render(frame, &window);
+            self.platform.prepare_render(frame, window);
         }
+    }
+
+    pub fn render<'a>(&'a mut self, device: &Device, queue: &Queue, pass: &mut RenderPass<'a>) {
+        self.renderer
+            .render(self.context.render(), queue, device, pass)
+            .expect("Rendering failed");
     }
 }

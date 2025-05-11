@@ -1,3 +1,4 @@
+use imgui::Condition;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -79,9 +80,32 @@ impl State<'_> {
             &self.new_canvas_size,
         );
 
-        ui.new_frame(dt, &window);
+        ui.new_frame(dt, &window, |frame| {
+            let window = frame.window("Hello world");
+            window
+                .size([300.0, 100.0], Condition::FirstUseEver)
+                .build(|| {
+                    frame.text("Hello world!");
+                    frame.text("This...is...imgui-rs on WGPU!");
+                    frame.separator();
+                    let mouse_pos = frame.io().mouse_pos;
+                    frame.text(format!(
+                        "Mouse Position: ({:.1},{:.1})",
+                        mouse_pos[0], mouse_pos[1]
+                    ));
+                });
+
+            let window = frame.window("Hello too");
+            window
+                .size([400.0, 200.0], Condition::FirstUseEver)
+                .position([400.0, 200.0], Condition::FirstUseEver)
+                .build(|| {
+                    frame.text(format!("Frame time: {dt:?}"));
+                });
+        });
 
         scene.render(&gfx, &mut assets);
+        gfx.render_ui(&mut ui);
 
         input.clear();
         // TODO Needed? Is there a better way?
