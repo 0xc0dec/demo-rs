@@ -5,13 +5,13 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.69"
-bytemuck = { version = "1.13.0", features = ["derive"] }
-ddsfile = "0.5.1"
+bytemuck = { version = "1.23.0", features = ["derive"] }
+ddsfile = "0.5.2"
 hecs = "0.10.5"
-image = { version = "0.25.1", features = ["png", "jpeg"], default-features = false }
+image = { version = "0.25.6", features = ["png", "jpeg"], default-features = false }
 pollster = "0.4.0"
 rapier3d = { version = "0.25.1", features = ["simd-stable"] }
 slotmap = "1.0.7"
-tobj = { version = "4.0.1", features = ["async"] }
+tobj = { version = "4.0.3", features = ["async"] }
 wgpu = "25.0.0"
-winit = { version = "0.30.3", features = ["rwh_05"] }
+winit = { version = "0.30.10", features = ["rwh_05"] }
