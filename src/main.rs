@@ -1,5 +1,4 @@
 use std::sync::Arc;
-
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, WindowEvent};
@@ -12,6 +11,7 @@ use crate::frame_time::FrameTime;
 use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::scene::Scene;
+use crate::ui::Ui;
 
 mod assets;
 mod components;
@@ -26,6 +26,7 @@ mod physics;
 mod render_target;
 mod scene;
 mod texture;
+mod ui;
 mod vertex;
 
 // TODO Switch to raw Vulkan? It at least has stable API.
@@ -46,6 +47,7 @@ struct State<'a> {
     input: Option<Input>,
     frame_time: Option<FrameTime>,
     new_canvas_size: Option<SurfaceSize>,
+    ui: Option<Ui>,
 }
 
 impl ApplicationHandler for State<'_> {
@@ -70,6 +72,14 @@ impl ApplicationHandler for State<'_> {
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let mut assets = Assets::load(&gfx);
 
+        let ui = Ui::new(
+            &gfx,
+            gfx.queue(),
+            window.as_ref(),
+            window.scale_factor(),
+            gfx.surface_texture_format(),
+        );
+
         window.request_redraw();
 
         self.scene = Some(Scene::new(&gfx, &mut assets));
@@ -78,6 +88,7 @@ impl ApplicationHandler for State<'_> {
         self.window = Some(window);
         self.assets = Some(assets);
         self.gfx = Some(gfx);
+        self.ui = Some(ui);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
