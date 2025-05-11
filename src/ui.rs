@@ -1,8 +1,9 @@
+use crate::graphics::Graphics;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::{Renderer, RendererConfig};
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
-use wgpu::{Device, Queue, RenderPass, TextureFormat};
+use wgpu::{Device, Queue, RenderPass};
 use winit::window::Window;
 
 pub struct Ui {
@@ -15,13 +16,7 @@ pub struct Ui {
 impl Ui {
     const FONT_SIZE: f64 = 13.0;
 
-    pub fn new(
-        device: &Device,
-        queue: &Queue,
-        window: &Window,
-        hidpi_factor: f64,
-        texture_format: TextureFormat,
-    ) -> Self {
+    pub fn new(gfx: &Graphics, window: &Window, hidpi_factor: f64) -> Self {
         let mut context = Context::create();
 
         let mut platform = WinitPlatform::new(&mut context);
@@ -45,11 +40,12 @@ impl Ui {
         }]);
 
         let renderer_config = RendererConfig {
-            texture_format,
+            texture_format: gfx.surface_texture_format(),
+            depth_format: Some(gfx.depth_texture_format()),
             ..Default::default()
         };
 
-        let renderer = Renderer::new(&mut context, device, queue, renderer_config);
+        let renderer = Renderer::new(&mut context, gfx, gfx.queue(), renderer_config);
         let last_cursor = None;
 
         Ui {

@@ -105,7 +105,6 @@ impl State<'_> {
         });
 
         scene.render(&gfx, &mut assets, &mut ui);
-        // gfx.render_ui(&mut ui);
 
         input.clear();
         // TODO Needed? Is there a better way?
@@ -143,13 +142,7 @@ impl ApplicationHandler for State<'_> {
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let mut assets = Assets::load(&gfx);
 
-        let ui = Ui::new(
-            &gfx,
-            gfx.queue(),
-            window.as_ref(),
-            window.scale_factor(),
-            gfx.surface_texture_format(),
-        );
+        let ui = Ui::new(&gfx, window.as_ref(), window.scale_factor());
 
         window.request_redraw();
 
