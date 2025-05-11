@@ -17,7 +17,7 @@ pub struct Scene {
     physics: Physics,
     postprocessor: Entity,
     player: Entity,
-    spawned_box_at_startup: bool,
+    spawned_startup_box: bool,
 }
 
 impl Scene {
@@ -27,7 +27,7 @@ impl Scene {
             physics: Physics::new(),
             player: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
-            spawned_box_at_startup: false,
+            spawned_startup_box: false,
         };
 
         // Player
@@ -93,12 +93,12 @@ impl Scene {
         Grab::update(&mut self.world, input, &mut self.physics);
         PlayerTarget::update(&mut self.world);
 
-        if input.action_activated(InputAction::Spawn) || !self.spawned_box_at_startup {
+        if input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
-            let pos = if self.spawned_box_at_startup {
+            let pos = if self.spawned_startup_box {
                 player_transform.position() + player_transform.forward().xyz() * 5.0
             } else {
-                self.spawned_box_at_startup = true;
+                self.spawned_startup_box = true;
                 Vec3::y_axis().xyz() * 5.0
             };
             self.spawn_box(pos, Vec3::from_element(1.0), gfx, assets);
