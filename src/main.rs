@@ -31,7 +31,7 @@ mod ui;
 mod vertex;
 
 // TODO Switch to raw Vulkan? It at least has stable API.
-
+// TODO Fix mouse first person rotation, it feels off.
 // TODO Spawned boxes should be rotated based on the camera view.
 // TODO Dragging should maintain box rotation relative to the camera.
 // TODO Selected object highlighting.
@@ -51,7 +51,7 @@ struct State<'a> {
 
 impl State<'_> {
     fn render(&mut self, event_loop: &ActiveEventLoop) {
-        // TODO Avoid this moving-out-and-moving-back-in
+        // TODO Avoid this ugliness.
         let mut scene = self.scene.take().unwrap();
         let mut gfx = self.gfx.take().unwrap();
         let mut input = self.input.take().unwrap();
@@ -79,25 +79,18 @@ impl State<'_> {
         );
 
         ui.prepare_frame(dt, &window, |frame| {
-            let window = frame.window("Hello world");
+            let window = frame.window("Info");
             window
-                .size([300.0, 100.0], Condition::FirstUseEver)
+                .size([300.0, 150.0], Condition::FirstUseEver)
                 .build(|| {
                     frame.text("Hello world!");
                     frame.text("This...is...imgui-rs on WGPU!");
                     frame.separator();
                     let mouse_pos = frame.io().mouse_pos;
                     frame.text(format!(
-                        "Mouse Position: ({:.1},{:.1})",
+                        "Mouse position: ({:.1},{:.1})",
                         mouse_pos[0], mouse_pos[1]
                     ));
-                });
-
-            let window = frame.window("Hello too");
-            window
-                .size([400.0, 200.0], Condition::FirstUseEver)
-                .position([400.0, 200.0], Condition::FirstUseEver)
-                .build(|| {
                     frame.text(format!("Frame time: {dt:?}"));
                 });
         });
@@ -138,7 +131,6 @@ impl ApplicationHandler for State<'_> {
 
         let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
         let mut assets = Assets::load(&gfx);
-
         let ui = Ui::new(&gfx, window.as_ref(), window.scale_factor());
 
         window.request_redraw();
