@@ -1,7 +1,7 @@
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
-use crate::graphics::{Graphics, RenderPipelineParams};
+use crate::renderer::{RenderPipelineParams, Renderer};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 
@@ -13,11 +13,11 @@ pub struct PostProcessMaterial {
 }
 
 impl PostProcessMaterial {
-    pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
+    pub fn new(rr: &Renderer, assets: &Assets, texture: &Texture) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
-            gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
+            rr.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
-        let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
+        let pipeline = rr.new_render_pipeline(RenderPipelineParams {
             shader_module: assets.shader(assets.postprocess_shader),
             depth_write: true,
             depth_enabled: true,

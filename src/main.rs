@@ -9,8 +9,8 @@ use winit::window::{Window, WindowId};
 
 use crate::assets::Assets;
 use crate::frame_time::FrameTime;
-use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
+use crate::renderer::{Renderer, SurfaceSize};
 use crate::scene::Scene;
 use crate::ui::Ui;
 
@@ -18,13 +18,13 @@ mod assets;
 mod components;
 mod file;
 mod frame_time;
-mod graphics;
 mod input;
 mod materials;
 mod math;
 mod mesh;
 mod physics;
 mod render_target;
+mod renderer;
 mod scene;
 mod texture;
 mod ui;
@@ -40,7 +40,7 @@ mod vertex;
 #[derive(Default)]
 struct State<'a> {
     window: Option<Arc<Window>>,
-    gfx: Option<Graphics<'a>>,
+    renderer: Option<Renderer<'a>>,
     assets: Option<Assets>,
     scene: Option<Scene>,
     input: Option<Input>,
@@ -53,7 +53,7 @@ impl State<'_> {
     fn render(&mut self, event_loop: &ActiveEventLoop) {
         // TODO Avoid this ugliness.
         let mut scene = self.scene.take().unwrap();
-        let mut gfx = self.gfx.take().unwrap();
+        let mut rr = self.renderer.take().unwrap();
         let mut input = self.input.take().unwrap();
         let mut assets = self.assets.take().unwrap();
         let mut ui = self.ui.take().unwrap();
@@ -64,19 +64,12 @@ impl State<'_> {
         }
 
         if let Some(&size) = self.new_canvas_size.as_ref() {
-            gfx.resize(size);
+            rr.resize(size);
         }
 
         let dt = self.frame_time.as_mut().unwrap().advance();
 
-        scene.update(
-            dt,
-            &gfx,
-            &input,
-            &window,
-            &mut assets,
-            &self.new_canvas_size,
-        );
+        scene.update(dt, &rr, &input, &window, &mut assets, &self.new_canvas_size);
 
         ui.prepare_frame(dt, &window, |frame| {
             let window = frame.window("Info");
@@ -95,7 +88,7 @@ impl State<'_> {
                 });
         });
 
-        scene.render(&gfx, &mut assets, &mut ui);
+        scene.render(&rr, &mut assets, &mut ui);
 
         input.clear();
         window.request_redraw();
@@ -103,7 +96,7 @@ impl State<'_> {
         self.assets = Some(assets);
         self.input = Some(input);
         self.window = Some(window);
-        self.gfx = Some(gfx);
+        self.renderer = Some(rr);
         self.scene = Some(scene);
         self.ui = Some(ui);
         self.new_canvas_size = None;
@@ -112,6 +105,7 @@ impl State<'_> {
 
 impl ApplicationHandler for State<'_> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        // This function should be re-entrant, see the docs. Existing if already initialized.
         if self.window.is_some() {
             return;
         }
@@ -129,18 +123,18 @@ impl ApplicationHandler for State<'_> {
                 .unwrap(),
         );
 
-        let gfx = pollster::block_on(Graphics::new(Arc::clone(&window)));
-        let mut assets = Assets::load(&gfx);
-        let ui = Ui::new(&gfx, window.as_ref(), window.scale_factor());
+        let rr = pollster::block_on(Renderer::new(Arc::clone(&window)));
+        let mut assets = Assets::load(&rr);
+        let ui = Ui::new(&rr, window.as_ref(), window.scale_factor());
 
         window.request_redraw();
 
-        self.scene = Some(Scene::new(&gfx, &mut assets));
+        self.scene = Some(Scene::new(&rr, &mut assets));
         self.frame_time = Some(FrameTime::new());
         self.input = Some(Input::new());
         self.window = Some(window);
         self.assets = Some(assets);
-        self.gfx = Some(gfx);
+        self.renderer = Some(rr);
         self.ui = Some(ui);
     }
 

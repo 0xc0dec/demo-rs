@@ -1,4 +1,4 @@
-use crate::graphics::Graphics;
+use crate::renderer::Renderer;
 use crate::texture::{Texture, TextureSize};
 
 pub struct RenderTarget {
@@ -7,10 +7,10 @@ pub struct RenderTarget {
 }
 
 impl RenderTarget {
-    pub fn new(gfx: &Graphics, size: Option<TextureSize>) -> Self {
-        let size = size.unwrap_or(gfx.surface_size().into());
-        let color_tex = Texture::new_render_attachment(gfx, gfx.surface_texture_format(), size);
-        let depth_tex = Texture::new_depth(gfx, gfx.depth_texture_format(), size);
+    pub fn new(rr: &Renderer, size: Option<TextureSize>) -> Self {
+        let size = size.unwrap_or(rr.surface_size().into());
+        let color_tex = Texture::new_render_attachment(rr, rr.surface_texture_format(), size);
+        let depth_tex = Texture::new_depth(rr, rr.depth_texture_format(), size);
 
         Self {
             color_tex,
@@ -26,7 +26,7 @@ impl RenderTarget {
         &self.depth_tex
     }
 
-    pub fn resize(&mut self, new_size: TextureSize, gfx: &Graphics) {
-        *self = RenderTarget::new(gfx, Some(new_size));
+    pub fn resize(&mut self, new_size: TextureSize, rr: &Renderer) {
+        *self = RenderTarget::new(rr, Some(new_size));
     }
 }

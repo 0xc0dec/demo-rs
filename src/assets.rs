@@ -1,11 +1,11 @@
 use slotmap::{DefaultKey, SlotMap};
 
 use crate::file;
-use crate::graphics::Graphics;
 use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
 use crate::mesh::Mesh;
+use crate::renderer::Renderer;
 use crate::texture::Texture;
 
 pub type MeshHandle = DefaultKey;
@@ -33,7 +33,7 @@ pub struct Assets {
 }
 
 impl Assets {
-    pub fn load(gfx: &Graphics) -> Self {
+    pub fn load(rr: &Renderer) -> Self {
         let (
             box_mesh,
             skybox_tex,
@@ -45,22 +45,22 @@ impl Assets {
             skybox_shader,
         ) = pollster::block_on(async {
             (
-                Mesh::from_file(gfx, "cube.obj").await,
-                Texture::new_cube_from_file("skybox_bgra.dds", gfx)
+                Mesh::from_file(rr, "cube.obj").await,
+                Texture::new_cube_from_file("skybox_bgra.dds", rr)
                     .await
                     .unwrap(),
-                Texture::new_2d_from_file("bricks.png", gfx).await.unwrap(),
-                Texture::new_2d_from_file("crate.png", gfx).await.unwrap(),
-                new_shader_module(gfx, "color.wgsl").await,
-                new_shader_module(gfx, "textured.wgsl").await,
-                new_shader_module(gfx, "post-process.wgsl").await,
-                new_shader_module(gfx, "skybox.wgsl").await,
+                Texture::new_2d_from_file("bricks.png", rr).await.unwrap(),
+                Texture::new_2d_from_file("crate.png", rr).await.unwrap(),
+                new_shader_module(rr, "color.wgsl").await,
+                new_shader_module(rr, "textured.wgsl").await,
+                new_shader_module(rr, "post-process.wgsl").await,
+                new_shader_module(rr, "skybox.wgsl").await,
             )
         });
 
         let mut meshes = SlotMap::new();
         let box_mesh = meshes.insert(box_mesh);
-        let quad_mesh = meshes.insert(Mesh::new_quad(gfx));
+        let quad_mesh = meshes.insert(Mesh::new_quad(rr));
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
@@ -98,18 +98,14 @@ impl Assets {
         self.shaders.get(handle).unwrap()
     }
 
-    pub fn add_color_material(&mut self, gfx: &Graphics) -> MaterialHandle {
+    pub fn add_color_material(&mut self, rr: &Renderer) -> MaterialHandle {
         self.materials
-            .insert(Material::Color(ColorMaterial::new(gfx, self)))
+            .insert(Material::Color(ColorMaterial::new(rr, self)))
     }
 
-    pub fn add_skybox_material(
-        &mut self,
-        gfx: &Graphics,
-        texture: TextureHandle,
-    ) -> MaterialHandle {
+    pub fn add_skybox_material(&mut self, rr: &Renderer, texture: TextureHandle) -> MaterialHandle {
         self.materials.insert(Material::Skybox(SkyboxMaterial::new(
-            gfx,
+            rr,
             self,
             &self.textures[texture],
         )))
@@ -117,12 +113,12 @@ impl Assets {
 
     pub fn add_textured_material(
         &mut self,
-        gfx: &Graphics,
+        rr: &Renderer,
         texture: TextureHandle,
     ) -> MaterialHandle {
         self.materials
             .insert(Material::Textured(TexturedMaterial::new(
-                gfx,
+                rr,
                 self,
                 &self.textures[texture],
             )))
@@ -130,12 +126,12 @@ impl Assets {
 
     pub fn add_postprocess_material(
         &mut self,
-        gfx: &Graphics,
+        rr: &Renderer,
         src_texture: &Texture,
     ) -> MaterialHandle {
         self.materials
             .insert(Material::PostProcess(PostProcessMaterial::new(
-                gfx,
+                rr,
                 self,
                 src_texture,
             )))

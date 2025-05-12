@@ -7,11 +7,11 @@ use crate::components::{
     RenderTags, RigidBody, RigidBodyParams, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE,
 };
-use crate::graphics::{Graphics, SurfaceSize};
 use crate::input::{Input, InputAction};
 use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
+use crate::renderer::{Renderer, SurfaceSize};
 use crate::ui::Ui;
 
 pub struct Scene {
@@ -23,7 +23,7 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn new(gfx: &Graphics, assets: &mut Assets) -> Self {
+    pub fn new(rr: &Renderer, assets: &mut Assets) -> Self {
         let mut scene = Self {
             world: World::new(),
             physics: Physics::new(),
@@ -35,21 +35,21 @@ impl Scene {
         // Player
         scene.player = Player::spawn(
             &mut scene.world,
-            gfx,
+            rr,
             &mut scene.physics,
             Vec3::new(7.0, 7.0, 7.0),
         );
 
         // Player target
-        PlayerTarget::spawn(gfx, &mut scene.world, assets);
+        PlayerTarget::spawn(rr, &mut scene.world, assets);
 
         // Floor
-        scene.spawn_floor(gfx, assets);
+        scene.spawn_floor(rr, assets);
 
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
-        let material = assets.add_skybox_material(gfx, assets.skybox_texture);
+        let material = assets.add_skybox_material(rr, assets.skybox_texture);
         scene.world.spawn((
             Transform::default(),
             Mesh(assets.quad_mesh),
@@ -67,7 +67,7 @@ impl Scene {
             .as_ref()
             .unwrap()
             .color_tex();
-        let material = assets.add_postprocess_material(gfx, pp_src_tex);
+        let material = assets.add_postprocess_material(rr, pp_src_tex);
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
@@ -83,7 +83,7 @@ impl Scene {
     pub fn update(
         &mut self,
         dt: f32,
-        gfx: &Graphics,
+        rr: &Renderer,
         input: &Input,
         window: &Window,
         assets: &mut Assets,
@@ -103,41 +103,36 @@ impl Scene {
                 self.spawned_startup_box = true;
                 Vec3::y_axis().xyz() * 5.0
             };
-            self.spawn_box(pos, Vec3::from_element(1.0), gfx, assets);
+            self.spawn_box(pos, Vec3::from_element(1.0), rr, assets);
         }
 
         self.sync_physics();
 
         if let Some(new_size) = new_canvas_size {
-            self.handle_canvas_resize(new_size, gfx, assets);
+            self.handle_canvas_resize(new_size, rr, assets);
         }
     }
 
-    pub fn render(&mut self, gfx: &Graphics, assets: &mut Assets, ui: &mut Ui) {
-        self.render_with_camera(self.player, gfx, assets, None);
-        self.render_with_camera(self.postprocessor, gfx, assets, Some(ui));
+    pub fn render(&mut self, rr: &Renderer, assets: &mut Assets, ui: &mut Ui) {
+        self.render_with_camera(self.player, rr, assets, None);
+        self.render_with_camera(self.postprocessor, rr, assets, Some(ui));
     }
 
-    fn handle_canvas_resize(
-        &mut self,
-        new_size: &SurfaceSize,
-        gfx: &Graphics,
-        assets: &mut Assets,
-    ) {
+    fn handle_canvas_resize(&mut self, new_size: &SurfaceSize, rr: &Renderer, assets: &mut Assets) {
         let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
         player_cam
             .target_mut()
             .unwrap()
-            .resize((new_size.width, new_size.height), gfx);
+            .resize((new_size.width, new_size.height), rr);
 
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
         let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
         assets.remove_material(material.0);
-        material.0 = assets.add_postprocess_material(gfx, color_tex);
+        material.0 = assets.add_postprocess_material(rr, color_tex);
     }
 
-    fn spawn_floor(&mut self, gfx: &Graphics, assets: &mut Assets) {
+    fn spawn_floor(&mut self, rr: &Renderer, assets: &mut Assets) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
         let body = RigidBody::cuboid(
@@ -148,7 +143,7 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let material = assets.add_textured_material(gfx, assets.bricks_texture);
+        let material = assets.add_textured_material(rr, assets.bricks_texture);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh),
@@ -159,7 +154,7 @@ impl Scene {
         ));
     }
 
-    fn spawn_box(&mut self, pos: Vec3, scale: Vec3, gfx: &Graphics, assets: &mut Assets) {
+    fn spawn_box(&mut self, pos: Vec3, scale: Vec3, rr: &Renderer, assets: &mut Assets) {
         let body = RigidBody::cuboid(
             RigidBodyParams {
                 pos,
@@ -168,7 +163,7 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let material = assets.add_textured_material(gfx, assets.crate_texture);
+        let material = assets.add_textured_material(rr, assets.crate_texture);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh),
@@ -182,7 +177,7 @@ impl Scene {
     fn render_with_camera(
         &mut self,
         camera: Entity,
-        gfx: &Graphics,
+        rr: &Renderer,
         assets: &mut Assets,
         ui: Option<&mut Ui>,
     ) {
@@ -212,17 +207,17 @@ impl Scene {
                 .into_iter()
                 .map(|(mesh, material, transform, _)| {
                     match assets.material_mut(material.0) {
-                        materials::Material::Color(m) => m.set_wvp(gfx, cam, cam_tr, transform),
-                        materials::Material::Skybox(m) => m.set_wvp(gfx, cam, cam_tr),
-                        materials::Material::Textured(m) => m.set_wvp(gfx, cam, cam_tr, transform),
+                        materials::Material::Color(m) => m.set_wvp(rr, cam, cam_tr, transform),
+                        materials::Material::Skybox(m) => m.set_wvp(rr, cam, cam_tr),
+                        materials::Material::Textured(m) => m.set_wvp(rr, cam, cam_tr, transform),
                         materials::Material::PostProcess(_) => (),
                     }
-                    gfx.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)
+                    rr.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)
                 })
                 // TODO Avoid vec allocation
                 .collect::<Vec<wgpu::RenderBundle>>();
 
-            gfx.render_pass(&bundles, cam.target().as_ref(), ui);
+            rr.render_pass(&bundles, cam.target().as_ref(), ui);
         }
     }
 

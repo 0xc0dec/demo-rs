@@ -2,20 +2,20 @@ use hecs::{With, World};
 
 use crate::assets::Assets;
 use crate::components::{
-    Material, Mesh, Player, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE, RenderOrder, RenderTags, Transform,
+    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
 };
-use crate::graphics::Graphics;
 use crate::materials;
 use crate::math::Vec3;
+use crate::renderer::Renderer;
 
 // A visual guide showing the current focus point of the player
 pub struct PlayerTarget;
 
 impl PlayerTarget {
-    pub fn spawn(gfx: &Graphics, world: &mut World, assets: &mut Assets) {
-        let mat = assets.add_color_material(gfx);
+    pub fn spawn(rr: &Renderer, world: &mut World, assets: &mut Assets) {
+        let mat = assets.add_color_material(rr);
         if let materials::Material::Color(m) = assets.material_mut(mat) {
-            m.set_color(gfx, Vec3::new(1.0, 1.0, 0.0))
+            m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
         }
 
         world.spawn((

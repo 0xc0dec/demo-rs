@@ -20,8 +20,8 @@ pub struct RenderPipelineParams<'a> {
     pub vertex_buffer_layouts: &'a [wgpu::VertexBufferLayout<'a>],
 }
 
-// TODO Rename to Renderer.
-pub struct Graphics<'a> {
+// TODO Store shared references to it to avoid passing it everywhere.
+pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
     surface_config: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
@@ -29,7 +29,7 @@ pub struct Graphics<'a> {
     depth_tex: Texture,
 }
 
-impl<'a> Graphics<'a> {
+impl<'a> Renderer<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
@@ -49,7 +49,7 @@ impl<'a> Graphics<'a> {
         &self.queue
     }
 
-    pub async fn new(window: Arc<winit::window::Window>) -> Graphics<'a> {
+    pub async fn new(window: Arc<winit::window::Window>) -> Renderer<'a> {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             flags: wgpu::InstanceFlags::DEBUG,
@@ -368,7 +368,7 @@ impl<'a> Graphics<'a> {
     }
 }
 
-impl Deref for Graphics<'_> {
+impl Deref for Renderer<'_> {
     type Target = wgpu::Device;
 
     fn deref(&self) -> &Self::Target {

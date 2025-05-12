@@ -5,11 +5,11 @@ use rapier3d::prelude::*;
 use winit::window::{CursorGrabMode, Window};
 
 use crate::components::RENDER_TAG_SCENE;
-use crate::graphics::Graphics;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Vec2, Vec3};
 use crate::physics::{Physics, RayCastResult};
 use crate::render_target::RenderTarget;
+use crate::renderer::Renderer;
 
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
@@ -35,10 +35,10 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn spawn(w: &mut World, gfx: &Graphics, physics: &mut Physics, position: Vec3) -> Entity {
-        let rt = RenderTarget::new(gfx, None);
+    pub fn spawn(w: &mut World, rr: &Renderer, physics: &mut Physics, position: Vec3) -> Entity {
+        let rt = RenderTarget::new(rr, None);
         let camera = Camera::new(
-            gfx.surface_size().width as f32 / gfx.surface_size().height as f32,
+            rr.surface_size().width as f32 / rr.surface_size().height as f32,
             RENDER_TAG_SCENE,
             Some(rt),
         );

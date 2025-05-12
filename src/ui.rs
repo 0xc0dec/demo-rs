@@ -1,6 +1,6 @@
-use crate::graphics::Graphics;
+use crate::renderer::Renderer;
 use imgui::{Context, FontSource, MouseCursor};
-use imgui_wgpu::{Renderer, RendererConfig};
+use imgui_wgpu::RendererConfig;
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
 use wgpu::{Device, Queue, RenderPass};
@@ -10,14 +10,14 @@ use winit::window::Window;
 pub struct Ui {
     context: Context,
     platform: WinitPlatform,
-    renderer: Renderer,
+    renderer: imgui_wgpu::Renderer,
     last_cursor: Option<MouseCursor>,
 }
 
 impl Ui {
     const FONT_SIZE: f64 = 13.0;
 
-    pub fn new(gfx: &Graphics, window: &Window, hidpi_factor: f64) -> Self {
+    pub fn new(rr: &Renderer, window: &Window, hidpi_factor: f64) -> Self {
         let mut context = Context::create();
 
         let mut platform = WinitPlatform::new(&mut context);
@@ -40,13 +40,16 @@ impl Ui {
             }),
         }]);
 
-        let renderer_config = RendererConfig {
-            texture_format: gfx.surface_texture_format(),
-            depth_format: Some(gfx.depth_texture_format()),
-            ..Default::default()
-        };
-
-        let renderer = Renderer::new(&mut context, gfx, gfx.queue(), renderer_config);
+        let renderer = imgui_wgpu::Renderer::new(
+            &mut context,
+            rr,
+            rr.queue(),
+            RendererConfig {
+                texture_format: rr.surface_texture_format(),
+                depth_format: Some(rr.depth_texture_format()),
+                ..Default::default()
+            },
+        );
         let last_cursor = None;
 
         Ui {

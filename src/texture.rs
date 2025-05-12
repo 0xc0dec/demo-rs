@@ -3,7 +3,7 @@ use image::GenericImageView;
 use wgpu::util::{DeviceExt, TextureDataOrder};
 
 use crate::file;
-use crate::graphics::Graphics;
+use crate::renderer::Renderer;
 
 pub type TextureSize = (u32, u32);
 
@@ -86,14 +86,14 @@ impl Texture {
         }
     }
 
-    pub async fn new_2d_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
+    pub async fn new_2d_from_file(file_name: &str, rr: &Renderer<'_>) -> Result<Self> {
         let data = file::read_binary_asset(file_name).await?;
-        Self::new_2d_from_mem(gfx, &data)
+        Self::new_2d_from_mem(rr, &data)
     }
 
-    pub async fn new_cube_from_file(file_name: &str, gfx: &Graphics<'_>) -> Result<Self> {
+    pub async fn new_cube_from_file(file_name: &str, rr: &Renderer<'_>) -> Result<Self> {
         let data = file::read_binary_asset(file_name).await?;
-        Self::new_cube_from_mem(gfx, &data)
+        Self::new_cube_from_mem(rr, &data)
     }
 
     pub fn view(&self) -> &wgpu::TextureView {
@@ -108,7 +108,7 @@ impl Texture {
         self.format
     }
 
-    fn new_2d_from_mem(gfx: &Graphics, data: &[u8]) -> Result<Self> {
+    fn new_2d_from_mem(rr: &Renderer, data: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(data)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -119,8 +119,8 @@ impl Texture {
         };
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
-        let texture = gfx.create_texture_with_data(
-            gfx.queue(),
+        let texture = rr.create_texture_with_data(
+            rr.queue(),
             &wgpu::TextureDescriptor {
                 label: None,
                 size,
@@ -136,7 +136,7 @@ impl Texture {
         );
 
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let sampler = gfx.create_sampler(&new_sampler_descriptor(
+        let sampler = rr.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
             wgpu::FilterMode::Nearest,
             None,
@@ -149,8 +149,8 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(gfx: &Graphics, data: &[u8]) -> Result<Self> {
-        let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&data)).unwrap();
+    fn new_cube_from_mem(rr: &Renderer, data: &[u8]) -> Result<Self> {
+        let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&data))?;
 
         let format = wgpu::TextureFormat::Rgba8UnormSrgb; // TODO Configurable
 
@@ -165,8 +165,8 @@ impl Texture {
             ..size
         };
 
-        let texture = gfx.create_texture_with_data(
-            gfx.queue(),
+        let texture = rr.create_texture_with_data(
+            rr.queue(),
             &wgpu::TextureDescriptor {
                 size,
                 mip_level_count: layer_size.max_mips(wgpu::TextureDimension::D2),
@@ -187,7 +187,7 @@ impl Texture {
             ..wgpu::TextureViewDescriptor::default()
         });
 
-        let sampler = gfx.create_sampler(&new_sampler_descriptor(
+        let sampler = rr.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Linear,
             wgpu::FilterMode::Linear,
             None,

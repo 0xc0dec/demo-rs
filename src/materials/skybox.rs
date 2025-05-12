@@ -1,6 +1,6 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
-use crate::graphics::{Graphics, RenderPipelineParams};
+use crate::renderer::{RenderPipelineParams, Renderer};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 
@@ -16,15 +16,15 @@ pub struct SkyboxMaterial {
 }
 
 impl SkyboxMaterial {
-    pub fn new(gfx: &Graphics, assets: &Assets, texture: &Texture) -> Self {
+    pub fn new(rr: &Renderer, assets: &Assets, texture: &Texture) -> Self {
         let matrices_uniform = ViewInvProjUniform::default();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
-            gfx.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
+            rr.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
 
         let (texture_bind_group_layout, texture_bind_group) =
-            gfx.new_texture_bind_group(texture, wgpu::TextureViewDimension::Cube);
+            rr.new_texture_bind_group(texture, wgpu::TextureViewDimension::Cube);
 
-        let pipeline = gfx.new_render_pipeline(RenderPipelineParams {
+        let pipeline = rr.new_render_pipeline(RenderPipelineParams {
             shader_module: assets.shader(assets.skybox_shader),
             depth_write: false,
             depth_enabled: true,
@@ -46,10 +46,10 @@ impl SkyboxMaterial {
 }
 
 impl SkyboxMaterial {
-    pub fn set_wvp(&mut self, gfx: &Graphics, camera: &Camera, camera_transform: &Transform) {
+    pub fn set_wvp(&mut self, rr: &Renderer, camera: &Camera, camera_transform: &Transform) {
         self.matrices_uniform
             .update(&camera_transform.view_matrix(), &camera.proj_matrix());
-        gfx.queue().write_buffer(
+        rr.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
             bytemuck::cast_slice(&[self.matrices_uniform]),
