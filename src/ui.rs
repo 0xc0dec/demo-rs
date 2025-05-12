@@ -78,7 +78,7 @@ impl Ui {
         }
     }
 
-    pub fn handle_event<T>(&mut self, event: &Event<T>, window: &Window) {
+    pub fn handle_event(&mut self, event: &Event<()>, window: &Window) {
         self.platform
             .handle_event(self.context.io_mut(), window, event)
     }

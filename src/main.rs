@@ -1,4 +1,3 @@
-use imgui::Condition;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -11,7 +10,6 @@ use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::renderer::{Renderer, SurfaceSize};
 use crate::scene::Scene;
-use crate::ui::Ui;
 
 mod assets;
 mod components;
@@ -45,7 +43,6 @@ struct State<'a> {
     input: Option<Input>,
     frame_time: Option<FrameTime>,
     new_canvas_size: Option<SurfaceSize>,
-    ui: Option<Ui>,
 }
 
 impl State<'_> {
@@ -55,7 +52,6 @@ impl State<'_> {
         let mut rr = self.renderer.take().unwrap();
         let mut input = self.input.take().unwrap();
         let mut assets = self.assets.take().unwrap();
-        let mut ui = self.ui.take().unwrap();
         let window = self.window.take().unwrap();
 
         if input.action_activated(InputAction::Quit) {
@@ -69,30 +65,7 @@ impl State<'_> {
         let dt = self.frame_time.as_mut().unwrap().advance();
 
         scene.update(dt, &rr, &input, &window, &mut assets, &self.new_canvas_size);
-
-        ui.prepare_frame(dt, &window, |frame| {
-            let window = frame.window("Info");
-            window
-                .always_auto_resize(true)
-                .size([300.0, 150.0], Condition::FirstUseEver)
-                .position([20.0, 20.0], Condition::FirstUseEver)
-                .build(|| {
-                    frame.text("Controls:");
-                    frame.text("Tab: capture/release mouse");
-                    frame.text("WASDQE: move camera while mouse is captured");
-                    frame.text("F: spawn a box");
-                    frame.text("Left mouse click: grab/release an object");
-                    frame.separator();
-                    let mouse_pos = frame.io().mouse_pos;
-                    frame.text(format!(
-                        "Mouse position: ({:.1},{:.1})",
-                        mouse_pos[0], mouse_pos[1]
-                    ));
-                    frame.text(format!("Frame time: {dt:?}"));
-                });
-        });
-
-        scene.render(&rr, &mut assets, &mut ui);
+        scene.render(&rr, &mut assets);
 
         input.clear();
         window.request_redraw();
@@ -102,7 +75,6 @@ impl State<'_> {
         self.window = Some(window);
         self.renderer = Some(rr);
         self.scene = Some(scene);
-        self.ui = Some(ui);
         self.new_canvas_size = None;
     }
 }
@@ -128,18 +100,16 @@ impl ApplicationHandler for State<'_> {
         );
 
         let rr = pollster::block_on(Renderer::new(Arc::clone(&window)));
-        let ui = Ui::new(&rr, window.as_ref(), window.scale_factor());
         let mut assets = Assets::load(&rr);
 
         window.request_redraw();
 
-        self.scene = Some(Scene::new(&rr, &mut assets));
+        self.scene = Some(Scene::new(&rr, &mut assets, &window));
         self.frame_time = Some(FrameTime::new());
         self.input = Some(Input::new());
         self.window = Some(window);
         self.assets = Some(assets);
         self.renderer = Some(rr);
-        self.ui = Some(ui);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
@@ -155,14 +125,14 @@ impl ApplicationHandler for State<'_> {
         }
 
         self.input.as_mut().unwrap().handle_window_event(&event);
-
-        self.ui.as_mut().unwrap().handle_event::<()>(
+        // TODO Avoid having to pass events to scene, this is currently needed just for UI.
+        self.scene.as_mut().unwrap().handle_event(
             &Event::WindowEvent {
                 window_id: id,
                 event,
             },
             self.window.as_ref().unwrap(),
-        );
+        )
     }
 
     fn device_event(

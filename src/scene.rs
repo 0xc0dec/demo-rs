@@ -1,4 +1,6 @@
 use hecs::{Entity, World};
+use imgui::Condition;
+use winit::event::Event;
 use winit::window::Window;
 
 use crate::assets::Assets;
@@ -19,16 +21,18 @@ pub struct Scene {
     physics: Physics,
     postprocessor: Entity,
     player: Entity,
+    ui: Ui,
     spawned_startup_box: bool,
 }
 
 impl Scene {
-    pub fn new(rr: &Renderer, assets: &mut Assets) -> Self {
+    pub fn new(rr: &Renderer, assets: &mut Assets, window: &Window) -> Self {
         let mut scene = Self {
             world: World::new(),
             physics: Physics::new(),
             player: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
+            ui: Ui::new(&rr, window, window.scale_factor()),
             spawned_startup_box: false,
         };
 
@@ -80,6 +84,10 @@ impl Scene {
         scene
     }
 
+    pub fn handle_event(&mut self, event: &Event<()>, window: &Window) {
+        self.ui.handle_event(event, window);
+    }
+
     pub fn update(
         &mut self,
         dt: f32,
@@ -111,11 +119,33 @@ impl Scene {
         if let Some(new_size) = new_canvas_size {
             self.resize(new_size, rr, assets);
         }
+
+        self.ui.prepare_frame(dt, window, |frame| {
+            let window = frame.window("Info");
+            window
+                .always_auto_resize(true)
+                .size([300.0, 150.0], Condition::FirstUseEver)
+                .position([20.0, 20.0], Condition::FirstUseEver)
+                .build(|| {
+                    frame.text("Controls:");
+                    frame.text("Tab: capture/release mouse");
+                    frame.text("WASDQE: move camera while mouse is captured");
+                    frame.text("F: spawn a box");
+                    frame.text("Left mouse click: grab/release an object");
+                    frame.separator();
+                    let mouse_pos = frame.io().mouse_pos;
+                    frame.text(format!(
+                        "Mouse position: ({:.1},{:.1})",
+                        mouse_pos[0], mouse_pos[1]
+                    ));
+                    frame.text(format!("Frame time: {dt:?}"));
+                });
+        })
     }
 
-    pub fn render(&mut self, rr: &Renderer, assets: &mut Assets, ui: &mut Ui) {
-        self.render_with_camera(self.player, rr, assets, None);
-        self.render_with_camera(self.postprocessor, rr, assets, Some(ui));
+    pub fn render(&mut self, rr: &Renderer, assets: &mut Assets) {
+        self.render_with_camera(self.player, rr, assets);
+        self.render_with_camera(self.postprocessor, rr, assets);
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, rr: &Renderer, assets: &mut Assets) {
@@ -174,13 +204,7 @@ impl Scene {
         ));
     }
 
-    fn render_with_camera(
-        &mut self,
-        camera: Entity,
-        rr: &Renderer,
-        assets: &mut Assets,
-        ui: Option<&mut Ui>,
-    ) {
+    fn render_with_camera(&mut self, camera: Entity, rr: &Renderer, assets: &mut Assets) {
         if let Some((cam, cam_tr)) = self
             .world
             .query_one::<(&Camera, &Transform)>(camera)
@@ -217,7 +241,11 @@ impl Scene {
                 // TODO Avoid vec allocation
                 .collect::<Vec<wgpu::RenderBundle>>();
 
-            rr.render_pass(&bundles, cam.target().as_ref(), ui);
+            rr.render_pass(
+                &bundles,
+                cam.target().as_ref(),
+                cam.target().is_none().then_some(&mut self.ui),
+            );
         }
     }
 
