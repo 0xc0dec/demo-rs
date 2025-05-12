@@ -2,9 +2,8 @@ use imgui::Condition;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
-use winit::event::{DeviceEvent, DeviceId, ElementState, Event, KeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, Event, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
-use winit::keyboard::PhysicalKey::Code;
 use winit::window::{Window, WindowId};
 
 use crate::assets::Assets;
@@ -145,50 +144,12 @@ impl ApplicationHandler for State<'_> {
 
         match &event {
             WindowEvent::RedrawRequested => self.render(event_loop),
-
-            WindowEvent::KeyboardInput {
-                event:
-                    KeyEvent {
-                        physical_key: Code(code),
-                        state,
-                        ..
-                    },
-                ..
-            } => {
-                self.input
-                    .as_mut()
-                    .unwrap()
-                    .consume_keyboard_event(*code, *state == ElementState::Pressed);
-            }
-
-            WindowEvent::MouseInput { button, state, .. } => {
-                self.input
-                    .as_mut()
-                    .unwrap()
-                    .consume_mouse_button_event(*button, *state == ElementState::Pressed);
-            }
-
-            WindowEvent::CursorEntered { .. } => {
-                self.input.as_mut().unwrap().consume_cursor_entrance(true);
-            }
-
-            WindowEvent::CursorLeft { .. } => {
-                self.input.as_mut().unwrap().consume_cursor_entrance(false);
-            }
-
-            WindowEvent::CursorMoved { position, .. } => {
-                self.input
-                    .as_mut()
-                    .unwrap()
-                    .consume_cursor_position(position.x as f32, position.y as f32);
-            }
-
             WindowEvent::CloseRequested => event_loop.exit(),
-
             WindowEvent::Resized(size) => self.new_canvas_size = Some(*size),
-
             _ => {}
         }
+
+        self.input.as_mut().unwrap().handle_window_event(&event);
 
         self.ui.as_mut().unwrap().handle_event::<()>(
             &Event::WindowEvent {
@@ -205,17 +166,7 @@ impl ApplicationHandler for State<'_> {
         _device_id: DeviceId,
         event: DeviceEvent,
     ) {
-        match event {
-            DeviceEvent::MouseMotion { delta } => self
-                .input
-                .as_mut()
-                .unwrap()
-                .consume_mouse_delta(delta.0 as f32, delta.1 as f32),
-
-            DeviceEvent::MouseWheel { .. } => (),
-
-            _ => (),
-        };
+        self.input.as_mut().unwrap().handle_device_event(&event);
     }
 }
 

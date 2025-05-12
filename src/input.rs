@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use winit::event::*;
 use winit::keyboard::KeyCode;
+use winit::keyboard::PhysicalKey::Code;
 
 pub enum InputAction {
     MoveForward,
@@ -64,23 +65,58 @@ impl Input {
         self.key_pressed_first(action_key(action))
     }
 
-    pub fn consume_keyboard_event(&mut self, code: KeyCode, pressed: bool) {
-        self.key_pressed.insert(Key::Keyboard(code), pressed);
+    pub fn handle_device_event(&mut self, event: &DeviceEvent) {
+        match event {
+            DeviceEvent::MouseMotion { delta: (x, y) } => {
+                self.mouse_delta = (*x as f32, *y as f32);
+            }
+            DeviceEvent::MouseWheel { .. } => (),
+            _ => (),
+        };
     }
 
-    pub fn consume_mouse_button_event(&mut self, btn: MouseButton, pressed: bool) {
-        self.key_pressed.insert(Key::MouseButton(btn), pressed);
+    pub fn handle_window_event(&mut self, event: &WindowEvent) {
+        match event {
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: Code(code),
+                        state,
+                        ..
+                    },
+                ..
+            } => {
+                self.key_pressed
+                    .insert(Key::Keyboard(*code), *state == ElementState::Pressed);
+            }
+
+            WindowEvent::MouseInput { button, state, .. } => {
+                self.key_pressed
+                    .insert(Key::MouseButton(*button), *state == ElementState::Pressed);
+            }
+
+            WindowEvent::CursorEntered { .. } => {
+                self.handle_cursor_entrance(true);
+            }
+
+            WindowEvent::CursorLeft { .. } => {
+                self.handle_cursor_entrance(false);
+            }
+
+            WindowEvent::CursorMoved { position, .. } => {
+                self.last_cursor_position = (position.x as f32, position.y as f32);
+            }
+
+            _ => (),
+        };
     }
 
-    pub fn consume_mouse_delta(&mut self, dx: f32, dy: f32) {
-        self.mouse_delta = (dx, dy);
+    pub fn clear(&mut self) {
+        self.mouse_delta = (0.0, 0.0);
+        self.key_pressed_prev.clone_from(&self.key_pressed);
     }
 
-    pub fn consume_cursor_position(&mut self, x: f32, y: f32) {
-        self.last_cursor_position = (x, y);
-    }
-
-    pub fn consume_cursor_entrance(&mut self, entered: bool) {
+    fn handle_cursor_entrance(&mut self, entered: bool) {
         self.cursor_in_window = entered;
         // Reset all pressed mouse buttons when the cursor leaves
         if !entered {
@@ -91,11 +127,6 @@ impl Input {
                 }
             }
         }
-    }
-
-    pub fn clear(&mut self) {
-        self.mouse_delta = (0.0, 0.0);
-        self.key_pressed_prev.clone_from(&self.key_pressed);
     }
 
     fn key_pressed_first(&self, key: Key) -> bool {
