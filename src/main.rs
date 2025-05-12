@@ -73,10 +73,15 @@ impl State<'_> {
         ui.prepare_frame(dt, &window, |frame| {
             let window = frame.window("Info");
             window
+                .always_auto_resize(true)
                 .size([300.0, 150.0], Condition::FirstUseEver)
+                .position([20.0, 20.0], Condition::FirstUseEver)
                 .build(|| {
-                    frame.text("Hello world!");
-                    frame.text("This...is...imgui-rs on WGPU!");
+                    frame.text("Controls:");
+                    frame.text("Tab: capture/release mouse");
+                    frame.text("WASDQE: move camera while mouse is captured");
+                    frame.text("F: spawn a box");
+                    frame.text("Left mouse click: grab/release an object");
                     frame.separator();
                     let mouse_pos = frame.io().mouse_pos;
                     frame.text(format!(
@@ -123,8 +128,8 @@ impl ApplicationHandler for State<'_> {
         );
 
         let rr = pollster::block_on(Renderer::new(Arc::clone(&window)));
-        let mut assets = Assets::load(&rr);
         let ui = Ui::new(&rr, window.as_ref(), window.scale_factor());
+        let mut assets = Assets::load(&rr);
 
         window.request_redraw();
 
