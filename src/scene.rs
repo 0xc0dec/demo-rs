@@ -109,7 +109,7 @@ impl Scene {
         self.sync_physics();
 
         if let Some(new_size) = new_canvas_size {
-            self.handle_canvas_resize(new_size, rr, assets);
+            self.resize(new_size, rr, assets);
         }
     }
 
@@ -118,7 +118,7 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets, Some(ui));
     }
 
-    fn handle_canvas_resize(&mut self, new_size: &SurfaceSize, rr: &Renderer, assets: &mut Assets) {
+    fn resize(&mut self, new_size: &SurfaceSize, rr: &Renderer, assets: &mut Assets) {
         let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
         player_cam

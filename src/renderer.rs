@@ -129,7 +129,7 @@ impl<'a> Renderer<'a> {
         mesh: MeshHandle,
         material: MaterialHandle,
         rt: Option<&RenderTarget>,
-        assets: &mut Assets,
+        assets: &Assets,
     ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(rt);
         match assets.material(material) {
@@ -158,12 +158,11 @@ impl<'a> Renderer<'a> {
                 .create_view(&wgpu::TextureViewDescriptor::default())
         });
 
-        let color_tex_view = target
-            .map(|t| t.color_tex().view())
-            .or(surface_tex_view.as_ref())
-            .unwrap();
         let color_attachment = Some(wgpu::RenderPassColorAttachment {
-            view: color_tex_view,
+            view: target
+                .map(|t| t.color_tex().view())
+                .or(surface_tex_view.as_ref())
+                .unwrap(),
             resolve_target: None,
             ops: wgpu::Operations {
                 load: wgpu::LoadOp::Clear(wgpu::Color::RED),
@@ -171,11 +170,10 @@ impl<'a> Renderer<'a> {
             },
         });
 
-        let depth_tex_view = target
-            .map(|t| t.depth_tex().view())
-            .unwrap_or(self.depth_tex.view());
         let depth_attachment = Some(wgpu::RenderPassDepthStencilAttachment {
-            view: depth_tex_view,
+            view: target
+                .map(|t| t.depth_tex().view())
+                .unwrap_or(self.depth_tex.view()),
             depth_ops: Some(wgpu::Operations {
                 load: wgpu::LoadOp::Clear(1.0),
                 store: wgpu::StoreOp::Store,
