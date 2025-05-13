@@ -84,10 +84,10 @@ impl Mesh {
 
     pub async fn from_file(device: &wgpu::Device, file_name: &str) -> Mesh {
         let text = file::read_string_asset(file_name).await.unwrap();
-        let cursor = Cursor::new(text);
-        let mut reader = BufReader::new(cursor);
+        let cursor = futures_lite::io::Cursor::new(text);
+        let mut reader = futures_lite::io::BufReader::new(cursor);
 
-        let (meshes, _) = tobj::load_obj_buf_async(
+        let (meshes, _) = tobj::futures::load_obj_buf(
             &mut reader,
             &tobj::LoadOptions {
                 triangulate: true,
@@ -95,7 +95,7 @@ impl Mesh {
                 ..Default::default()
             },
             |p| async move {
-                let mat_text = file::read_string_asset(&p).await.unwrap();
+                let mat_text = file::read_string_asset(p.to_str().unwrap()).await.unwrap();
                 tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_text)))
             },
         )

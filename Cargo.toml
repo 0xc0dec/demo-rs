@@ -15,6 +15,6 @@ imgui-wgpu = "0.25.0"
 imgui-winit-support = "0.13.0"
 rapier3d = { version = "0.25.1", features = ["simd-stable"] }
 slotmap = "1.0.7"
-tobj = { version = "4.0.3", features = ["async"] }
+tobj = { version = "4.0.3", features = ["async", "futures"] }
 wgpu = "25.0.0"
 winit = { version = "0.30.10", features = ["rwh_05"] }
