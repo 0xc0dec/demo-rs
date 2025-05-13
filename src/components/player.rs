@@ -35,6 +35,11 @@ pub struct Player {
 }
 
 impl Player {
+    const SPEED: f32 = 10.0;
+    const MIN_TOP_ANGLE: f32 = 0.1;
+    const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
+    const ROTATION_SPEED: f32 = 30.0;
+
     pub fn spawn(w: &mut World, rr: &Renderer, physics: &mut Physics, position: Vec3) -> Entity {
         let rt = RenderTarget::new(rr, None);
         let camera = Camera::new(
@@ -82,26 +87,26 @@ impl Player {
         input: &Input,
         window: &Window,
     ) {
-        let (_, (tr, cam, player)) = world
+        let (_, (tr, cam, this)) = world
             .query_mut::<(&mut Transform, &mut Camera, &mut Player)>()
             .into_iter()
             .next()
             .unwrap();
 
         // Move and rotate
-        if player.controlled {
-            player.rotate(dt, tr, input);
-            player.translate(dt, tr, input, physics);
+        if this.controlled {
+            this.rotate(dt, tr, input);
+            this.translate(dt, tr, input, physics);
         } else {
-            player.translation_acc = Vec3::zeros();
+            this.translation_acc = Vec3::zeros();
         }
 
         if input.action_activated(InputAction::ControlPlayer) {
-            player.controlled = !player.controlled;
-            toggle_cursor(player.controlled, window);
+            this.controlled = !this.controlled;
+            toggle_cursor(this.controlled, window);
         }
 
-        player.update_focus(tr, cam, input, window, physics);
+        this.update_focus(tr, cam, input, window, physics);
     }
 
     fn translate(
@@ -132,18 +137,16 @@ impl Player {
             translation -= transform.up();
         }
 
-        const SPEED: f32 = 10.0;
-
         // Apply only if there's anything to apply. Otherwise getting NaN after normalize() :|
         if translation.magnitude() > 0.01 {
-            self.translation_acc += translation.normalize() * dt * SPEED;
+            self.translation_acc += translation.normalize() * dt * Self::SPEED;
         }
 
         let (possible_translation, collider_current_pos) =
             physics.move_character(dt, self.translation_acc, self.collider);
         self.translation_acc = possible_translation;
 
-        let translation = SPEED * dt * self.translation_acc;
+        let translation = Self::SPEED * dt * self.translation_acc;
         self.translation_acc -= translation;
 
         transform.translate(translation);
@@ -155,26 +158,22 @@ impl Player {
     }
 
     fn rotate(&mut self, dt: f32, transform: &mut Transform, input: &Input) {
-        const MIN_TOP_ANGLE: f32 = 0.1;
-        const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-        const SPEED: f32 = 30.0;
-
         let angle_to_top = transform.forward().angle(&Vec3::y_axis());
         self.v_rot_acc += input.mouse_delta().1 * dt;
         // Protect from overturning - prevent camera from reaching the vertical line with small
         // margin angles.
-        if angle_to_top + self.v_rot_acc <= MIN_TOP_ANGLE {
-            self.v_rot_acc = -(angle_to_top - MIN_TOP_ANGLE);
-        } else if angle_to_top + self.v_rot_acc >= MIN_BOTTOM_ANGLE {
-            self.v_rot_acc = MIN_BOTTOM_ANGLE - angle_to_top;
+        if angle_to_top + self.v_rot_acc <= Self::MIN_TOP_ANGLE {
+            self.v_rot_acc = -(angle_to_top - Self::MIN_TOP_ANGLE);
+        } else if angle_to_top + self.v_rot_acc >= Self::MIN_BOTTOM_ANGLE {
+            self.v_rot_acc = Self::MIN_BOTTOM_ANGLE - angle_to_top;
         }
 
         // Smooth the movement a bit
-        let v_rot = SPEED * dt * self.v_rot_acc;
+        let v_rot = Self::ROTATION_SPEED * dt * self.v_rot_acc;
         self.v_rot_acc -= v_rot;
 
         self.h_rot_acc += input.mouse_delta().0 * dt;
-        let h_rot = SPEED * dt * self.h_rot_acc;
+        let h_rot = Self::ROTATION_SPEED * dt * self.h_rot_acc;
         self.h_rot_acc -= h_rot;
 
         transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
@@ -243,6 +242,8 @@ impl Player {
     }
 }
 
+// TODO Send an "event" from Player and consume it elsewhere, or provide a specific API on the
+// "window" object to toggle the cursor.
 fn toggle_cursor(grab: bool, window: &Window) {
     if grab {
         window

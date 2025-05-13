@@ -3,7 +3,6 @@ use rapier3d::prelude::*;
 
 use crate::math::Vec3;
 
-// TODO Try to fully encapsulate Rapier types
 pub struct Physics {
     pub bodies: RigidBodySet,
     pub colliders: ColliderSet,

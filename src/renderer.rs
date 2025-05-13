@@ -20,7 +20,6 @@ pub struct RenderPipelineParams<'a> {
     pub vertex_buffer_layouts: &'a [wgpu::VertexBufferLayout<'a>],
 }
 
-// TODO Store shared references to it to avoid passing it everywhere.
 pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
     surface_config: wgpu::SurfaceConfiguration,

@@ -25,6 +25,7 @@ mod vertex;
 // TODO Dragging should maintain box rotation relative to the camera.
 // TODO Selected object highlighting.
 // TODO Gizmos (e.g. axes instead of a box representing the player's target)
+// TODO Encapsulate/isolate library stuff (e.g. Rapier, wgpu, etc.) from the rest of the code better.
 
 fn main() {
     let event_loop = EventLoop::new().unwrap();
