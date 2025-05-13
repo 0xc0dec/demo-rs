@@ -1,4 +1,3 @@
-use crate::renderer::Renderer;
 use crate::state::State;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::RendererConfig;
@@ -6,7 +5,6 @@ use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
 use wgpu::{Device, Queue, RenderPass};
 use winit::event::Event;
-use winit::window::Window;
 
 pub struct Ui {
     context: Context,
@@ -18,19 +16,19 @@ pub struct Ui {
 impl Ui {
     const FONT_SIZE: f64 = 13.0;
 
-    pub fn new(rr: &Renderer, window: &Window, hidpi_factor: f64) -> Self {
+    pub fn new(state: &State) -> Self {
         let mut context = Context::create();
 
         let mut platform = WinitPlatform::new(&mut context);
         platform.attach_window(
             context.io_mut(),
-            window,
+            &state.window,
             imgui_winit_support::HiDpiMode::Default,
         );
         context.set_ini_filename(None);
 
-        let font_size = (Self::FONT_SIZE * hidpi_factor) as f32;
-        context.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
+        let font_size = (Self::FONT_SIZE * state.window.scale_factor()) as f32;
+        context.io_mut().font_global_scale = (1.0 / state.window.scale_factor()) as f32;
 
         context.fonts().add_font(&[FontSource::DefaultFontData {
             config: Some(imgui::FontConfig {
@@ -43,11 +41,11 @@ impl Ui {
 
         let renderer = imgui_wgpu::Renderer::new(
             &mut context,
-            rr,
-            rr.queue(),
+            &state.renderer,
+            &state.renderer.queue(),
             RendererConfig {
-                texture_format: rr.surface_texture_format(),
-                depth_format: Some(rr.depth_texture_format()),
+                texture_format: state.renderer.surface_texture_format(),
+                depth_format: Some(state.renderer.depth_texture_format()),
                 ..Default::default()
             },
         );

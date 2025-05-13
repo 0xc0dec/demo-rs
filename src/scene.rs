@@ -32,7 +32,7 @@ impl Scene {
             physics: Physics::new(),
             player: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
-            ui: Ui::new(&state.renderer, &state.window, state.window.scale_factor()),
+            ui: Ui::new(state),
             spawned_startup_box: false,
         };
 
@@ -121,10 +121,10 @@ impl Scene {
         self.sync_physics();
 
         if let Some(new_size) = new_canvas_size {
-            self.resize(new_size, &state, assets);
+            self.resize(new_size, state, assets);
         }
 
-        self.ui.prepare_frame(dt, &state, |frame| {
+        self.ui.prepare_frame(dt, state, |frame| {
             let window = frame.window("Info");
             window
                 .always_auto_resize(true)
