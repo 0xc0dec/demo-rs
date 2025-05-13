@@ -31,12 +31,9 @@ impl App<'_> {
             event_loop.exit();
         }
 
-        if let Some(&size) = self.new_canvas_size.as_ref() {
-            state.renderer.resize(size);
-        }
-
         let dt = self.frame_time.as_mut().unwrap().advance();
 
+        state.renderer.update(self.new_canvas_size);
         scene.update(dt, &state, &mut assets, &self.new_canvas_size);
         scene.render(&state.renderer, &mut assets);
 
