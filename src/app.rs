@@ -3,6 +3,7 @@ use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::renderer::{Renderer, SurfaceSize};
 use crate::scene::Scene;
+use crate::state::State;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -12,11 +13,9 @@ use winit::window::{Window, WindowId};
 
 #[derive(Default)]
 pub struct App<'a> {
-    window: Option<Arc<Window>>,
-    renderer: Option<Renderer<'a>>,
+    state: Option<State<'a>>,
     assets: Option<Assets>,
     scene: Option<Scene>,
-    input: Option<Input>,
     frame_time: Option<FrameTime>,
     new_canvas_size: Option<SurfaceSize>,
 }
@@ -24,32 +23,28 @@ pub struct App<'a> {
 impl App<'_> {
     fn render(&mut self, event_loop: &ActiveEventLoop) {
         // TODO Avoid this ugliness.
+        let mut state = self.state.take().unwrap();
         let mut scene = self.scene.take().unwrap();
-        let mut rr = self.renderer.take().unwrap();
-        let mut input = self.input.take().unwrap();
         let mut assets = self.assets.take().unwrap();
-        let window = self.window.take().unwrap();
 
-        if input.action_activated(InputAction::Quit) {
+        if state.input.action_activated(InputAction::Quit) {
             event_loop.exit();
         }
 
         if let Some(&size) = self.new_canvas_size.as_ref() {
-            rr.resize(size);
+            state.renderer.resize(size);
         }
 
         let dt = self.frame_time.as_mut().unwrap().advance();
 
-        scene.update(dt, &rr, &input, &window, &mut assets, &self.new_canvas_size);
-        scene.render(&rr, &mut assets);
+        scene.update(dt, &state, &mut assets, &self.new_canvas_size);
+        scene.render(&state.renderer, &mut assets);
 
-        input.clear();
-        window.request_redraw();
+        state.input.clear();
+        state.window.request_redraw();
 
+        self.state = Some(state);
         self.assets = Some(assets);
-        self.input = Some(input);
-        self.window = Some(window);
-        self.renderer = Some(rr);
         self.scene = Some(scene);
         self.new_canvas_size = None;
     }
@@ -58,7 +53,7 @@ impl App<'_> {
 impl ApplicationHandler for App<'_> {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         // This function should be re-entrant, see the docs. Exiting if already initialized.
-        if self.window.is_some() {
+        if self.state.is_some() {
             return;
         }
 
@@ -74,22 +69,25 @@ impl ApplicationHandler for App<'_> {
                 )
                 .unwrap(),
         );
+        window.request_redraw();
 
         let rr = pollster::block_on(Renderer::new(Arc::clone(&window)));
         let mut assets = Assets::load(&rr);
 
-        window.request_redraw();
+        let state = State {
+            window,
+            renderer: rr,
+            input: Input::new(),
+        };
 
-        self.scene = Some(Scene::new(&rr, &mut assets, &window));
+        self.scene = Some(Scene::new(&state, &mut assets));
         self.frame_time = Some(FrameTime::new());
-        self.input = Some(Input::new());
-        self.window = Some(window);
         self.assets = Some(assets);
-        self.renderer = Some(rr);
+        self.state = Some(state);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
-        if self.window.is_none() || id != self.window.as_ref().unwrap().id() {
+        if self.state.is_none() || id != self.state.as_ref().unwrap().window.id() {
             return;
         }
 
@@ -100,14 +98,18 @@ impl ApplicationHandler for App<'_> {
             _ => {}
         }
 
-        self.input.as_mut().unwrap().handle_window_event(&event);
+        self.state
+            .as_mut()
+            .unwrap()
+            .input
+            .handle_window_event(&event);
         // TODO Avoid having to pass events to scene, this is currently needed just for UI.
         self.scene.as_mut().unwrap().handle_event(
             &Event::WindowEvent {
                 window_id: id,
                 event,
             },
-            self.window.as_ref().unwrap(),
+            self.state.as_ref().unwrap(),
         )
     }
 
@@ -117,6 +119,10 @@ impl ApplicationHandler for App<'_> {
         _device_id: DeviceId,
         event: DeviceEvent,
     ) {
-        self.input.as_mut().unwrap().handle_device_event(&event);
+        self.state
+            .as_mut()
+            .unwrap()
+            .input
+            .handle_device_event(&event);
     }
 }

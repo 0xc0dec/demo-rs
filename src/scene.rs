@@ -1,7 +1,6 @@
 use hecs::{Entity, World};
 use imgui::Condition;
 use winit::event::Event;
-use winit::window::Window;
 
 use crate::assets::Assets;
 use crate::components::{
@@ -9,11 +8,12 @@ use crate::components::{
     RenderTags, RigidBody, RigidBodyParams, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS,
     RENDER_TAG_SCENE,
 };
-use crate::input::{Input, InputAction};
+use crate::input::InputAction;
 use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::renderer::{Renderer, SurfaceSize};
+use crate::state::State;
 use crate::ui::Ui;
 
 pub struct Scene {
@@ -26,34 +26,34 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn new(rr: &Renderer, assets: &mut Assets, window: &Window) -> Self {
+    pub fn new(state: &State, assets: &mut Assets) -> Self {
         let mut scene = Self {
             world: World::new(),
             physics: Physics::new(),
             player: Entity::DANGLING,
             postprocessor: Entity::DANGLING,
-            ui: Ui::new(&rr, window, window.scale_factor()),
+            ui: Ui::new(&state.renderer, &state.window, state.window.scale_factor()),
             spawned_startup_box: false,
         };
 
         // Player
         scene.player = Player::spawn(
             &mut scene.world,
-            rr,
+            &state.renderer,
             &mut scene.physics,
             Vec3::new(7.0, 7.0, 7.0),
         );
 
         // Player target
-        PlayerTarget::spawn(rr, &mut scene.world, assets);
+        PlayerTarget::spawn(&state.renderer, &mut scene.world, assets);
 
         // Floor
-        scene.spawn_floor(rr, assets);
+        scene.spawn_floor(&state.renderer, assets);
 
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
-        let material = assets.add_skybox_material(rr, assets.skybox_texture);
+        let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
         scene.world.spawn((
             Transform::default(),
             Mesh(assets.quad_mesh),
@@ -71,7 +71,7 @@ impl Scene {
             .as_ref()
             .unwrap()
             .color_tex();
-        let material = assets.add_postprocess_material(rr, pp_src_tex);
+        let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
         scene.postprocessor = scene.world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
@@ -84,26 +84,30 @@ impl Scene {
         scene
     }
 
-    pub fn handle_event(&mut self, event: &Event<()>, window: &Window) {
-        self.ui.handle_event(event, window);
+    pub fn handle_event(&mut self, event: &Event<()>, state: &State) {
+        self.ui.handle_event(event, state);
     }
 
     pub fn update(
         &mut self,
         dt: f32,
-        rr: &Renderer,
-        input: &Input,
-        window: &Window,
+        state: &State,
         assets: &mut Assets,
         new_canvas_size: &Option<SurfaceSize>,
     ) {
         self.physics.update(dt);
 
-        Player::update(dt, &mut self.world, &mut self.physics, input, window);
-        Grab::update(&mut self.world, input, &mut self.physics);
+        Player::update(
+            dt,
+            &mut self.world,
+            &mut self.physics,
+            &state.input,
+            &state.window,
+        );
+        Grab::update(&mut self.world, &state.input, &mut self.physics);
         PlayerTarget::update(&mut self.world);
 
-        if input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
+        if state.input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
             let pos = if self.spawned_startup_box {
                 player_transform.position() + player_transform.forward().xyz() * 5.0
@@ -111,16 +115,16 @@ impl Scene {
                 self.spawned_startup_box = true;
                 Vec3::y_axis().xyz() * 5.0
             };
-            self.spawn_box(pos, Vec3::from_element(1.0), rr, assets);
+            self.spawn_box(pos, Vec3::from_element(1.0), &state.renderer, assets);
         }
 
         self.sync_physics();
 
         if let Some(new_size) = new_canvas_size {
-            self.resize(new_size, rr, assets);
+            self.resize(new_size, &state, assets);
         }
 
-        self.ui.prepare_frame(dt, window, |frame| {
+        self.ui.prepare_frame(dt, &state, |frame| {
             let window = frame.window("Info");
             window
                 .always_auto_resize(true)
@@ -148,18 +152,18 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets);
     }
 
-    fn resize(&mut self, new_size: &SurfaceSize, rr: &Renderer, assets: &mut Assets) {
+    fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {
         let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
         player_cam
             .target_mut()
             .unwrap()
-            .resize((new_size.width, new_size.height), rr);
+            .resize((new_size.width, new_size.height), &state.renderer);
 
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
         let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
         assets.remove_material(material.0);
-        material.0 = assets.add_postprocess_material(rr, color_tex);
+        material.0 = assets.add_postprocess_material(&state.renderer, color_tex);
     }
 
     fn spawn_floor(&mut self, rr: &Renderer, assets: &mut Assets) {

@@ -1,4 +1,5 @@
 use crate::renderer::Renderer;
+use crate::state::State;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::RendererConfig;
 use imgui_winit_support::WinitPlatform;
@@ -60,13 +61,13 @@ impl Ui {
         }
     }
 
-    pub fn prepare_frame(&mut self, dt: f32, window: &Window, build: impl FnOnce(&mut imgui::Ui)) {
+    pub fn prepare_frame(&mut self, dt: f32, state: &State, build: impl FnOnce(&mut imgui::Ui)) {
         self.context
             .io_mut()
             .update_delta_time(Duration::from_secs_f32(dt)); // TODO Avoid the conversion.
 
         self.platform
-            .prepare_frame(self.context.io_mut(), window)
+            .prepare_frame(self.context.io_mut(), &state.window)
             .expect("Failed to prepare UI frame");
 
         let frame = self.context.new_frame();
@@ -74,13 +75,13 @@ impl Ui {
 
         if self.last_cursor != frame.mouse_cursor() {
             self.last_cursor = frame.mouse_cursor();
-            self.platform.prepare_render(frame, window);
+            self.platform.prepare_render(frame, &state.window);
         }
     }
 
-    pub fn handle_event(&mut self, event: &Event<()>, window: &Window) {
+    pub fn handle_event(&mut self, event: &Event<()>, state: &State) {
         self.platform
-            .handle_event(self.context.io_mut(), window, event)
+            .handle_event(self.context.io_mut(), &state.window, event)
     }
 
     pub fn render<'a>(&'a mut self, device: &Device, queue: &Queue, pass: &mut RenderPass<'a>) {
