@@ -21,7 +21,7 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    fn render(&mut self, event_loop: &ActiveEventLoop) {
+    fn update_and_render(&mut self, event_loop: &ActiveEventLoop) {
         // TODO Avoid this ugliness.
         let mut state = self.state.take().unwrap();
         let mut scene = self.scene.take().unwrap();
@@ -89,9 +89,9 @@ impl ApplicationHandler for App<'_> {
         }
 
         match &event {
-            WindowEvent::RedrawRequested => self.render(event_loop),
-            WindowEvent::CloseRequested => event_loop.exit(),
+            WindowEvent::RedrawRequested => self.update_and_render(event_loop),
             WindowEvent::Resized(size) => self.new_canvas_size = Some(*size),
+            WindowEvent::CloseRequested => event_loop.exit(),
             _ => {}
         }
 
@@ -100,6 +100,7 @@ impl ApplicationHandler for App<'_> {
             .unwrap()
             .input
             .handle_window_event(&event);
+
         // TODO Avoid having to pass events to scene, this is currently needed just for UI.
         self.scene.as_mut().unwrap().handle_event(
             &Event::WindowEvent {

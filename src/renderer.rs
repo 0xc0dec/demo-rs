@@ -330,7 +330,7 @@ impl<'a> Renderer<'a> {
             },
             depth_stencil: if params.depth_enabled {
                 Some(wgpu::DepthStencilState {
-                    format: Self::DEPTH_TEX_FORMAT, // TODO Configurable
+                    format: Self::DEPTH_TEX_FORMAT,
                     depth_write_enabled: params.depth_write,
                     depth_compare: wgpu::CompareFunction::Less,
                     stencil: wgpu::StencilState::default(),
