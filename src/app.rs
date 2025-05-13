@@ -4,6 +4,7 @@ use crate::input::{Input, InputAction};
 use crate::renderer::{Renderer, SurfaceSize};
 use crate::scene::Scene;
 use crate::state::State;
+use futures_lite::future;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -68,7 +69,7 @@ impl ApplicationHandler for App<'_> {
         );
         window.request_redraw();
 
-        let rr = pollster::block_on(Renderer::new(Arc::clone(&window)));
+        let rr = future::block_on(Renderer::new(Arc::clone(&window)));
         let mut assets = Assets::load(&rr);
 
         let state = State {

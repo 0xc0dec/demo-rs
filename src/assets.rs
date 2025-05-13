@@ -1,3 +1,4 @@
+use futures_lite::future;
 use slotmap::{DefaultKey, SlotMap};
 
 use crate::file;
@@ -43,7 +44,7 @@ impl Assets {
             textured_shader,
             postprocess_shader,
             skybox_shader,
-        ) = pollster::block_on(async {
+        ) = future::block_on(async {
             (
                 Mesh::from_file(rr, "cube.obj").await,
                 Texture::new_cube_from_file("skybox_bgra.dds", rr)
