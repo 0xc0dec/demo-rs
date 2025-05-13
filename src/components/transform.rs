@@ -79,7 +79,7 @@ impl Transform {
         self.rebuild_matrix();
     }
 
-    pub fn rotate_around_axis(&mut self, axis: Vec3, angle: f32, space: TransformSpace) {
+    pub fn rotate(&mut self, axis: Vec3, angle: f32, space: TransformSpace) {
         let axis = axis.normalize();
         let axis = match space {
             TransformSpace::Local => axis,

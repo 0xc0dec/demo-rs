@@ -24,8 +24,6 @@ pub struct PlayerFocus {
 pub struct Player {
     // TODO Extract into a component
     collider: ColliderHandle,
-    h_rot_acc: f32,
-    v_rot_acc: f32,
     translation_acc: Vec3,
     controlled: bool,
     // Ray and focus are separate because it's possible to have the ray but no focus (nothing is hit).
@@ -38,7 +36,7 @@ impl Player {
     const SPEED: f32 = 10.0;
     const MIN_TOP_ANGLE: f32 = 0.1;
     const MIN_BOTTOM_ANGLE: f32 = PI - 0.1;
-    const ROTATION_SPEED: f32 = 30.0;
+    const ROTATION_SPEED: f32 = 0.003;
 
     pub fn spawn(w: &mut World, rr: &Renderer, physics: &mut Physics, position: Vec3) -> Entity {
         let rt = RenderTarget::new(rr, None);
@@ -60,8 +58,6 @@ impl Player {
         w.spawn((
             Self {
                 collider,
-                h_rot_acc: 0.0,
-                v_rot_acc: 0.0,
                 translation_acc: Vec3::zeros(),
                 controlled: false,
                 focus_ray: None,
@@ -95,7 +91,7 @@ impl Player {
 
         // Move and rotate
         if this.controlled {
-            this.rotate(dt, tr, input);
+            this.rotate(tr, input);
             this.translate(dt, tr, input, physics);
         } else {
             this.translation_acc = Vec3::zeros();
@@ -157,27 +153,21 @@ impl Player {
             .set_translation(collider_current_pos + translation);
     }
 
-    fn rotate(&mut self, dt: f32, transform: &mut Transform, input: &Input) {
-        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
-        self.v_rot_acc += input.mouse_delta().1 * dt;
-        // Protect from overturning - prevent camera from reaching the vertical line with small
+    fn rotate(&mut self, transform: &mut Transform, input: &Input) {
+        let h_delta = input.mouse_delta().0 * Self::ROTATION_SPEED;
+        let mut v_delta = input.mouse_delta().1 * Self::ROTATION_SPEED;
+
+        // Protect from overturning: stop the camera from reaching the vertical line by small
         // margin angles.
-        if angle_to_top + self.v_rot_acc <= Self::MIN_TOP_ANGLE {
-            self.v_rot_acc = -(angle_to_top - Self::MIN_TOP_ANGLE);
-        } else if angle_to_top + self.v_rot_acc >= Self::MIN_BOTTOM_ANGLE {
-            self.v_rot_acc = Self::MIN_BOTTOM_ANGLE - angle_to_top;
+        let angle_to_top = transform.forward().angle(&Vec3::y_axis());
+        if angle_to_top + v_delta <= Self::MIN_TOP_ANGLE {
+            v_delta = -(angle_to_top - Self::MIN_TOP_ANGLE);
+        } else if angle_to_top + v_delta >= Self::MIN_BOTTOM_ANGLE {
+            v_delta = Self::MIN_BOTTOM_ANGLE - angle_to_top;
         }
 
-        // Smooth the movement a bit
-        let v_rot = Self::ROTATION_SPEED * dt * self.v_rot_acc;
-        self.v_rot_acc -= v_rot;
-
-        self.h_rot_acc += input.mouse_delta().0 * dt;
-        let h_rot = Self::ROTATION_SPEED * dt * self.h_rot_acc;
-        self.h_rot_acc -= h_rot;
-
-        transform.rotate_around_axis(Vec3::y_axis().xyz(), h_rot, TransformSpace::World);
-        transform.rotate_around_axis(Vec3::x_axis().xyz(), v_rot, TransformSpace::Local);
+        transform.rotate(Vec3::y_axis().xyz(), h_delta, TransformSpace::World);
+        transform.rotate(Vec3::x_axis().xyz(), v_delta, TransformSpace::Local);
     }
 
     fn update_focus(
