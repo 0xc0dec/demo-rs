@@ -68,7 +68,8 @@ impl Input {
     pub fn handle_device_event(&mut self, event: &DeviceEvent) {
         match event {
             DeviceEvent::MouseMotion { delta: (x, y) } => {
-                self.mouse_delta = (*x as f32, *y as f32);
+                self.mouse_delta.0 += *x as f32;
+                self.mouse_delta.1 += *y as f32;
             }
             DeviceEvent::MouseWheel { .. } => (),
             _ => (),
