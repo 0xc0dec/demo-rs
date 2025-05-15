@@ -82,8 +82,8 @@ impl Mesh {
         }
     }
 
-    pub async fn from_file(device: &wgpu::Device, file_name: &str) -> Mesh {
-        let text = file::read_string_asset(file_name).await.unwrap();
+    pub async fn from_file(device: &wgpu::Device, file_path: &str) -> Mesh {
+        let text = file::read_string_asset(file_path).await.unwrap();
         let cursor = futures_lite::io::Cursor::new(text);
         let mut reader = futures_lite::io::BufReader::new(cursor);
 

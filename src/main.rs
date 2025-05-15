@@ -19,8 +19,7 @@ mod texture;
 mod ui;
 mod vertex;
 
-// TODO Switch to raw Vulkan? It at least has stable API.
-// TODO Fix mouse first person rotation, it feels off.
+// TODO Switch to raw Vulkan and/or introduce it as a separate backend. wgpu has an unstable API.
 // TODO Spawned boxes should be rotated based on the camera view.
 // TODO Dragging should maintain box rotation relative to the camera.
 // TODO Selected object highlighting.
