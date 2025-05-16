@@ -1,6 +1,4 @@
-use rapier3d::na;
-
-use crate::math::{Mat4, Quat, UnitQuat, Vec3};
+use crate::math::{Mat4, Quat, Rotation3, Translation3, UnitQuat, Vec3};
 
 pub enum TransformSpace {
     Local,
@@ -91,8 +89,8 @@ impl Transform {
     }
 
     fn rebuild_matrix(&mut self) {
-        let rot_m = na::Rotation3::from(self.rot).transpose();
-        let tr_m = na::Translation3::new(self.pos.x, self.pos.y, self.pos.z);
+        let rot_m = Rotation3::from(self.rot).transpose();
+        let tr_m = Translation3::new(self.pos.x, self.pos.y, self.pos.z);
         let rot_and_tr_m = tr_m * rot_m;
         self.m = rot_and_tr_m
             .to_matrix()

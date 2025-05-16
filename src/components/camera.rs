@@ -1,6 +1,4 @@
-use rapier3d::na;
-
-use crate::math::Mat4;
+use crate::math::{Mat4, Perspective3};
 use crate::render_target::RenderTarget;
 
 pub struct Camera {
@@ -20,7 +18,7 @@ impl Camera {
         let znear = 0.1;
         let zfar = 100.0;
         let fov = 45.0;
-        let proj_matrix = na::Perspective3::new(aspect, fov, znear, zfar).to_homogeneous();
+        let proj_matrix = Perspective3::new(aspect, fov, znear, zfar).to_homogeneous();
 
         Self {
             aspect,
@@ -52,6 +50,6 @@ impl Camera {
     pub fn set_aspect(&mut self, aspect: f32) {
         self.aspect = aspect;
         self.proj_matrix =
-            na::Perspective3::new(self.aspect, self.fov, self.znear, self.zfar).to_homogeneous();
+            Perspective3::new(self.aspect, self.fov, self.znear, self.zfar).to_homogeneous();
     }
 }
