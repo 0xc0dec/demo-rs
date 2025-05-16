@@ -15,7 +15,6 @@ mod render;
 mod render_target;
 mod scene;
 mod state;
-mod texture;
 mod ui;
 mod vertex;
 mod window;

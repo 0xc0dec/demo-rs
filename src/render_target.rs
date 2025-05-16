@@ -1,5 +1,5 @@
 use crate::render::Renderer;
-use crate::texture::{Texture, TextureSize};
+use crate::render::{Texture, TextureSize};
 
 pub struct RenderTarget {
     color_tex: Texture,

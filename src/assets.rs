@@ -7,7 +7,7 @@ use crate::materials::{
 };
 use crate::mesh::Mesh;
 use crate::render::Renderer;
-use crate::texture::Texture;
+use crate::render::Texture;
 
 pub type MeshHandle = DefaultKey;
 pub type MaterialHandle = DefaultKey;

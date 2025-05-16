@@ -1,8 +1,8 @@
 use wgpu::{BindGroup, RenderPipeline};
 
 use crate::assets::Assets;
+use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
-use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 
 use super::apply_material::ApplyMaterial;

@@ -2,8 +2,8 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::{DeviceExt, TextureDataOrder};
 
+use super::Renderer;
 use crate::file;
-use crate::render::Renderer;
 
 pub type TextureSize = (u32, u32);
 
