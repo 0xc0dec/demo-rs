@@ -2,17 +2,17 @@ use std::f32::consts::PI;
 
 use hecs::{Entity, World};
 use rapier3d::prelude::*;
-use winit::window::{CursorGrabMode, Window};
+use winit::window::Window;
 
+use super::camera::Camera;
+use super::transform::{Transform, TransformSpace};
 use crate::components::RENDER_TAG_SCENE;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Vec2, Vec3};
 use crate::physics::{Physics, RayCastResult};
 use crate::render_target::RenderTarget;
 use crate::renderer::Renderer;
-
-use super::camera::Camera;
-use super::transform::{Transform, TransformSpace};
+use crate::window::CursorGrab;
 
 #[derive(Copy, Clone)]
 pub struct PlayerFocus {
@@ -99,7 +99,7 @@ impl Player {
 
         if input.action_activated(InputAction::ControlPlayer) {
             this.controlled = !this.controlled;
-            toggle_cursor(this.controlled, window);
+            window.set_cursor_grabbed(this.controlled);
         }
 
         this.update_focus(tr, cam, input, window, physics);
@@ -229,20 +229,5 @@ impl Player {
                 });
             }
         }
-    }
-}
-
-// TODO Send an "event" from Player and consume it elsewhere, or provide a specific API on the
-// "window" object to toggle the cursor.
-fn toggle_cursor(grab: bool, window: &Window) {
-    if grab {
-        window
-            .set_cursor_grab(CursorGrabMode::Confined)
-            .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Locked))
-            .unwrap();
-        window.set_cursor_visible(false);
-    } else {
-        window.set_cursor_grab(CursorGrabMode::None).unwrap();
-        window.set_cursor_visible(true);
     }
 }
