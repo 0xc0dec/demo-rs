@@ -139,9 +139,20 @@ impl Scene {
                     frame.text("Left mouse click: grab/release an object");
                     frame.separator();
                     let mouse_pos = frame.io().mouse_pos;
+                    // Sometimes the coordinates are reported as very big negative numbers, e.g.
+                    // when the app just starts.
                     frame.text(format!(
                         "Mouse position: ({:.1},{:.1})",
-                        mouse_pos[0], mouse_pos[1]
+                        if mouse_pos[0] >= 0f32 {
+                            mouse_pos[0]
+                        } else {
+                            0f32
+                        },
+                        if mouse_pos[1] >= 0f32 {
+                            mouse_pos[1]
+                        } else {
+                            0f32
+                        }
                     ));
                     frame.text(format!("Frame time: {dt:?}"));
                 });
