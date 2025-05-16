@@ -4,6 +4,9 @@ use winit::event::Event;
 
 use super::assets::Assets;
 use super::components;
+use super::components::{
+    Camera, Grab, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
+};
 use super::materials;
 use crate::input::InputAction;
 use crate::math::Vec3;
@@ -27,7 +30,7 @@ impl Scene {
         let mut physics = Physics::new();
 
         // Player
-        let player = components::Player::spawn(
+        let player = Player::spawn(
             &mut world,
             &state.renderer,
             &mut physics,
@@ -35,23 +38,23 @@ impl Scene {
         );
 
         // Player target
-        components::PlayerTarget::spawn(&state.renderer, &mut world, assets);
+        PlayerTarget::spawn(&state.renderer, &mut world, assets);
 
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
         let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
         world.spawn((
-            components::Transform::default(),
-            components::Mesh(assets.quad_mesh),
+            Transform::default(),
+            Mesh(assets.quad_mesh),
             components::Material(material),
-            components::RenderOrder(-100),
-            components::RenderTags(components::RENDER_TAG_SCENE),
+            RenderOrder(-100),
+            RenderTags(components::RENDER_TAG_SCENE),
         ));
 
         // Post-processor
         let pp_src_tex = world
-            .query_one_mut::<&components::Camera>(player)
+            .query_one_mut::<&Camera>(player)
             .unwrap()
             .target()
             .as_ref()
@@ -59,16 +62,16 @@ impl Scene {
             .color_tex();
         let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
         let postprocessor = world.spawn((
-            components::Transform::default(),
-            components::Camera::new(
+            Transform::default(),
+            Camera::new(
                 1.0,
                 components::RENDER_TAG_POST_PROCESS | components::RENDER_TAG_DEBUG_UI,
                 None,
             ),
-            components::Mesh(assets.quad_mesh),
+            Mesh(assets.quad_mesh),
             components::Material(material),
-            components::RenderOrder(100),
-            components::RenderTags(components::RENDER_TAG_POST_PROCESS),
+            RenderOrder(100),
+            RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
 
         let mut scene = Self {
@@ -98,21 +101,18 @@ impl Scene {
     ) {
         self.physics.update(dt);
 
-        components::Player::update(
+        Player::update(
             dt,
             &mut self.world,
             &mut self.physics,
             &state.input,
             &state.window,
         );
-        components::Grab::update(&mut self.world, &state.input, &mut self.physics);
-        components::PlayerTarget::update(&mut self.world);
+        Grab::update(&mut self.world, &state.input, &mut self.physics);
+        PlayerTarget::update(&mut self.world);
 
         if state.input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
-            let player_transform = self
-                .world
-                .query_one_mut::<&components::Transform>(self.player)
-                .unwrap();
+            let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
             let pos = if self.spawned_startup_box {
                 player_transform.position() + player_transform.forward().xyz() * 5.0
             } else {
@@ -168,10 +168,7 @@ impl Scene {
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {
-        let mut player_cam = self
-            .world
-            .get::<&mut components::Camera>(self.player)
-            .unwrap();
+        let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
         player_cam
             .target_mut()
@@ -200,12 +197,12 @@ impl Scene {
         );
         let material = assets.add_textured_material(rr, assets.bricks_texture);
         self.world.spawn((
-            components::Transform::new(pos, scale),
-            components::Mesh(assets.box_mesh),
+            Transform::new(pos, scale),
+            Mesh(assets.box_mesh),
             components::Material(material),
             body,
-            components::RenderOrder(0),
-            components::RenderTags(components::RENDER_TAG_SCENE),
+            RenderOrder(0),
+            RenderTags(components::RENDER_TAG_SCENE),
         ));
     }
 
@@ -220,28 +217,28 @@ impl Scene {
         );
         let material = assets.add_textured_material(rr, assets.crate_texture);
         self.world.spawn((
-            components::Transform::new(pos, scale),
-            components::Mesh(assets.box_mesh),
+            Transform::new(pos, scale),
+            Mesh(assets.box_mesh),
             components::Material(material),
             body,
-            components::RenderOrder(0),
-            components::RenderTags(components::RENDER_TAG_SCENE),
+            RenderOrder(0),
+            RenderTags(components::RENDER_TAG_SCENE),
         ));
     }
 
     fn render_with_camera(&mut self, camera: Entity, rr: &Renderer, assets: &mut Assets) {
         if let Some((cam, cam_tr)) = self
             .world
-            .query_one::<(&components::Camera, &components::Transform)>(camera)
+            .query_one::<(&Camera, &Transform)>(camera)
             .unwrap()
             .get()
         {
             let mut renderables = self.world.query::<(
-                &components::Mesh,
+                &Mesh,
                 &components::Material,
-                &components::Transform,
-                &components::RenderOrder,
-                &components::RenderTags,
+                &Transform,
+                &RenderOrder,
+                &RenderTags,
             )>();
 
             // Pick what should be rendered by the camera
@@ -281,7 +278,7 @@ impl Scene {
     fn sync_physics(&mut self) {
         for (_, (t, b)) in self
             .world
-            .query_mut::<(&mut components::Transform, &components::RigidBody)>()
+            .query_mut::<(&mut Transform, &components::RigidBody)>()
         {
             let body = self.physics.body(b.handle());
             t.set(*body.translation(), *body.rotation().inverse().quaternion());
