@@ -27,34 +27,25 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(state: &State, assets: &mut Assets) -> Self {
-        let mut scene = Self {
-            world: World::new(),
-            physics: Physics::new(),
-            player: Entity::DANGLING,
-            postprocessor: Entity::DANGLING,
-            ui: Ui::new(state),
-            spawned_startup_box: false,
-        };
+        let mut world = World::new();
+        let mut physics = Physics::new();
 
         // Player
-        scene.player = Player::spawn(
-            &mut scene.world,
+        let player = Player::spawn(
+            &mut world,
             &state.renderer,
-            &mut scene.physics,
+            &mut physics,
             Vec3::new(7.0, 7.0, 7.0),
         );
 
         // Player target
-        PlayerTarget::spawn(&state.renderer, &mut scene.world, assets);
-
-        // Floor
-        scene.spawn_floor(&state.renderer, assets);
+        PlayerTarget::spawn(&state.renderer, &mut world, assets);
 
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
         let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
-        scene.world.spawn((
+        world.spawn((
             Transform::default(),
             Mesh(assets.quad_mesh),
             Material(material),
@@ -63,16 +54,15 @@ impl Scene {
         ));
 
         // Post-processor
-        let pp_src_tex = scene
-            .world
-            .query_one_mut::<&Camera>(scene.player)
+        let pp_src_tex = world
+            .query_one_mut::<&Camera>(player)
             .unwrap()
             .target()
             .as_ref()
             .unwrap()
             .color_tex();
         let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
-        scene.postprocessor = scene.world.spawn((
+        let postprocessor = world.spawn((
             Transform::default(),
             Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
             Mesh(assets.quad_mesh),
@@ -80,6 +70,17 @@ impl Scene {
             RenderOrder(100),
             RenderTags(RENDER_TAG_POST_PROCESS),
         ));
+
+        let mut scene = Self {
+            world,
+            physics,
+            player,
+            postprocessor,
+            ui: Ui::new(state),
+            spawned_startup_box: false,
+        };
+
+        scene.spawn_floor(&state.renderer, assets);
 
         scene
     }
