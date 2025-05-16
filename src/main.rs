@@ -9,7 +9,6 @@ mod frame_time;
 mod input;
 mod materials;
 mod math;
-mod mesh;
 mod physics;
 mod render;
 mod scene;

@@ -5,7 +5,7 @@ use crate::file;
 use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
-use crate::mesh::Mesh;
+use crate::render::Mesh;
 use crate::render::Renderer;
 use crate::render::Texture;
 

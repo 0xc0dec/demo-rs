@@ -2,8 +2,8 @@ use std::io::{BufReader, Cursor};
 
 use wgpu::util::DeviceExt;
 
+use super::vertex::PosTexCoordNormalVertex;
 use crate::file;
-use crate::render::PosTexCoordNormalVertex;
 
 struct MeshPart {
     vertex_buffer: wgpu::Buffer,

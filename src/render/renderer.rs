@@ -7,7 +7,7 @@ use super::render_target::RenderTarget;
 use super::texture::Texture;
 use crate::assets::{Assets, MaterialHandle, MeshHandle};
 use crate::materials::{ApplyMaterial, Material};
-use crate::mesh::DrawMesh;
+use crate::render::DrawMesh;
 use crate::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
