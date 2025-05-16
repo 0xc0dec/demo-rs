@@ -1,5 +1,5 @@
 use crate::math::{Mat4, Perspective3};
-use crate::render_target::RenderTarget;
+use crate::render::RenderTarget;
 
 pub struct Camera {
     aspect: f32,
