@@ -48,7 +48,7 @@ impl Grab {
                         body.set_kinematic(physics, true);
                         body_entity
                     };
-                    let body = physics.bodies.get_mut(player_focus.body).unwrap();
+                    let body = physics.body_mut(player_focus.body);
                     let offset = *body.translation() - player_focus.point;
                     world
                         .insert(
@@ -70,9 +70,7 @@ impl Grab {
             if let Some((_, (grab, body))) = world.query::<(&Grab, &RigidBody)>().iter().next() {
                 let new_pos = player_focus_ray.point_at(grab.distance) + grab.offset;
                 physics
-                    .bodies
-                    .get_mut(body.handle())
-                    .unwrap()
+                    .body_mut(body.handle())
                     .set_translation(new_pos.coords, true);
             }
         } else {

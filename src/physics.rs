@@ -3,9 +3,11 @@ use rapier3d::prelude::*;
 
 use crate::math::Vec3;
 
+pub use rapier3d::prelude::RigidBodyHandle;
+
 pub struct Physics {
-    pub bodies: RigidBodySet,
     pub colliders: ColliderSet,
+    bodies: RigidBodySet,
     query_pipeline: QueryPipeline,
     physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
@@ -46,6 +48,14 @@ impl Physics {
         self.colliders
             .insert_with_parent(collider, body, &mut self.bodies);
         body
+    }
+
+    pub fn body(&self, handle: RigidBodyHandle) -> &RigidBody {
+        self.bodies.get(handle).unwrap()
+    }
+
+    pub fn body_mut(&mut self, handle: RigidBodyHandle) -> &mut RigidBody {
+        self.bodies.get_mut(handle).unwrap()
     }
 
     pub fn move_character(

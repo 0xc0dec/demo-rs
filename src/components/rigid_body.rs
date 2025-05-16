@@ -40,7 +40,7 @@ impl RigidBody {
     }
 
     pub fn set_kinematic(&self, physics: &mut Physics, kinematic: bool) {
-        let body = physics.bodies.get_mut(self.handle).unwrap();
+        let body = physics.body_mut(self.handle);
         let new_type = if kinematic {
             RigidBodyType::KinematicPositionBased
         } else {
