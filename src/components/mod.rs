@@ -5,7 +5,7 @@ pub use player_target::PlayerTarget;
 pub use rigid_body::{RigidBody, RigidBodyParams};
 pub use transform::Transform;
 
-use crate::assets::{MaterialHandle, MeshHandle};
+use crate::scene::{MaterialHandle, MeshHandle};
 
 mod camera;
 mod grab;

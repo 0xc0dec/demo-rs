@@ -2,7 +2,6 @@ use crate::app::App;
 use winit::event_loop::{ControlFlow, EventLoop};
 
 mod app;
-mod assets;
 mod components;
 mod file;
 mod frame_time;
@@ -15,7 +14,6 @@ mod scene;
 mod state;
 mod ui;
 mod window;
-
 // TODO Switch to raw Vulkan and/or introduce it as a separate backend. wgpu has an unstable API.
 // TODO Spawned boxes should be rotated based on the camera view.
 // TODO Dragging should maintain box rotation relative to the camera.

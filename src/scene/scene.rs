@@ -2,7 +2,7 @@ use hecs::{Entity, World};
 use imgui::Condition;
 use winit::event::Event;
 
-use crate::assets::Assets;
+use super::assets::Assets;
 use crate::components::{
     Camera, Grab, Material, Mesh, Player, PlayerTarget, RenderOrder,
     RenderTags, RigidBody, RigidBodyParams, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS,

@@ -1,7 +1,7 @@
-use crate::assets::Assets;
 use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::render::{Renderer, SurfaceSize};
+use crate::scene::Assets;
 use crate::scene::Scene;
 use crate::state::State;
 use futures_lite::future;

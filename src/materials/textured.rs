@@ -1,8 +1,8 @@
-use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::render::PosTexCoordNormalVertex;
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
+use crate::scene::Assets;
 
 use super::apply_material::ApplyMaterial;
 use super::uniforms::WorldViewProjUniform;

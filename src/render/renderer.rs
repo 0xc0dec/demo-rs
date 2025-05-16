@@ -5,9 +5,9 @@ use wgpu::{BackendOptions, Trace};
 
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use crate::assets::{Assets, MaterialHandle, MeshHandle};
 use crate::materials::{ApplyMaterial, Material};
 use crate::render::DrawMesh;
+use crate::scene::{Assets, MaterialHandle, MeshHandle};
 use crate::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
