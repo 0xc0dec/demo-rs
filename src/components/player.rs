@@ -49,11 +49,12 @@ impl Player {
         let mut transform = Transform::from_pos(position);
         transform.look_at(Vec3::from_element(0.0));
 
-        let collider = ColliderBuilder::ball(0.5)
-            .restitution(0.7)
-            .translation(position)
-            .build();
-        let collider = physics.colliders.insert(collider);
+        let collider = physics.add_collider(
+            ColliderBuilder::ball(0.5)
+                .restitution(0.7)
+                .translation(position)
+                .build(),
+        );
 
         w.spawn((
             Self {
@@ -147,9 +148,7 @@ impl Player {
 
         transform.translate(translation);
         physics
-            .colliders
-            .get_mut(self.collider)
-            .unwrap()
+            .collider_mut(self.collider)
             .set_translation(collider_current_pos + translation);
     }
 
@@ -221,7 +220,7 @@ impl Player {
             if let Some(RayCastResult { distance, collider }) =
                 physics.cast_ray(orig, dir, Some(self.collider))
             {
-                let body = physics.colliders.get(collider).unwrap().parent().unwrap();
+                let body = physics.collider(collider).parent().unwrap();
                 self.focus = Some(PlayerFocus {
                     point: ray.point_at(distance).coords,
                     distance,
