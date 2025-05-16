@@ -1,15 +1,14 @@
 use std::f32::consts::PI;
 
 use hecs::{Entity, World};
-use rapier3d::prelude::*;
 use winit::window::Window;
 
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
 use crate::components::RENDER_TAG_SCENE;
 use crate::input::{Input, InputAction};
-use crate::math::{to_point3, Vec2, Vec3};
-use crate::physics::{Physics, RayCastResult};
+use crate::math::{to_point3, Ray, Vec2, Vec3};
+use crate::physics::{ColliderBuilder, ColliderHandle, Physics, RayCastResult, RigidBodyHandle};
 use crate::render_target::RenderTarget;
 use crate::renderer::Renderer;
 use crate::window::CursorGrab;
