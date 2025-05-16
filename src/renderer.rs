@@ -197,7 +197,7 @@ impl<'a> Renderer<'a> {
 
                 pass.execute_bundles(bundles.iter());
                 if let Some(ui) = ui {
-                    ui.render(self, self.queue(), &mut pass);
+                    ui.render(self, &mut pass);
                 }
             }
 

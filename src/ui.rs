@@ -1,9 +1,10 @@
+use crate::renderer::Renderer;
 use crate::state::State;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::RendererConfig;
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
-use wgpu::{Device, Queue, RenderPass};
+use wgpu::RenderPass;
 use winit::event::Event;
 
 pub struct Ui {
@@ -42,7 +43,7 @@ impl Ui {
         let renderer = imgui_wgpu::Renderer::new(
             &mut context,
             &state.renderer,
-            &state.renderer.queue(),
+            state.renderer.queue(),
             RendererConfig {
                 texture_format: state.renderer.surface_texture_format(),
                 depth_format: Some(state.renderer.depth_texture_format()),
@@ -82,9 +83,9 @@ impl Ui {
             .handle_event(self.context.io_mut(), &state.window, event)
     }
 
-    pub fn render<'a>(&'a mut self, device: &Device, queue: &Queue, pass: &mut RenderPass<'a>) {
+    pub fn render<'a>(&'a mut self, rr: &Renderer, pass: &mut RenderPass<'a>) {
         self.renderer
-            .render(self.context.render(), queue, device, pass)
+            .render(self.context.render(), rr.queue(), &rr, pass)
             .expect("Rendering failed");
     }
 }
