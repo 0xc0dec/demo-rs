@@ -5,8 +5,8 @@ use wgpu::{BackendOptions, Trace};
 
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use crate::materials::{ApplyMaterial, Material};
 use crate::render::DrawMesh;
+use crate::scene::materials::{ApplyMaterial, Material};
 use crate::scene::{Assets, MaterialHandle, MeshHandle};
 use crate::ui::Ui;
 

@@ -1,10 +1,10 @@
 use futures_lite::future;
 use slotmap::{DefaultKey, SlotMap};
 
-use crate::file;
-use crate::materials::{
+use super::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
+use crate::file;
 use crate::render::Mesh;
 use crate::render::Renderer;
 use crate::render::Texture;

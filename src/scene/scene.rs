@@ -3,13 +3,9 @@ use imgui::Condition;
 use winit::event::Event;
 
 use super::assets::Assets;
-use crate::components::{
-    Camera, Grab, Material, Mesh, Player, PlayerTarget, RenderOrder,
-    RenderTags, RigidBody, RigidBodyParams, Transform, RENDER_TAG_DEBUG_UI, RENDER_TAG_POST_PROCESS,
-    RENDER_TAG_SCENE,
-};
+use super::components;
+use super::materials;
 use crate::input::InputAction;
-use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render::{Renderer, SurfaceSize};
@@ -31,7 +27,7 @@ impl Scene {
         let mut physics = Physics::new();
 
         // Player
-        let player = Player::spawn(
+        let player = components::Player::spawn(
             &mut world,
             &state.renderer,
             &mut physics,
@@ -39,23 +35,23 @@ impl Scene {
         );
 
         // Player target
-        PlayerTarget::spawn(&state.renderer, &mut world, assets);
+        components::PlayerTarget::spawn(&state.renderer, &mut world, assets);
 
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
         let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
         world.spawn((
-            Transform::default(),
-            Mesh(assets.quad_mesh),
-            Material(material),
-            RenderOrder(-100),
-            RenderTags(RENDER_TAG_SCENE),
+            components::Transform::default(),
+            components::Mesh(assets.quad_mesh),
+            components::Material(material),
+            components::RenderOrder(-100),
+            components::RenderTags(components::RENDER_TAG_SCENE),
         ));
 
         // Post-processor
         let pp_src_tex = world
-            .query_one_mut::<&Camera>(player)
+            .query_one_mut::<&components::Camera>(player)
             .unwrap()
             .target()
             .as_ref()
@@ -63,12 +59,16 @@ impl Scene {
             .color_tex();
         let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
         let postprocessor = world.spawn((
-            Transform::default(),
-            Camera::new(1.0, RENDER_TAG_POST_PROCESS | RENDER_TAG_DEBUG_UI, None),
-            Mesh(assets.quad_mesh),
-            Material(material),
-            RenderOrder(100),
-            RenderTags(RENDER_TAG_POST_PROCESS),
+            components::Transform::default(),
+            components::Camera::new(
+                1.0,
+                components::RENDER_TAG_POST_PROCESS | components::RENDER_TAG_DEBUG_UI,
+                None,
+            ),
+            components::Mesh(assets.quad_mesh),
+            components::Material(material),
+            components::RenderOrder(100),
+            components::RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
 
         let mut scene = Self {
@@ -98,18 +98,21 @@ impl Scene {
     ) {
         self.physics.update(dt);
 
-        Player::update(
+        components::Player::update(
             dt,
             &mut self.world,
             &mut self.physics,
             &state.input,
             &state.window,
         );
-        Grab::update(&mut self.world, &state.input, &mut self.physics);
-        PlayerTarget::update(&mut self.world);
+        components::Grab::update(&mut self.world, &state.input, &mut self.physics);
+        components::PlayerTarget::update(&mut self.world);
 
         if state.input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
-            let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
+            let player_transform = self
+                .world
+                .query_one_mut::<&components::Transform>(self.player)
+                .unwrap();
             let pos = if self.spawned_startup_box {
                 player_transform.position() + player_transform.forward().xyz() * 5.0
             } else {
@@ -165,7 +168,10 @@ impl Scene {
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {
-        let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
+        let mut player_cam = self
+            .world
+            .get::<&mut components::Camera>(self.player)
+            .unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
         player_cam
             .target_mut()
@@ -173,7 +179,10 @@ impl Scene {
             .resize((new_size.width, new_size.height), &state.renderer);
 
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
-        let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
+        let mut material = self
+            .world
+            .get::<&mut components::Material>(self.postprocessor)
+            .unwrap();
         assets.remove_material(material.0);
         material.0 = assets.add_postprocess_material(&state.renderer, color_tex);
     }
@@ -181,8 +190,8 @@ impl Scene {
     fn spawn_floor(&mut self, rr: &Renderer, assets: &mut Assets) {
         let pos = Vec3::from_element(0.0);
         let scale = Vec3::new(10.0, 0.5, 10.0);
-        let body = RigidBody::cuboid(
-            RigidBodyParams {
+        let body = components::RigidBody::cuboid(
+            components::RigidBodyParams {
                 pos,
                 scale,
                 movable: false,
@@ -191,18 +200,18 @@ impl Scene {
         );
         let material = assets.add_textured_material(rr, assets.bricks_texture);
         self.world.spawn((
-            Transform::new(pos, scale),
-            Mesh(assets.box_mesh),
-            Material(material),
+            components::Transform::new(pos, scale),
+            components::Mesh(assets.box_mesh),
+            components::Material(material),
             body,
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_SCENE),
+            components::RenderOrder(0),
+            components::RenderTags(components::RENDER_TAG_SCENE),
         ));
     }
 
     fn spawn_box(&mut self, pos: Vec3, scale: Vec3, rr: &Renderer, assets: &mut Assets) {
-        let body = RigidBody::cuboid(
-            RigidBodyParams {
+        let body = components::RigidBody::cuboid(
+            components::RigidBodyParams {
                 pos,
                 scale,
                 movable: true,
@@ -211,25 +220,29 @@ impl Scene {
         );
         let material = assets.add_textured_material(rr, assets.crate_texture);
         self.world.spawn((
-            Transform::new(pos, scale),
-            Mesh(assets.box_mesh),
-            Material(material),
+            components::Transform::new(pos, scale),
+            components::Mesh(assets.box_mesh),
+            components::Material(material),
             body,
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_SCENE),
+            components::RenderOrder(0),
+            components::RenderTags(components::RENDER_TAG_SCENE),
         ));
     }
 
     fn render_with_camera(&mut self, camera: Entity, rr: &Renderer, assets: &mut Assets) {
         if let Some((cam, cam_tr)) = self
             .world
-            .query_one::<(&Camera, &Transform)>(camera)
+            .query_one::<(&components::Camera, &components::Transform)>(camera)
             .unwrap()
             .get()
         {
-            let mut renderables =
-                self.world
-                    .query::<(&Mesh, &Material, &Transform, &RenderOrder, &RenderTags)>();
+            let mut renderables = self.world.query::<(
+                &components::Mesh,
+                &components::Material,
+                &components::Transform,
+                &components::RenderOrder,
+                &components::RenderTags,
+            )>();
 
             // Pick what should be rendered by the camera
             let mut meshes = renderables
@@ -266,7 +279,10 @@ impl Scene {
     }
 
     fn sync_physics(&mut self) {
-        for (_, (t, b)) in self.world.query_mut::<(&mut Transform, &RigidBody)>() {
+        for (_, (t, b)) in self
+            .world
+            .query_mut::<(&mut components::Transform, &components::RigidBody)>()
+        {
             let body = self.physics.body(b.handle());
             t.set(*body.translation(), *body.rotation().inverse().quaternion());
         }

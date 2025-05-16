@@ -1,11 +1,11 @@
 use hecs::{With, World};
 
-use crate::components::{
-    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
-};
-use crate::materials;
 use crate::math::Vec3;
 use crate::render::Renderer;
+use crate::scene::components::{
+    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
+};
+use crate::scene::materials;
 use crate::scene::Assets;
 
 // A visual guide showing the current focus point of the player

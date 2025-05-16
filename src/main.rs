@@ -2,11 +2,9 @@ use crate::app::App;
 use winit::event_loop::{ControlFlow, EventLoop};
 
 mod app;
-mod components;
 mod file;
 mod frame_time;
 mod input;
-mod materials;
 mod math;
 mod physics;
 mod render;

@@ -1,3 +1,10 @@
+mod camera;
+mod grab;
+mod player;
+mod player_target;
+mod rigid_body;
+mod transform;
+
 pub use camera::Camera;
 pub use grab::Grab;
 pub use player::Player;
@@ -6,13 +13,6 @@ pub use rigid_body::{RigidBody, RigidBodyParams};
 pub use transform::Transform;
 
 use crate::scene::{MaterialHandle, MeshHandle};
-
-mod camera;
-mod grab;
-mod player;
-mod player_target;
-mod rigid_body;
-mod transform;
 
 pub struct RenderTags(pub u32);
 pub struct RenderOrder(pub i32);

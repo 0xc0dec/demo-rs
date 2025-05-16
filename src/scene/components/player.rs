@@ -5,12 +5,12 @@ use winit::window::Window;
 
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
-use crate::components::RENDER_TAG_SCENE;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Ray, Vec2, Vec3};
 use crate::physics::{ColliderBuilder, ColliderHandle, Physics, RayCastResult, RigidBodyHandle};
 use crate::render::RenderTarget;
 use crate::render::Renderer;
+use crate::scene::components::RENDER_TAG_SCENE;
 use crate::window::CursorGrab;
 
 #[derive(Copy, Clone)]
