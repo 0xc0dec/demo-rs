@@ -1,6 +1,6 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
-use crate::renderer::{RenderPipelineParams, Renderer};
+use crate::render::{RenderPipelineParams, Renderer};
 use crate::texture::Texture;
 use crate::vertex::PosTexCoordNormalVertex;
 

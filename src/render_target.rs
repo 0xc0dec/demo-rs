@@ -1,4 +1,4 @@
-use crate::renderer::Renderer;
+use crate::render::Renderer;
 use crate::texture::{Texture, TextureSize};
 
 pub struct RenderTarget {

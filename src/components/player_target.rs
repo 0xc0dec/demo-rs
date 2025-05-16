@@ -6,7 +6,7 @@ use crate::components::{
 };
 use crate::materials;
 use crate::math::Vec3;
-use crate::renderer::Renderer;
+use crate::render::Renderer;
 
 // A visual guide showing the current focus point of the player
 pub struct PlayerTarget;

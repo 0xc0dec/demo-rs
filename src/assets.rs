@@ -6,7 +6,7 @@ use crate::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
 use crate::mesh::Mesh;
-use crate::renderer::Renderer;
+use crate::render::Renderer;
 use crate::texture::Texture;
 
 pub type MeshHandle = DefaultKey;

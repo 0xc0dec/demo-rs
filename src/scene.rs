@@ -12,7 +12,7 @@ use crate::input::InputAction;
 use crate::materials;
 use crate::math::Vec3;
 use crate::physics::Physics;
-use crate::renderer::{Renderer, SurfaceSize};
+use crate::render::{Renderer, SurfaceSize};
 use crate::state::State;
 use crate::ui::Ui;
 

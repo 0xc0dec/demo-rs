@@ -1,4 +1,4 @@
-use crate::renderer::Renderer;
+use crate::render::Renderer;
 use crate::state::State;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::RendererConfig;

@@ -9,8 +9,8 @@ use crate::components::RENDER_TAG_SCENE;
 use crate::input::{Input, InputAction};
 use crate::math::{to_point3, Ray, Vec2, Vec3};
 use crate::physics::{ColliderBuilder, ColliderHandle, Physics, RayCastResult, RigidBodyHandle};
+use crate::render::Renderer;
 use crate::render_target::RenderTarget;
-use crate::renderer::Renderer;
 use crate::window::CursorGrab;
 
 #[derive(Copy, Clone)]
