@@ -15,7 +15,6 @@ mod render;
 mod scene;
 mod state;
 mod ui;
-mod vertex;
 mod window;
 
 // TODO Switch to raw Vulkan and/or introduce it as a separate backend. wgpu has an unstable API.

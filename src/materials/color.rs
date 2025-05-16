@@ -1,8 +1,8 @@
 use crate::assets::Assets;
 use crate::components::{Camera, Transform};
 use crate::math::Vec3;
+use crate::render::PosTexCoordNormalVertex;
 use crate::render::{RenderPipelineParams, Renderer};
-use crate::vertex::PosTexCoordNormalVertex;
 
 use super::apply_material::ApplyMaterial;
 use super::uniforms::{Vec3Uniform, WorldViewProjUniform};
