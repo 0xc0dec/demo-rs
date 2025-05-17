@@ -1,4 +1,4 @@
-use crate::math::{Mat4, OPENGL_TO_WGPU_MATRIX, Vec3};
+use crate::math::{Mat4, Vec3, OPENGL_TO_WGPU_MATRIX};
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
@@ -48,9 +48,11 @@ pub struct ViewInvProjUniform {
 }
 
 impl ViewInvProjUniform {
-    pub fn update(&mut self, view: &Mat4, proj: &Mat4) {
-        self.view_mat = (*view).into();
-        self.proj_mat_inv = (OPENGL_TO_WGPU_MATRIX * proj).try_inverse().unwrap().into();
+    pub fn new(view: &Mat4, proj: &Mat4) -> Self {
+        Self {
+            view_mat: (*view).into(),
+            proj_mat_inv: (OPENGL_TO_WGPU_MATRIX * proj).try_inverse().unwrap().into(),
+        }
     }
 }
 
