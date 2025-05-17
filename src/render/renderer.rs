@@ -5,8 +5,7 @@ use wgpu::{BackendOptions, Trace};
 
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use super::{ApplyMaterial, DrawMesh};
-use crate::scene::materials::Material;
+use super::DrawMesh;
 use crate::scene::{Assets, MaterialHandle, MeshHandle};
 use crate::ui::Ui;
 
@@ -28,6 +27,7 @@ pub struct Renderer<'a> {
     depth_tex: Texture,
 }
 
+// TODO Avoid references to Assets, materials and everything from Scene
 impl<'a> Renderer<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
@@ -133,12 +133,7 @@ impl<'a> Renderer<'a> {
         assets: &Assets,
     ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(rt);
-        match assets.material(material) {
-            Material::Color(m) => m.apply(&mut encoder),
-            Material::Skybox(m) => m.apply(&mut encoder),
-            Material::Textured(m) => m.apply(&mut encoder),
-            Material::PostProcess(m) => m.apply(&mut encoder),
-        }
+        assets.material(material).apply(&mut encoder);
         encoder.draw_mesh(assets.mesh(mesh));
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }

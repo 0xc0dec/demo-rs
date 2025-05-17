@@ -1,5 +1,5 @@
 use crate::math::Vec3;
-use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
+use crate::render::PosTexCoordNormalVertex;
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
@@ -65,8 +65,8 @@ impl ColorMaterial {
     }
 }
 
-impl ApplyMaterial for ColorMaterial {
-    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+impl ColorMaterial {
+    pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.color_uniform_bind_group, &[]);

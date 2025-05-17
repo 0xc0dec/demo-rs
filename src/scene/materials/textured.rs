@@ -1,5 +1,5 @@
+use crate::render::PosTexCoordNormalVertex;
 use crate::render::Texture;
-use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
@@ -39,13 +39,7 @@ impl TexturedMaterial {
 }
 
 impl TexturedMaterial {
-    pub fn set_wvp(
-        &self,
-        rr: &Renderer,
-        cam: &Camera,
-        cam_tr: &Transform,
-        tr: &Transform,
-    ) {
+    pub fn set_wvp(&self, rr: &Renderer, cam: &Camera, cam_tr: &Transform, tr: &Transform) {
         rr.queue().write_buffer(
             &self.uniform_buf,
             0,
@@ -58,8 +52,8 @@ impl TexturedMaterial {
     }
 }
 
-impl ApplyMaterial for TexturedMaterial {
-    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+impl TexturedMaterial {
+    pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
         encoder.set_bind_group(1, &self.uniform_bind_group, &[]);

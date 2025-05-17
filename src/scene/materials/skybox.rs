@@ -1,5 +1,5 @@
 use crate::render::Texture;
-use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
+use crate::render::PosTexCoordNormalVertex;
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
@@ -51,8 +51,8 @@ impl SkyboxMaterial {
     }
 }
 
-impl ApplyMaterial for SkyboxMaterial {
-    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+impl SkyboxMaterial {
+    pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.uniform_bind_group, &[]);
         encoder.set_bind_group(1, &self.tex_bind_group, &[]);

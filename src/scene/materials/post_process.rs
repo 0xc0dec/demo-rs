@@ -1,4 +1,4 @@
-use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
+use crate::render::PosTexCoordNormalVertex;
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 
@@ -29,8 +29,8 @@ impl PostProcessMaterial {
     }
 }
 
-impl ApplyMaterial for PostProcessMaterial {
-    fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+impl PostProcessMaterial {
+    pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);
     }
