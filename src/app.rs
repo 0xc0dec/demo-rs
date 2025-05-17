@@ -36,7 +36,7 @@ impl App<'_> {
 
         state.renderer.update(self.new_canvas_size);
         scene.update(dt, &state, &mut assets, &self.new_canvas_size);
-        scene.render(&state.renderer, &mut assets);
+        scene.render(&state.renderer, &assets);
 
         state.input.clear();
         state.window.request_redraw();

@@ -5,8 +5,8 @@ use crate::math::{Mat4, Vec3, OPENGL_TO_WGPU_MATRIX};
 pub struct Vec3Uniform([f32; 3]);
 
 impl Vec3Uniform {
-    pub fn update(&mut self, value: Vec3) {
-        self.0 = [value.x, value.y, value.z];
+    pub fn new(v: Vec3) -> Self {
+        Self([v.x, v.y, v.z])
     }
 }
 
@@ -24,9 +24,11 @@ pub struct WorldViewProjUniform {
 }
 
 impl WorldViewProjUniform {
-    pub fn update(&mut self, world: &Mat4, view: &Mat4, proj: &Mat4) {
-        self.world = (*world).into();
-        self.view_proj = (OPENGL_TO_WGPU_MATRIX * proj * view).into();
+    pub fn new(world: &Mat4, view: &Mat4, proj: &Mat4) -> Self {
+        Self {
+            world: (*world).into(),
+            view_proj: (OPENGL_TO_WGPU_MATRIX * proj * view).into(),
+        }
     }
 }
 

@@ -14,7 +14,7 @@ pub struct PlayerTarget;
 impl PlayerTarget {
     pub fn spawn(rr: &Renderer, world: &mut World, assets: &mut Assets) {
         let mat = assets.add_color_material(rr);
-        if let materials::Material::Color(m) = assets.material_mut(mat) {
+        if let materials::Material::Color(m) = assets.material(mat) {
             m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
         }
 

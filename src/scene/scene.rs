@@ -162,7 +162,7 @@ impl Scene {
         })
     }
 
-    pub fn render(&mut self, rr: &Renderer, assets: &mut Assets) {
+    pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
         self.render_with_camera(self.player, rr, assets);
         self.render_with_camera(self.postprocessor, rr, assets);
     }
@@ -226,7 +226,7 @@ impl Scene {
         ));
     }
 
-    fn render_with_camera(&mut self, camera: Entity, rr: &Renderer, assets: &mut Assets) {
+    fn render_with_camera(&mut self, camera: Entity, rr: &Renderer, assets: &Assets) {
         if let Some((cam, cam_tr)) = self
             .world
             .query_one::<(&Camera, &Transform)>(camera)
@@ -255,11 +255,11 @@ impl Scene {
 
             let bundles = meshes
                 .into_iter()
-                .map(|(mesh, material, transform, _)| {
-                    match assets.material_mut(material.0) {
-                        materials::Material::Color(m) => m.set_wvp(rr, cam, cam_tr, transform),
+                .map(|(mesh, material, tr, _)| {
+                    match assets.material(material.0) {
+                        materials::Material::Color(m) => m.set_wvp(rr, cam, cam_tr, tr),
                         materials::Material::Skybox(m) => m.set_wvp(rr, cam, cam_tr),
-                        materials::Material::Textured(m) => m.set_wvp(rr, cam, cam_tr, transform),
+                        materials::Material::Textured(m) => m.set_wvp(rr, cam, cam_tr, tr),
                         materials::Material::PostProcess(_) => (),
                     }
                     rr.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)

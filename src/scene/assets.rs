@@ -145,10 +145,6 @@ impl Assets {
     pub fn material(&self, handle: MaterialHandle) -> &Material {
         &self.materials[handle]
     }
-
-    pub fn material_mut(&mut self, handle: MaterialHandle) -> &mut Material {
-        &mut self.materials[handle]
-    }
 }
 
 async fn new_shader_module(device: &wgpu::Device, src_file_path: &str) -> wgpu::ShaderModule {

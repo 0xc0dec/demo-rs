@@ -8,23 +8,19 @@ use super::uniforms::{Vec3Uniform, WorldViewProjUniform};
 
 pub struct ColorMaterial {
     pipeline: wgpu::RenderPipeline,
-    matrices_uniform: WorldViewProjUniform,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: wgpu::BindGroup,
-    color_uniform: Vec3Uniform,
     color_uniform_buf: wgpu::Buffer,
     color_uniform_bind_group: wgpu::BindGroup,
 }
 
 impl ColorMaterial {
     pub fn new(rr: &Renderer, assets: &Assets) -> Self {
-        let matrices_uniform = WorldViewProjUniform::default();
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
-            rr.new_uniform_bind_group(bytemuck::cast_slice(&[matrices_uniform]));
+            rr.new_uniform_bind_group(bytemuck::cast_slice(&[WorldViewProjUniform::default()]));
 
-        let color_uniform = Vec3Uniform::default();
         let (color_uniform_bind_group_layout, color_uniform_bind_group, color_uniform_buf) =
-            rr.new_uniform_bind_group(bytemuck::cast_slice(&[color_uniform]));
+            rr.new_uniform_bind_group(bytemuck::cast_slice(&[Vec3Uniform::default()]));
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
             shader_module: assets.shader(assets.color_shader),
@@ -39,10 +35,8 @@ impl ColorMaterial {
 
         Self {
             pipeline,
-            matrices_uniform,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
-            color_uniform,
             color_uniform_buf,
             color_uniform_bind_group,
         }
@@ -50,31 +44,23 @@ impl ColorMaterial {
 }
 
 impl ColorMaterial {
-    pub fn set_color(&mut self, rr: &Renderer, color: Vec3) {
-        self.color_uniform.update(color);
+    pub fn set_color(&self, rr: &Renderer, color: Vec3) {
         rr.queue().write_buffer(
             &self.color_uniform_buf,
             0,
-            bytemuck::cast_slice(&[self.color_uniform]),
+            bytemuck::cast_slice(&[Vec3Uniform::new(color)]),
         );
     }
 
-    pub fn set_wvp(
-        &mut self,
-        rr: &Renderer,
-        camera: &Camera,
-        camera_transform: &Transform,
-        transform: &Transform,
-    ) {
-        self.matrices_uniform.update(
-            &transform.matrix(),
-            &camera_transform.view_matrix(),
-            &camera.proj_matrix(),
-        );
+    pub fn set_wvp(&self, rr: &Renderer, cam: &Camera, cam_tr: &Transform, tr: &Transform) {
         rr.queue().write_buffer(
             &self.matrices_uniform_buf,
             0,
-            bytemuck::cast_slice(&[self.matrices_uniform]),
+            bytemuck::cast_slice(&[WorldViewProjUniform::new(
+                &tr.matrix(),
+                &cam_tr.view_matrix(),
+                &cam.proj_matrix(),
+            )]),
         );
     }
 }

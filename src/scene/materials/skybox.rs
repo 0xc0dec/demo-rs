@@ -18,7 +18,7 @@ impl SkyboxMaterial {
         let (uniform_bind_group_layout, uniform_bind_group, uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[ViewInvProjUniform::default()]));
 
-        let (text_bind_group_layout, tex_bind_group) =
+        let (tex_bind_group_layout, tex_bind_group) =
             rr.new_texture_bind_group(texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
@@ -27,7 +27,7 @@ impl SkyboxMaterial {
             depth_enabled: true,
             bind_group_layouts: &[
                 &uniform_bind_group_layout,
-                &text_bind_group_layout,
+                &tex_bind_group_layout,
             ],
             vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });
