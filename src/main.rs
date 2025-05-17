@@ -13,7 +13,6 @@ mod state;
 mod ui;
 mod window;
 
-// TODO Switch to raw Vulkan and/or introduce it as a separate backend. wgpu has an unstable API.
 // TODO Spawned boxes should be rotated based on the camera view.
 // TODO Dragging should maintain box rotation relative to the camera.
 // TODO Selected object highlighting.
@@ -21,6 +20,7 @@ mod window;
 // TODO Encapsulate/isolate library stuff (e.g. Rapier, wgpu, etc.) from the rest of the code better.
 // TODO Avoid references from `render` to `scene` mod. `render` is supposed to be low-level and referenced by `scene`,
 // not the other way around.
+// TODO Switch to raw Vulkan and/or introduce it as a separate backend. wgpu has an unstable API.
 
 fn main() {
     let event_loop = EventLoop::new().unwrap();
