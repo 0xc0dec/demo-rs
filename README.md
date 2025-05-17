@@ -1,14 +1,11 @@
 # About
 
-A simple graphics demo where you can fly around, spawn boxes and grab them.
+A simple graphics demo where you can fly around, spawn boxes and move them.
 
 ![Demo](/screenshot.png?raw=true)
 
 I made this project to learn Rust and try it in game development. There is no attempt to create an "engine", everything
 is pretty low level and abstractions are built along the way when needed.
-
-Even though this is a learning project, the code is not heavily commented.
-Hopefully it's clean enough to be readable and easy to navigate.
 
 ## Building and running
 
@@ -21,7 +18,7 @@ Controls:
 - Toggle camera control: `Tab`
 - Move: `WASDQE`
 - Grab/drop boxes: left mouse click
-- Spawn new box: `F`
+- Spawn a new box: `F`
 - Quit: `Esc`
 
 ## Features
