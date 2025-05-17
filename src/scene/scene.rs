@@ -14,7 +14,6 @@ use super::components;
 use super::components::{
     Camera, Grab, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
 };
-use super::materials;
 
 pub struct Scene {
     world: World,
@@ -254,14 +253,9 @@ impl Scene {
 
             let bundles = meshes
                 .into_iter()
-                .map(|(mesh, material, tr, _)| {
-                    match assets.material(material.0) {
-                        materials::Material::Color(m) => m.set_wvp(rr, cam, cam_tr, tr),
-                        materials::Material::Skybox(m) => m.set_wvp(rr, cam, cam_tr),
-                        materials::Material::Textured(m) => m.set_wvp(rr, cam, cam_tr, tr),
-                        materials::Material::PostProcess(_) => (),
-                    }
-                    rr.build_render_bundle(mesh.0, material.0, cam.target().as_ref(), assets)
+                .map(|(mesh, mat, tr, _)| {
+                    assets.material(mat.0).update(rr, cam, cam_tr, tr);
+                    rr.build_render_bundle(mesh.0, mat.0, cam.target().as_ref(), assets)
                 })
                 // TODO Avoid vec allocation
                 .collect::<Vec<wgpu::RenderBundle>>();

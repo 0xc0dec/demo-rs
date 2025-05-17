@@ -1,3 +1,6 @@
+use crate::render::Renderer;
+
+use super::super::components::{Camera, Transform};
 use super::{ColorMaterial, PostProcessMaterial, SkyboxMaterial, TexturedMaterial};
 
 pub enum Material {
@@ -8,6 +11,15 @@ pub enum Material {
 }
 
 impl Material {
+    pub fn update(&self, rr: &Renderer, cam: &Camera, cam_tr: &Transform, tr: &Transform) {
+        match self {
+            Material::Color(m) => m.set_wvp(rr, cam, cam_tr, tr),
+            Material::Textured(m) => m.set_wvp(rr, cam, cam_tr, tr),
+            Material::Skybox(m) => m.set_wvp(rr, cam, cam_tr),
+            Material::PostProcess(_) => (),
+        }
+    }
+
     pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         match self {
             Material::Color(m) => m.apply(encoder),
