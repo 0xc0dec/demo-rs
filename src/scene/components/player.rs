@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use hecs::{Entity, World};
-use winit::window::Window;
 
 use super::camera::Camera;
 use super::transform::{Transform, TransformSpace};
@@ -11,6 +10,7 @@ use crate::physics::{ColliderBuilder, ColliderHandle, Physics, RayCastResult, Ri
 use crate::render::RenderTarget;
 use crate::render::Renderer;
 use crate::scene::components::RENDER_TAG_SCENE;
+use crate::state::State;
 use crate::window::CursorGrab;
 
 #[derive(Copy, Clone)]
@@ -80,8 +80,7 @@ impl Player {
         dt: f32,
         world: &mut World,
         physics: &mut Physics,
-        input: &Input,
-        window: &Window,
+        state: &State,
     ) {
         let (_, (tr, cam, this)) = world
             .query_mut::<(&mut Transform, &mut Camera, &mut Player)>()
@@ -91,18 +90,18 @@ impl Player {
 
         // Move and rotate
         if this.controlled {
-            this.rotate(tr, input);
-            this.translate(dt, tr, input, physics);
+            this.rotate(tr, &state.input);
+            this.translate(dt, tr, &state.input, physics);
         } else {
             this.translation_acc = Vec3::zeros();
         }
 
-        if input.action_activated(InputAction::ControlPlayer) {
+        if state.input.action_activated(InputAction::ControlPlayer) {
             this.controlled = !this.controlled;
-            window.set_cursor_grabbed(this.controlled);
+            state.window.set_cursor_grabbed(this.controlled);
         }
 
-        this.update_focus(tr, cam, input, window, physics);
+        this.update_focus(tr, cam, state, physics);
     }
 
     fn translate(
@@ -172,19 +171,18 @@ impl Player {
         &mut self,
         tr: &Transform,
         cam: &Camera,
-        input: &Input,
-        window: &Window,
+        state: &State,
         physics: &Physics,
     ) {
         let ray = if self.controlled {
             // From screen center
             Some((tr.position(), tr.forward()))
-        } else if let Some(cursor_pos) = input.cursor_position() {
+        } else if let Some(cursor_pos) = state.input.cursor_position() {
             // From cursor position
             let cursor_pos = Vec2::new(cursor_pos.0, cursor_pos.1);
             let canvas_size = Vec2::new(
-                window.inner_size().width as f32,
-                window.inner_size().height as f32,
+                state.window.inner_size().width as f32,
+                state.window.inner_size().height as f32,
             );
             // Normalized device coordinates (-1..1)
             let mut cursor_ndc_pos =

@@ -105,8 +105,7 @@ impl Scene {
             dt,
             &mut self.world,
             &mut self.physics,
-            &state.input,
-            &state.window,
+            &state,
         );
         Grab::update(&mut self.world, &state.input, &mut self.physics);
         PlayerTarget::update(&mut self.world);
