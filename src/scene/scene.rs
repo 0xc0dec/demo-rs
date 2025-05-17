@@ -101,12 +101,7 @@ impl Scene {
     ) {
         self.physics.update(dt);
 
-        Player::update(
-            dt,
-            &mut self.world,
-            &mut self.physics,
-            &state,
-        );
+        Player::update(dt, &mut self.world, &mut self.physics, state);
         Grab::update(&mut self.world, &state.input, &mut self.physics);
         PlayerTarget::update(&mut self.world);
 
@@ -127,6 +122,15 @@ impl Scene {
             self.resize(new_size, state, assets);
         }
 
+        self.prepare_ui(dt, state);
+    }
+
+    pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
+        self.render_with_camera(self.player, rr, assets);
+        self.render_with_camera(self.postprocessor, rr, assets);
+    }
+
+    fn prepare_ui(&mut self, dt: f32, state: &State) {
         self.ui.prepare_frame(dt, state, |frame| {
             let window = frame.window("Info");
             window
@@ -158,12 +162,7 @@ impl Scene {
                     ));
                     frame.text(format!("Frame time: {dt:?}"));
                 });
-        })
-    }
-
-    pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
-        self.render_with_camera(self.player, rr, assets);
-        self.render_with_camera(self.postprocessor, rr, assets);
+        });
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {
