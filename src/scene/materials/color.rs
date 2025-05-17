@@ -1,9 +1,9 @@
 use crate::math::Vec3;
 use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
 use crate::render::{RenderPipelineParams, Renderer};
-use crate::scene::components::{Camera, Transform};
-use crate::scene::Assets;
 
+use super::super::components::{Camera, Transform};
+use super::super::Assets;
 use super::uniforms::{Vec3Uniform, WorldViewProjUniform};
 
 pub struct ColorMaterial {

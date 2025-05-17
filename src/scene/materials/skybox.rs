@@ -1,9 +1,9 @@
 use crate::render::Texture;
 use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
 use crate::render::{RenderPipelineParams, Renderer};
-use crate::scene::components::{Camera, Transform};
-use crate::scene::Assets;
 
+use super::super::components::{Camera, Transform};
+use super::super::Assets;
 use super::uniforms::ViewInvProjUniform;
 
 pub struct SkyboxMaterial {
@@ -25,10 +25,7 @@ impl SkyboxMaterial {
             shader_module: assets.shader(assets.skybox_shader),
             depth_write: false,
             depth_enabled: true,
-            bind_group_layouts: &[
-                &uniform_bind_group_layout,
-                &tex_bind_group_layout,
-            ],
+            bind_group_layouts: &[&uniform_bind_group_layout, &tex_bind_group_layout],
             vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });
 

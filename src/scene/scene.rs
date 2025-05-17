@@ -2,18 +2,19 @@ use hecs::{Entity, World};
 use imgui::Condition;
 use winit::event::Event;
 
-use super::assets::Assets;
-use super::components;
-use super::components::{
-    Camera, Grab, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
-};
-use super::materials;
 use crate::input::InputAction;
 use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render::{Renderer, SurfaceSize};
 use crate::state::State;
 use crate::ui::Ui;
+
+use super::assets::Assets;
+use super::components;
+use super::components::{
+    Camera, Grab, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
+};
+use super::materials;
 
 pub struct Scene {
     world: World,
