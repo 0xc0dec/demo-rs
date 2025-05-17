@@ -31,6 +31,6 @@ Controls:
     - Camera with character controller, preventing it from passing through objects.
     - Ray casting.
     - Drag-n-drop.
-- First person flying camera ("spectator") with clamping of vertical angles to protect from overturning.
+- First person flying camera ("spectator") with protection from overturning.
 - Skybox rendering on a full-screen quad.
 - Vignette post-processing.
