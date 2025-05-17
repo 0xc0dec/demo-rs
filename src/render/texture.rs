@@ -14,6 +14,8 @@ pub struct Texture {
 }
 
 impl Texture {
+    const DEFAULT_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
+    
     pub fn new_depth(
         device: &wgpu::Device,
         format: wgpu::TextureFormat,
@@ -24,18 +26,7 @@ impl Texture {
             height: size.1,
             depth_or_array_layers: 1,
         };
-
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
-
+        let texture = new_empty_texture_2d(device, size, format);
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = device.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
@@ -60,18 +51,7 @@ impl Texture {
             height: size.1,
             depth_or_array_layers: 1,
         };
-
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            label: None,
-            size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
-            view_formats: &[],
-        });
-
+        let texture = new_empty_texture_2d(device, size, format);
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = device.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
@@ -117,7 +97,6 @@ impl Texture {
             height: dimensions.1,
             depth_or_array_layers: 1,
         };
-        let format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
         let texture = rr.create_texture_with_data(
             rr.queue(),
@@ -127,14 +106,13 @@ impl Texture {
                 mip_level_count: 1,
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format,
+                format: Self::DEFAULT_FORMAT,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 view_formats: &[],
             },
             TextureDataOrder::default(),
             &rgba,
         );
-
         let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
         let sampler = rr.create_sampler(&new_sampler_descriptor(
             wgpu::FilterMode::Nearest,
@@ -145,14 +123,12 @@ impl Texture {
         Ok(Self {
             view,
             sampler,
-            format,
+            format: Self::DEFAULT_FORMAT,
         })
     }
 
     fn new_cube_from_mem(rr: &Renderer, data: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&data))?;
-
-        let format = wgpu::TextureFormat::Rgba8UnormSrgb; // TODO Configurable
 
         let size = wgpu::Extent3d {
             width: 128,
@@ -172,7 +148,7 @@ impl Texture {
                 mip_level_count: layer_size.max_mips(wgpu::TextureDimension::D2),
                 sample_count: 1,
                 dimension: wgpu::TextureDimension::D2,
-                format,
+                format: Self::DEFAULT_FORMAT,
                 usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 label: None,
                 view_formats: &[],
@@ -196,7 +172,7 @@ impl Texture {
         Ok(Self {
             view,
             sampler,
-            format,
+            format: Self::DEFAULT_FORMAT,
         })
     }
 }
@@ -219,4 +195,22 @@ fn new_sampler_descriptor<'a>(
         compare,
         ..Default::default()
     }
+}
+
+// TODO Move to Renderer?
+fn new_empty_texture_2d(
+    device: &wgpu::Device,
+    size: wgpu::Extent3d,
+    format: wgpu::TextureFormat,
+) -> wgpu::Texture {
+    device.create_texture(&wgpu::TextureDescriptor {
+        label: None,
+        size,
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format,
+        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::RENDER_ATTACHMENT,
+        view_formats: &[],
+    })
 }
