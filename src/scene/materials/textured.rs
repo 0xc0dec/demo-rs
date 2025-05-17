@@ -1,10 +1,9 @@
-use crate::render::PosTexCoordNormalVertex;
+use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 use crate::scene::components::{Camera, Transform};
 use crate::scene::Assets;
 
-use super::apply_material::ApplyMaterial;
 use super::uniforms::WorldViewProjUniform;
 
 pub struct TexturedMaterial {
