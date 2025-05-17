@@ -1,13 +1,11 @@
-use wgpu::{BindGroup, RenderPipeline};
-
 use crate::render::{ApplyMaterial, PosTexCoordNormalVertex};
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 use crate::scene::Assets;
 
 pub struct PostProcessMaterial {
-    pipeline: RenderPipeline,
-    texture_bind_group: BindGroup,
+    pipeline: wgpu::RenderPipeline,
+    texture_bind_group: wgpu::BindGroup,
 }
 
 impl PostProcessMaterial {
