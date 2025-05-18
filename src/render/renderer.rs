@@ -20,6 +20,7 @@ pub struct RenderPipelineParams<'a> {
 }
 
 pub struct Renderer<'a> {
+    pub adapter_name: String,
     surface: wgpu::Surface<'a>,
     surface_cfg: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
@@ -64,6 +65,7 @@ impl<'a> Renderer<'a> {
             })
             .await
             .unwrap();
+        let adapter_name = adapter.get_info().name.clone();
 
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
@@ -109,6 +111,7 @@ impl<'a> Renderer<'a> {
             device,
             queue,
             depth_tex,
+            adapter_name,
         }
     }
 

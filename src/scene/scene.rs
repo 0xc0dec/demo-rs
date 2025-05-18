@@ -122,7 +122,7 @@ impl Scene {
             self.resize(new_size, state, assets);
         }
 
-        self.prepare_ui(dt, state);
+        self.build_ui(dt, state);
     }
 
     pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
@@ -130,7 +130,7 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets);
     }
 
-    fn prepare_ui(&mut self, dt: f32, state: &State) {
+    fn build_ui(&mut self, dt: f32, state: &State) {
         self.ui.prepare_frame(dt, state, |frame| {
             let window = frame.window("Info");
             window
@@ -144,6 +144,7 @@ impl Scene {
                     frame.text("F: spawn a box");
                     frame.text("Left mouse click: grab/release an object");
                     frame.separator();
+                    frame.text(format!("Using adapter {}", state.renderer.adapter_name));
                     let mouse_pos = frame.io().mouse_pos;
                     // Sometimes the coordinates are reported as very big negative numbers, e.g.
                     // when the app just starts.
