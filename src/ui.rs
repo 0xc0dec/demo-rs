@@ -1,11 +1,13 @@
-use crate::render::Renderer;
-use crate::state::State;
 use imgui::{Context, FontSource, MouseCursor};
 use imgui_wgpu::RendererConfig;
 use imgui_winit_support::WinitPlatform;
 use std::time::Duration;
 use wgpu::RenderPass;
 use winit::event::Event;
+
+use crate::render;
+use crate::render::Renderer;
+use crate::state::State;
 
 pub struct Ui {
     context: Context,
@@ -82,10 +84,12 @@ impl Ui {
         self.platform
             .handle_event(self.context.io_mut(), &state.window, event)
     }
+}
 
-    pub fn render<'a>(&'a mut self, rr: &Renderer, pass: &mut RenderPass<'a>) {
+impl render::Ui for Ui {
+    fn draw<'a>(&'a mut self, rr: &Renderer, pass: &mut RenderPass<'a>) {
         self.renderer
             .render(self.context.render(), rr.queue(), rr, pass)
-            .expect("Rendering failed");
+            .expect("Rendering UI failed");
     }
 }

@@ -1,4 +1,3 @@
-use crate::ui::Ui;
 use std::ops::Deref;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
@@ -8,6 +7,7 @@ use super::material::ApplyMaterial;
 use super::mesh::Mesh;
 use super::render_target::RenderTarget;
 use super::texture::Texture;
+use super::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -140,7 +140,7 @@ impl<'a> Renderer<'a> {
         &self,
         bundles: &[wgpu::RenderBundle],
         target: Option<&RenderTarget>,
-        ui: Option<&mut Ui>,
+        ui: Option<&mut dyn Ui>,
     ) {
         let surface_tex = target.is_none().then(|| {
             self.surface
@@ -190,7 +190,7 @@ impl<'a> Renderer<'a> {
 
                 pass.execute_bundles(bundles.iter());
                 if let Some(ui) = ui {
-                    ui.render(self, &mut pass);
+                    ui.draw(self, &mut pass);
                 }
             }
 
