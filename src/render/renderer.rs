@@ -140,11 +140,16 @@ impl<'a> Renderer<'a> {
         &self,
         bundles: &[wgpu::RenderBundle],
         target: Option<&RenderTarget>,
+        // TODO More elegant.
+        // Currently I cannot win the borrow checker and make Renderer NOT reference the Ui in some way.
+        // Tried adding a lambda param here with a render pass param to allow "additional rendering"
+        // but using the Ui in that lambda on the call site hits the lifetime wall.
         ui: Option<&mut dyn Ui>,
     ) {
         let surface_tex = target.is_none().then(|| {
             self.surface
                 .get_current_texture()
+                // TODO Fix, this breaks on Linux when resizing.
                 .expect("Missing surface texture")
         });
         let surface_tex_view = surface_tex.as_ref().map(|t| {
