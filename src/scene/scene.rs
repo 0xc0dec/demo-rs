@@ -240,7 +240,7 @@ impl Scene {
             )>();
 
             // Pick what should be rendered by the camera
-            let mut meshes = renderables
+            let mut renderables = renderables
                 .iter()
                 .filter(|(_, (.., tag))| cam.should_render(tag.0))
                 .map(|(_, (mesh, material, transform, order, _))| {
@@ -249,9 +249,9 @@ impl Scene {
                 .collect::<Vec<_>>();
 
             // Sort by render order
-            meshes.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
+            renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
 
-            let bundles = meshes
+            let bundles = renderables
                 .into_iter()
                 .map(|(mesh, mat, tr, _)| {
                     let mat = assets.material(mat.0);
