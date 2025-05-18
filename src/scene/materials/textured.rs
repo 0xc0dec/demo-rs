@@ -50,9 +50,7 @@ impl TexturedMaterial {
             )]),
         );
     }
-}
 
-impl TexturedMaterial {
     pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.texture_bind_group, &[]);

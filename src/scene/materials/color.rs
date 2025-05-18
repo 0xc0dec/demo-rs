@@ -63,9 +63,7 @@ impl ColorMaterial {
             )]),
         );
     }
-}
 
-impl ColorMaterial {
     pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         encoder.set_pipeline(&self.pipeline);
         encoder.set_bind_group(0, &self.matrices_uniform_bind_group, &[]);

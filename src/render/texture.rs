@@ -2,8 +2,9 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::{DeviceExt, TextureDataOrder};
 
-use super::Renderer;
 use crate::file;
+
+use super::Renderer;
 
 pub type TextureSize = (u32, u32);
 
@@ -15,7 +16,7 @@ pub struct Texture {
 
 impl Texture {
     const DEFAULT_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
-    
+
     pub fn new_depth(
         device: &wgpu::Device,
         format: wgpu::TextureFormat,
