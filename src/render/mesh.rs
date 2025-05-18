@@ -1,9 +1,9 @@
 use std::io::{BufReader, Cursor};
-
 use wgpu::util::DeviceExt;
 
-use super::vertex::PosTexCoordNormalVertex;
 use crate::file;
+
+use super::vertex::PosTexCoordNormalVertex;
 
 struct MeshPart {
     vertex_buffer: wgpu::Buffer,
@@ -127,7 +127,7 @@ impl Mesh {
 
         Mesh { parts }
     }
-    
+
     pub fn draw<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
         for part in &self.parts {
             encoder.set_vertex_buffer(0, part.vertex_buffer.slice(..));

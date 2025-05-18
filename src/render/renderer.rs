@@ -1,12 +1,13 @@
+use crate::ui::Ui;
 use std::ops::Deref;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use wgpu::{BackendOptions, Trace};
 
+use super::material::ApplyMaterial;
+use super::mesh::Mesh;
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use crate::scene::{Assets, MaterialHandle, MeshHandle};
-use crate::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -26,7 +27,6 @@ pub struct Renderer<'a> {
     depth_tex: Texture,
 }
 
-// TODO Avoid references to Assets, materials and everything from Scene
 impl<'a> Renderer<'a> {
     // TODO Configurable?
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
@@ -126,14 +126,13 @@ impl<'a> Renderer<'a> {
 
     pub fn build_render_bundle(
         &self,
-        mesh: MeshHandle,
-        material: MaterialHandle,
+        mesh: &Mesh,
+        material: &dyn ApplyMaterial,
         rt: Option<&RenderTarget>,
-        assets: &Assets,
     ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(rt);
-        assets.material(material).apply(&mut encoder);
-        assets.mesh(mesh).draw(&mut encoder);
+        material.apply(&mut encoder);
+        mesh.draw(&mut encoder);
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 

@@ -1,4 +1,6 @@
+use crate::render;
 use crate::render::Renderer;
+use wgpu::RenderBundleEncoder;
 
 use super::super::components::{Camera, Transform};
 use super::{ColorMaterial, PostProcessMaterial, SkyboxMaterial, TexturedMaterial};
@@ -19,8 +21,10 @@ impl Material {
             Material::PostProcess(_) => (),
         }
     }
+}
 
-    pub fn apply<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+impl render::ApplyMaterial for Material {
+    fn apply<'a>(&'a self, encoder: &mut RenderBundleEncoder<'a>) {
         match self {
             Material::Color(m) => m.apply(encoder),
             Material::Skybox(m) => m.apply(encoder),
