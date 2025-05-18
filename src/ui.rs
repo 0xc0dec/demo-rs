@@ -85,7 +85,7 @@ impl Ui {
 
     pub fn render<'a>(&'a mut self, rr: &Renderer, pass: &mut RenderPass<'a>) {
         self.renderer
-            .render(self.context.render(), rr.queue(), &rr, pass)
+            .render(self.context.render(), rr.queue(), rr, pass)
             .expect("Rendering failed");
     }
 }
