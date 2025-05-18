@@ -5,7 +5,6 @@ use wgpu::{BackendOptions, Trace};
 
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use super::DrawMesh;
 use crate::scene::{Assets, MaterialHandle, MeshHandle};
 use crate::ui::Ui;
 
@@ -134,7 +133,7 @@ impl<'a> Renderer<'a> {
     ) -> wgpu::RenderBundle {
         let mut encoder = self.new_bundle_encoder(rt);
         assets.material(material).apply(&mut encoder);
-        encoder.draw_mesh(assets.mesh(mesh));
+        assets.mesh(mesh).draw(&mut encoder);
         encoder.finish(&wgpu::RenderBundleDescriptor { label: None })
     }
 

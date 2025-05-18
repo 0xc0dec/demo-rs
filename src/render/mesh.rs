@@ -127,18 +127,12 @@ impl Mesh {
 
         Mesh { parts }
     }
-}
-
-pub trait DrawMesh<'a> {
-    fn draw_mesh(&mut self, mesh: &'a Mesh);
-}
-
-impl<'a> DrawMesh<'a> for wgpu::RenderBundleEncoder<'a> {
-    fn draw_mesh(&mut self, mesh: &'a Mesh) {
-        for part in &mesh.parts {
-            self.set_vertex_buffer(0, part.vertex_buffer.slice(..));
-            self.set_index_buffer(part.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
-            self.draw_indexed(0..part.num_indices, 0, 0..1);
+    
+    pub fn draw<'a>(&'a self, encoder: &mut wgpu::RenderBundleEncoder<'a>) {
+        for part in &self.parts {
+            encoder.set_vertex_buffer(0, part.vertex_buffer.slice(..));
+            encoder.set_index_buffer(part.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+            encoder.draw_indexed(0..part.num_indices, 0, 0..1);
         }
     }
 }
