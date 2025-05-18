@@ -1,7 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
-use wgpu::{BackendOptions, Trace};
 
 use super::material::ApplyMaterial;
 use super::mesh::Mesh;
@@ -52,7 +51,7 @@ impl<'a> Renderer<'a> {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
             backends: wgpu::Backends::PRIMARY,
             flags: wgpu::InstanceFlags::DEBUG,
-            backend_options: BackendOptions::default(),
+            backend_options: wgpu::BackendOptions::default(),
         });
 
         let surface = instance.create_surface(Arc::clone(&window)).unwrap();
@@ -73,7 +72,7 @@ impl<'a> Renderer<'a> {
                 required_features: wgpu::Features::empty(),
                 required_limits: wgpu::Limits::default(),
                 memory_hints: wgpu::MemoryHints::default(),
-                trace: Trace::Off,
+                trace: wgpu::Trace::Off,
             })
             .await
             .unwrap();
