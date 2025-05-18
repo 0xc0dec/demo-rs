@@ -10,7 +10,6 @@ mod physics;
 mod render;
 mod scene;
 mod state;
-mod ui;
 mod window;
 
 // TODO Spawned boxes should be rotated based on the camera view.

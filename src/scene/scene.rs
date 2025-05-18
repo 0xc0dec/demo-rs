@@ -4,9 +4,8 @@ use winit::event::Event;
 use crate::input::InputAction;
 use crate::math::Vec3;
 use crate::physics::Physics;
-use crate::render::{Renderer, SurfaceSize};
+use crate::render::{Renderer, SurfaceSize, Ui};
 use crate::state::State;
-use crate::ui::Ui;
 
 use super::assets::Assets;
 use super::components;
@@ -82,7 +81,7 @@ impl Scene {
             player,
             postprocessor,
             hud,
-            ui: Ui::new(state),
+            ui: Ui::new(&state.window, &state.renderer),
             spawned_startup_box: false,
         };
 
@@ -92,7 +91,7 @@ impl Scene {
     }
 
     pub fn handle_event(&mut self, event: &Event<()>, state: &State) {
-        self.ui.handle_event(event, state);
+        self.ui.handle_event(event, &state.window);
     }
 
     pub fn update(
@@ -202,7 +201,7 @@ impl Scene {
             .unwrap()
             .get()
         {
-            let mut renderables = self.world.query::<(
+            let mut items = self.world.query::<(
                 &Mesh,
                 &components::Material,
                 &Transform,
@@ -211,7 +210,7 @@ impl Scene {
             )>();
 
             // Pick what should be rendered by the camera
-            let mut renderables = renderables
+            let mut items = items
                 .iter()
                 .filter(|(_, (.., tag))| cam.should_render(tag.0))
                 .map(|(_, (mesh, material, transform, order, _))| {
@@ -220,9 +219,9 @@ impl Scene {
                 .collect::<Vec<_>>();
 
             // Sort by render order
-            renderables.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
+            items.sort_by(|&(.., o1), &(.., o2)| o1.0.partial_cmp(&o2.0).unwrap());
 
-            let bundles = renderables
+            let bundles = items
                 .into_iter()
                 .map(|(mesh, mat, tr, _)| {
                     let mat = assets.material(mat.0);

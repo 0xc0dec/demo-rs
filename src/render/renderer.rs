@@ -2,11 +2,11 @@ use std::ops::Deref;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 
+use super::ui::Ui;
 use super::material::ApplyMaterial;
 use super::mesh::Mesh;
 use super::render_target::RenderTarget;
 use super::texture::Texture;
-use super::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -146,7 +146,7 @@ impl<'a> Renderer<'a> {
         // Currently I cannot win the borrow checker and make Renderer NOT reference the Ui in some way.
         // Tried adding a lambda param here with a render pass param to allow "additional rendering"
         // but using the Ui in that lambda on the call site hits the lifetime wall.
-        ui: Option<&mut dyn Ui>,
+        ui: Option<&mut Ui>,
     ) {
         let surface_tex = target.is_none().then(|| {
             self.surface
