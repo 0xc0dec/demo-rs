@@ -21,7 +21,7 @@ pub struct RenderPipelineParams<'a> {
 
 pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
-    surface_config: wgpu::SurfaceConfiguration,
+    surface_cfg: wgpu::SurfaceConfiguration,
     device: wgpu::Device,
     queue: wgpu::Queue,
     depth_tex: Texture,
@@ -32,7 +32,7 @@ impl<'a> Renderer<'a> {
     const DEPTH_TEX_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
     pub fn surface_texture_format(&self) -> wgpu::TextureFormat {
-        self.surface_config.format
+        self.surface_cfg.format
     }
 
     pub fn depth_texture_format(&self) -> wgpu::TextureFormat {
@@ -40,7 +40,7 @@ impl<'a> Renderer<'a> {
     }
 
     pub fn surface_size(&self) -> SurfaceSize {
-        SurfaceSize::new(self.surface_config.width, self.surface_config.height)
+        SurfaceSize::new(self.surface_cfg.width, self.surface_cfg.height)
     }
 
     pub fn queue(&self) -> &wgpu::Queue {
@@ -78,7 +78,7 @@ impl<'a> Renderer<'a> {
 
         let surface_size = window.inner_size();
 
-        let surface_config = {
+        let surface_cfg = {
             let caps = surface.get_capabilities(&adapter);
 
             let format = caps
@@ -99,12 +99,12 @@ impl<'a> Renderer<'a> {
                 desired_maximum_frame_latency: 2,
             }
         };
-        surface.configure(&device, &surface_config);
+        surface.configure(&device, &surface_cfg);
 
         let depth_tex = Texture::new_depth(&device, Self::DEPTH_TEX_FORMAT, surface_size.into());
 
         Self {
-            surface_config,
+            surface_cfg,
             surface,
             device,
             queue,
@@ -115,9 +115,9 @@ impl<'a> Renderer<'a> {
     pub fn update(&mut self, new_surface_size: Option<SurfaceSize>) {
         if let Some(SurfaceSize { width, height }) = new_surface_size {
             if width > 0 && height > 0 {
-                self.surface_config.width = width;
-                self.surface_config.height = height;
-                self.surface.configure(&self.device, &self.surface_config);
+                self.surface_cfg.width = width;
+                self.surface_cfg.height = height;
+                self.surface.configure(&self.device, &self.surface_cfg);
                 self.depth_tex =
                     Texture::new_depth(&self.device, Self::DEPTH_TEX_FORMAT, (width, height));
             }
@@ -175,7 +175,7 @@ impl<'a> Renderer<'a> {
             stencil_ops: None,
         });
 
-        let cmd_buffer = {
+        let cmd_buf = {
             let mut encoder =
                 self.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
@@ -197,7 +197,7 @@ impl<'a> Renderer<'a> {
             encoder.finish()
         };
 
-        self.queue.submit(Some(cmd_buffer));
+        self.queue.submit(Some(cmd_buf));
 
         if let Some(t) = surface_tex {
             t.present()
@@ -306,7 +306,7 @@ impl<'a> Renderer<'a> {
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: self.surface_config.format,
+                    format: self.surface_cfg.format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
