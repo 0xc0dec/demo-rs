@@ -6,6 +6,8 @@ use winit::event::Event;
 
 use super::renderer::Renderer;
 
+// By the virtue of how the underlying library is implemented, this should be used as a singleton.
+// Or I just don't know Rust enough to make it work :|
 pub struct Ui {
     context: Context,
     platform: WinitPlatform,
