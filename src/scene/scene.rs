@@ -1,5 +1,4 @@
 use hecs::{Entity, World};
-use imgui::Condition;
 use winit::event::Event;
 
 use crate::input::InputAction;
@@ -12,7 +11,7 @@ use crate::ui::Ui;
 use super::assets::Assets;
 use super::components;
 use super::components::{
-    Camera, Grab, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
+    Camera, Grab, Hud, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
 };
 
 pub struct Scene {
@@ -20,6 +19,7 @@ pub struct Scene {
     physics: Physics,
     postprocessor: Entity,
     player: Entity,
+    hud: Entity,
     ui: Ui,
     spawned_startup_box: bool,
 }
@@ -74,11 +74,14 @@ impl Scene {
             RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
 
+        let hud = world.spawn((Hud,));
+
         let mut scene = Self {
             world,
             physics,
             player,
             postprocessor,
+            hud,
             ui: Ui::new(state),
             spawned_startup_box: false,
         };
@@ -122,48 +125,15 @@ impl Scene {
             self.resize(new_size, state, assets);
         }
 
-        self.build_ui(dt, state);
+        self.world
+            .query_one_mut::<&mut Hud>(self.hud)
+            .unwrap()
+            .build(dt, state, &mut self.ui);
     }
 
     pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
         self.render_with_camera(self.player, rr, assets);
         self.render_with_camera(self.postprocessor, rr, assets);
-    }
-
-    fn build_ui(&mut self, dt: f32, state: &State) {
-        self.ui.prepare_frame(dt, state, |frame| {
-            let window = frame.window("Info");
-            window
-                .always_auto_resize(true)
-                .size([300.0, 150.0], Condition::FirstUseEver)
-                .position([20.0, 20.0], Condition::FirstUseEver)
-                .build(|| {
-                    frame.text("Controls:");
-                    frame.text("Tab: capture/release mouse");
-                    frame.text("WASDQE: move camera while mouse is captured");
-                    frame.text("F: spawn a box");
-                    frame.text("Left mouse click: grab/release an object");
-                    frame.separator();
-                    frame.text(format!("Using adapter {}", state.renderer.adapter_name));
-                    let mouse_pos = frame.io().mouse_pos;
-                    // Sometimes the coordinates are reported as very big negative numbers, e.g.
-                    // when the app just starts.
-                    frame.text(format!(
-                        "Mouse position: ({:.1},{:.1})",
-                        if mouse_pos[0] >= 0f32 {
-                            mouse_pos[0]
-                        } else {
-                            0f32
-                        },
-                        if mouse_pos[1] >= 0f32 {
-                            mouse_pos[1]
-                        } else {
-                            0f32
-                        }
-                    ));
-                    frame.text(format!("Frame time: {dt:?}"));
-                });
-        });
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {

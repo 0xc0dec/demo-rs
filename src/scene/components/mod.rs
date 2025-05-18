@@ -1,5 +1,6 @@
 mod camera;
 mod grab;
+mod hud;
 mod player;
 mod player_target;
 mod rigid_body;
@@ -7,6 +8,7 @@ mod transform;
 
 pub use camera::Camera;
 pub use grab::Grab;
+pub use hud::Hud;
 pub use player::Player;
 pub use player_target::PlayerTarget;
 pub use rigid_body::{RigidBody, RigidBodyParams};
