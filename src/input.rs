@@ -22,6 +22,8 @@ enum Key {
     MouseButton(MouseButton),
 }
 
+// TODO Extract raw events, they don't belong here.
+// They were introduced to avoid passing raw events to Scene so that it could update Ui.
 #[derive(Default)]
 pub struct Input {
     mouse_delta: (f32, f32),
@@ -31,6 +33,7 @@ pub struct Input {
     key_pressed: HashMap<Key, bool>,
     // Key presses from the previous frame
     key_pressed_prev: HashMap<Key, bool>,
+    new_raw_events: Vec<Event<()>>,
 }
 
 impl Input {
@@ -41,11 +44,16 @@ impl Input {
             cursor_in_window: false,
             key_pressed: HashMap::new(),
             key_pressed_prev: HashMap::new(),
+            new_raw_events: Vec::new(),
         }
     }
 
     pub fn mouse_delta(&self) -> (f32, f32) {
         self.mouse_delta
+    }
+
+    pub fn new_raw_events(&self) -> &[Event<()>] {
+        &self.new_raw_events
     }
 
     pub fn cursor_position(&self) -> Option<(f32, f32)> {
@@ -64,56 +72,60 @@ impl Input {
         self.key_pressed_first(action_key(action))
     }
 
-    pub fn handle_device_event(&mut self, event: &DeviceEvent) {
+    pub fn handle_event(&mut self, event: Event<()>) {
+        self.new_raw_events.push(event.clone());
         match event {
-            DeviceEvent::MouseMotion { delta: (x, y) } => {
-                self.mouse_delta.0 += *x as f32;
-                self.mouse_delta.1 += *y as f32;
-            }
-            DeviceEvent::MouseWheel { .. } => (),
+            Event::WindowEvent { event, .. } => match event {
+                WindowEvent::KeyboardInput {
+                    event:
+                        KeyEvent {
+                            physical_key: Code(code),
+                            state,
+                            ..
+                        },
+                    ..
+                } => {
+                    self.key_pressed
+                        .insert(Key::Keyboard(code), state == ElementState::Pressed);
+                }
+
+                WindowEvent::MouseInput { button, state, .. } => {
+                    self.key_pressed
+                        .insert(Key::MouseButton(button), state == ElementState::Pressed);
+                }
+
+                WindowEvent::CursorEntered { .. } => {
+                    self.handle_cursor_entrance(true);
+                }
+
+                WindowEvent::CursorLeft { .. } => {
+                    self.handle_cursor_entrance(false);
+                }
+
+                WindowEvent::CursorMoved { position, .. } => {
+                    self.last_cursor_position = (position.x as f32, position.y as f32);
+                }
+
+                _ => (),
+            },
+
+            Event::DeviceEvent { event, .. } => match event {
+                DeviceEvent::MouseMotion { delta: (x, y) } => {
+                    self.mouse_delta.0 += x as f32;
+                    self.mouse_delta.1 += y as f32;
+                }
+                DeviceEvent::MouseWheel { .. } => (),
+                _ => (),
+            },
+
             _ => (),
-        };
-    }
-
-    pub fn handle_window_event(&mut self, event: &WindowEvent) {
-        match event {
-            WindowEvent::KeyboardInput {
-                event:
-                    KeyEvent {
-                        physical_key: Code(code),
-                        state,
-                        ..
-                    },
-                ..
-            } => {
-                self.key_pressed
-                    .insert(Key::Keyboard(*code), *state == ElementState::Pressed);
-            }
-
-            WindowEvent::MouseInput { button, state, .. } => {
-                self.key_pressed
-                    .insert(Key::MouseButton(*button), *state == ElementState::Pressed);
-            }
-
-            WindowEvent::CursorEntered { .. } => {
-                self.handle_cursor_entrance(true);
-            }
-
-            WindowEvent::CursorLeft { .. } => {
-                self.handle_cursor_entrance(false);
-            }
-
-            WindowEvent::CursorMoved { position, .. } => {
-                self.last_cursor_position = (position.x as f32, position.y as f32);
-            }
-
-            _ => (),
-        };
+        }
     }
 
     pub fn clear(&mut self) {
         self.mouse_delta = (0.0, 0.0);
         self.key_pressed_prev.clone_from(&self.key_pressed);
+        self.new_raw_events.clear();
     }
 
     fn handle_cursor_entrance(&mut self, entered: bool) {

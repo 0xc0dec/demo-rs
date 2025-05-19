@@ -85,8 +85,13 @@ impl ApplicationHandler for App<'_> {
         self.state = Some(state);
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
-        if self.state.is_none() || id != self.state.as_ref().unwrap().window.id() {
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        window_id: WindowId,
+        event: WindowEvent,
+    ) {
+        if self.state.is_none() || window_id != self.state.as_ref().unwrap().window.id() {
             return;
         }
 
@@ -101,28 +106,19 @@ impl ApplicationHandler for App<'_> {
             .as_mut()
             .unwrap()
             .input
-            .handle_window_event(&event);
-
-        // TODO Avoid having to pass events to scene, this is currently needed just for UI.
-        self.scene.as_mut().unwrap().handle_event(
-            &Event::WindowEvent {
-                window_id: id,
-                event,
-            },
-            self.state.as_ref().unwrap(),
-        )
+            .handle_event(Event::WindowEvent { window_id, event });
     }
 
     fn device_event(
         &mut self,
         _event_loop: &ActiveEventLoop,
-        _device_id: DeviceId,
+        device_id: DeviceId,
         event: DeviceEvent,
     ) {
         self.state
             .as_mut()
             .unwrap()
             .input
-            .handle_device_event(&event);
+            .handle_event(Event::DeviceEvent { device_id, event });
     }
 }

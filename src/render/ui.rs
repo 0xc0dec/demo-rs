@@ -72,7 +72,7 @@ impl Ui {
             .update_delta_time(Duration::from_secs_f32(dt)); // TODO Avoid the conversion.
 
         self.platform
-            .prepare_frame(self.context.io_mut(), &window)
+            .prepare_frame(self.context.io_mut(), window)
             .expect("Failed to prepare UI frame");
 
         let frame = self.context.new_frame();
@@ -80,7 +80,7 @@ impl Ui {
 
         if self.last_cursor != frame.mouse_cursor() {
             self.last_cursor = frame.mouse_cursor();
-            self.platform.prepare_render(frame, &window);
+            self.platform.prepare_render(frame, window);
         }
     }
 

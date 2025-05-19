@@ -1,5 +1,4 @@
 use hecs::{Entity, World};
-use winit::event::Event;
 
 use crate::input::InputAction;
 use crate::math::Vec3;
@@ -90,10 +89,6 @@ impl Scene {
         scene
     }
 
-    pub fn handle_event(&mut self, event: &Event<()>, state: &State) {
-        self.ui.handle_event(event, &state.window);
-    }
-
     pub fn update(
         &mut self,
         dt: f32,
@@ -101,6 +96,10 @@ impl Scene {
         assets: &mut Assets,
         new_canvas_size: &Option<SurfaceSize>,
     ) {
+        for e in state.input.new_raw_events() {
+            self.ui.handle_event(e, &state.window);
+        }
+
         self.physics.update(dt);
 
         Player::update(dt, &mut self.world, &mut self.physics, state);
