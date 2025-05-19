@@ -1,9 +1,3 @@
-use crate::frame_time::FrameTime;
-use crate::input::{Input, InputAction};
-use crate::render::{Renderer, SurfaceSize};
-use crate::scene::Assets;
-use crate::scene::Scene;
-use crate::state::State;
 use futures_lite::future;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
@@ -11,6 +5,13 @@ use winit::dpi::PhysicalSize;
 use winit::event::{DeviceEvent, DeviceId, Event, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Window, WindowId};
+
+use crate::frame_time::FrameTime;
+use crate::input::{Input, InputAction};
+use crate::render::{Renderer, SurfaceSize};
+use crate::scene::Assets;
+use crate::scene::Scene;
+use crate::state::State;
 
 #[derive(Default)]
 pub struct App<'a> {

@@ -1,7 +1,8 @@
-use crate::input::Input;
-use crate::render::Renderer;
 use std::sync::Arc;
 use winit::window::Window;
+
+use crate::input::Input;
+use crate::render::Renderer;
 
 // TODO Better name
 pub struct State<'a> {
