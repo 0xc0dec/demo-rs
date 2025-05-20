@@ -82,6 +82,7 @@ impl Mesh {
         }
     }
 
+    // TODO Extract the file reading, this struct is only for rendering.
     pub async fn from_file(device: &wgpu::Device, file_path: &str) -> Mesh {
         let text = file::read_string_asset(file_path).await.unwrap();
         let cursor = futures_lite::io::Cursor::new(text);
