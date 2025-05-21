@@ -198,7 +198,7 @@ impl Scene {
         }
 
         let mut t = Transform::default();
-        t.translate(Vec3::new(0.0, 1.0, 0.0));
+        t.translate(Vec3::new(2.0, 1.0, 2.0));
 
         self.world.spawn((
             t,
