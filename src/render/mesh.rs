@@ -35,9 +35,14 @@ impl MeshPart {
             num_indices: indices.len() as u32,
         }
     }
+}
 
-    // TODO Use different vertex description and remove unused attributes
-    fn new_quad(device: &wgpu::Device) -> MeshPart {
+pub struct Mesh {
+    parts: Vec<MeshPart>,
+}
+
+impl Mesh {
+    pub fn new_quad(device: &wgpu::Device) -> Self {
         let vertices = vec![
             // Bottom left
             PosTexCoordNormalVertex {
@@ -65,20 +70,12 @@ impl MeshPart {
             },
         ];
 
-        let indices: Vec<u32> = vec![0, 1, 2, 0, 2, 3];
-
-        Self::from_buffers(device, &vertices, &indices)
-    }
-}
-
-pub struct Mesh {
-    parts: Vec<MeshPart>,
-}
-
-impl Mesh {
-    pub fn new_quad(device: &wgpu::Device) -> Self {
         Self {
-            parts: vec![MeshPart::new_quad(device)],
+            parts: vec![MeshPart::from_buffers(
+                device,
+                &vertices,
+                &[0, 1, 2, 0, 2, 3],
+            )],
         }
     }
 
