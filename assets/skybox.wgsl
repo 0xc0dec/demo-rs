@@ -1,5 +1,3 @@
-// Vertex shader
-
 struct Matrices {
     view_mat: mat4x4<f32>,
     proj_mat_inv: mat4x4<f32>,
@@ -35,8 +33,6 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 
     return out;
 }
-
-// Fragment shader
 
 @group(1) @binding(0)
 var cubeTexture: texture_cube<f32>;

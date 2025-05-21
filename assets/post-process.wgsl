@@ -1,5 +1,3 @@
-// Vertex shader
-
 struct VertexInput {
     @location(0)
     position: vec3<f32>,
@@ -26,8 +24,6 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 
     return out;
 }
-
-// Fragment shader
 
 @group(0) @binding(0)
 var texture: texture_2d<f32>;
