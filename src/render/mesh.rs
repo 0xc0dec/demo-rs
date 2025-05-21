@@ -43,39 +43,92 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new_quad(device: &wgpu::Device) -> Self {
-        let vertices = vec![
-            // Bottom left
-            PosTexCoordNormalVertex {
-                position: [-1.0, -1.0, 0.0],
-                tex_coords: [0.0, 0.0],
-                normal: [0.0, 0.0, 0.0], // unused
-            },
-            // Top left
-            PosTexCoordNormalVertex {
-                position: [-1.0, 1.0, 0.0],
-                tex_coords: [0.0, 1.0],
-                normal: [0.0, 0.0, 0.0], // unused
-            },
-            // Top right
-            PosTexCoordNormalVertex {
-                position: [1.0, 1.0, 0.0],
-                tex_coords: [1.0, 1.0],
-                normal: [0.0, 0.0, 0.0], // unused
-            },
-            // Bottom right
-            PosTexCoordNormalVertex {
-                position: [1.0, -1.0, 0.0],
-                tex_coords: [1.0, 0.0],
-                normal: [0.0, 0.0, 0.0], // unused
-            },
-        ];
-
         Self {
             parts: vec![MeshPart::from_buffers(
                 device,
-                &vertices,
+                &[
+                    // Bottom left
+                    PosTexCoordNormalVertex {
+                        position: [-1.0, -1.0, 0.0],
+                        tex_coords: [0.0, 0.0],
+                        normal: [0.0, 0.0, 0.0], // unused
+                    },
+                    // Top left
+                    PosTexCoordNormalVertex {
+                        position: [-1.0, 1.0, 0.0],
+                        tex_coords: [0.0, 1.0],
+                        normal: [0.0, 0.0, 0.0], // unused
+                    },
+                    // Top right
+                    PosTexCoordNormalVertex {
+                        position: [1.0, 1.0, 0.0],
+                        tex_coords: [1.0, 1.0],
+                        normal: [0.0, 0.0, 0.0], // unused
+                    },
+                    // Bottom right
+                    PosTexCoordNormalVertex {
+                        position: [1.0, -1.0, 0.0],
+                        tex_coords: [1.0, 0.0],
+                        normal: [0.0, 0.0, 0.0], // unused
+                    },
+                ],
                 &[0, 1, 2, 0, 2, 3],
             )],
+        }
+    }
+
+    pub fn new_basis(device: &wgpu::Device) -> Self {
+        Self {
+            parts: vec![
+                MeshPart::from_buffers(
+                    device,
+                    &[
+                        PosTexCoordNormalVertex {
+                            position: [0.0, 0.0, 0.0],
+                            tex_coords: [0.0, 0.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                        PosTexCoordNormalVertex {
+                            position: [1.0, 0.0, 0.0],
+                            tex_coords: [0.0, 1.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                    ],
+                    &[0, 1],
+                ),
+                MeshPart::from_buffers(
+                    device,
+                    &[
+                        PosTexCoordNormalVertex {
+                            position: [0.0, 0.0, 0.0],
+                            tex_coords: [0.0, 0.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                        PosTexCoordNormalVertex {
+                            position: [0.0, 1.0, 0.0],
+                            tex_coords: [0.0, 1.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                    ],
+                    &[0, 1],
+                ),
+                MeshPart::from_buffers(
+                    device,
+                    &[
+                        PosTexCoordNormalVertex {
+                            position: [0.0, 0.0, 0.0],
+                            tex_coords: [0.0, 0.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                        PosTexCoordNormalVertex {
+                            position: [0.0, 0.0, 1.0],
+                            tex_coords: [0.0, 1.0],  // unused
+                            normal: [0.0, 0.0, 0.0], // unused
+                        },
+                    ],
+                    &[0, 1],
+                ),
+            ],
         }
     }
 
