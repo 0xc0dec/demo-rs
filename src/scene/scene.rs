@@ -7,10 +7,11 @@ use crate::render::{Renderer, SurfaceSize, Ui};
 use crate::state::State;
 
 use super::assets::Assets;
-use super::components;
 use super::components::{
-    Camera, Grab, Hud, Mesh, Player, PlayerTarget, RenderOrder, RenderTags, Transform,
+    Camera, Grab, Hud, Material, Mesh, Player, PlayerTarget, RenderOrder, RenderTags,
+    Transform, RENDER_TAG_SCENE,
 };
+use super::{components, materials};
 
 pub struct Scene {
     world: World,
@@ -19,7 +20,6 @@ pub struct Scene {
     player: Entity,
     hud: Entity,
     ui: Ui,
-    spawned_startup_box: bool,
 }
 
 impl Scene {
@@ -45,9 +45,9 @@ impl Scene {
         world.spawn((
             Transform::default(),
             Mesh(assets.quad_mesh),
-            components::Material(material),
+            Material(material),
             RenderOrder(-100),
-            RenderTags(components::RENDER_TAG_SCENE),
+            RenderTags(RENDER_TAG_SCENE),
         ));
 
         // Post-processor
@@ -67,7 +67,7 @@ impl Scene {
                 None,
             ),
             Mesh(assets.quad_mesh),
-            components::Material(material),
+            Material(material),
             RenderOrder(100),
             RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
@@ -81,10 +81,16 @@ impl Scene {
             postprocessor,
             hud,
             ui: Ui::new(&state.window, &state.renderer),
-            spawned_startup_box: false,
         };
 
         scene.spawn_floor(&state.renderer, assets);
+        scene.spawn_box(
+            Vec3::y_axis().xyz() * 5.0,
+            Vec3::from_element(1.0),
+            &state.renderer,
+            assets,
+        );
+        scene.spawn_basis(&state.renderer, assets);
 
         scene
     }
@@ -106,14 +112,9 @@ impl Scene {
         Grab::update(&mut self.world, &state.input, &mut self.physics);
         PlayerTarget::update(&mut self.world);
 
-        if state.input.action_activated(InputAction::Spawn) || !self.spawned_startup_box {
+        if state.input.action_activated(InputAction::Spawn) {
             let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
-            let pos = if self.spawned_startup_box {
-                player_transform.position() + player_transform.forward().xyz() * 5.0
-            } else {
-                self.spawned_startup_box = true;
-                Vec3::y_axis().xyz() * 5.0
-            };
+            let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
             self.spawn_box(pos, Vec3::from_element(1.0), &state.renderer, assets);
         }
 
@@ -143,10 +144,7 @@ impl Scene {
             .resize((new_size.width, new_size.height), &state.renderer);
 
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
-        let mut material = self
-            .world
-            .get::<&mut components::Material>(self.postprocessor)
-            .unwrap();
+        let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
         assets.remove_material(material.0);
         material.0 = assets.add_postprocess_material(&state.renderer, color_tex);
     }
@@ -166,10 +164,10 @@ impl Scene {
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh),
-            components::Material(material),
+            Material(material),
             body,
             RenderOrder(0),
-            RenderTags(components::RENDER_TAG_SCENE),
+            RenderTags(RENDER_TAG_SCENE),
         ));
     }
 
@@ -186,10 +184,27 @@ impl Scene {
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(assets.box_mesh),
-            components::Material(material),
+            Material(material),
             body,
             RenderOrder(0),
-            RenderTags(components::RENDER_TAG_SCENE),
+            RenderTags(RENDER_TAG_SCENE),
+        ));
+    }
+
+    fn spawn_basis(&mut self, rr: &Renderer, assets: &mut Assets) {
+        let mat = assets.add_color_material(rr);
+        if let materials::Material::Color(m) = assets.material(mat) {
+            m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
+        }
+        let mut t = Transform::default();
+        t.translate(Vec3::new(0.0, 1.0, 0.0));
+
+        self.world.spawn((
+            t,
+            Mesh(assets.basis_mesh),
+            Material(mat),
+            RenderOrder(0),
+            RenderTags(RENDER_TAG_SCENE),
         ));
     }
 
@@ -200,13 +215,9 @@ impl Scene {
             .unwrap()
             .get()
         {
-            let mut items = self.world.query::<(
-                &Mesh,
-                &components::Material,
-                &Transform,
-                &RenderOrder,
-                &RenderTags,
-            )>();
+            let mut items = self
+                .world
+                .query::<(&Mesh, &Material, &Transform, &RenderOrder, &RenderTags)>();
 
             // Pick what should be rendered by the camera
             let mut items = items
