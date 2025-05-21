@@ -28,6 +28,7 @@ pub struct Assets {
 
     pub box_mesh: MeshHandle,
     pub quad_mesh: MeshHandle,
+    pub basis_mesh: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
 
     materials: SlotMap<MaterialHandle, Material>,
@@ -62,6 +63,7 @@ impl Assets {
         let mut meshes = SlotMap::new();
         let box_mesh = meshes.insert(box_mesh);
         let quad_mesh = meshes.insert(Mesh::new_quad(rr));
+        let basis_mesh = meshes.insert(Mesh::new_basis(rr));
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
@@ -87,6 +89,7 @@ impl Assets {
             meshes,
             box_mesh,
             quad_mesh,
+            basis_mesh,
             materials: SlotMap::new(),
         }
     }
