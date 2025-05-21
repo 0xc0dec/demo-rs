@@ -15,7 +15,7 @@ pub struct ColorMaterial {
 }
 
 impl ColorMaterial {
-    pub fn new(rr: &Renderer, assets: &Assets) -> Self {
+    pub fn new(rr: &Renderer, assets: &Assets, wireframe: bool) -> Self {
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[WorldViewProjUniform::default()]));
 
@@ -26,6 +26,7 @@ impl ColorMaterial {
             shader_module: assets.shader(assets.color_shader),
             depth_write: true,
             depth_enabled: true,
+            wireframe,
             bind_group_layouts: &[
                 &matrices_uniform_bind_group_layout,
                 &color_uniform_bind_group_layout,

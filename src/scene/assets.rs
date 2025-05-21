@@ -102,9 +102,9 @@ impl Assets {
         self.shaders.get(handle).unwrap()
     }
 
-    pub fn add_color_material(&mut self, rr: &Renderer) -> MaterialHandle {
+    pub fn add_color_material(&mut self, rr: &Renderer, wireframe: bool) -> MaterialHandle {
         self.materials
-            .insert(Material::Color(ColorMaterial::new(rr, self)))
+            .insert(Material::Color(ColorMaterial::new(rr, self, wireframe)))
     }
 
     pub fn add_skybox_material(&mut self, rr: &Renderer, texture: TextureHandle) -> MaterialHandle {

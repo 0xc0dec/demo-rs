@@ -192,10 +192,11 @@ impl Scene {
     }
 
     fn spawn_basis(&mut self, rr: &Renderer, assets: &mut Assets) {
-        let mat = assets.add_color_material(rr);
+        let mat = assets.add_color_material(rr, true);
         if let materials::Material::Color(m) = assets.material(mat) {
             m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
         }
+
         let mut t = Transform::default();
         t.translate(Vec3::new(0.0, 1.0, 0.0));
 

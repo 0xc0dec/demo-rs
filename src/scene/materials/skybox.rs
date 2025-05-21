@@ -25,6 +25,7 @@ impl SkyboxMaterial {
             shader_module: assets.shader(assets.skybox_shader),
             depth_write: false,
             depth_enabled: true,
+            wireframe: false,
             bind_group_layouts: &[&uniform_bind_group_layout, &tex_bind_group_layout],
             vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });

@@ -18,6 +18,7 @@ impl PostProcessMaterial {
             shader_module: assets.shader(assets.postprocess_shader),
             depth_write: true,
             depth_enabled: true,
+            wireframe: false,
             bind_group_layouts: &[&texture_bind_group_layout],
             vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
         });

@@ -2,11 +2,11 @@ use std::ops::Deref;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 
-use super::ui::Ui;
 use super::material::ApplyMaterial;
 use super::mesh::Mesh;
 use super::render_target::RenderTarget;
 use super::texture::Texture;
+use super::ui::Ui;
 
 pub type SurfaceSize = winit::dpi::PhysicalSize<u32>;
 
@@ -14,6 +14,7 @@ pub struct RenderPipelineParams<'a> {
     pub shader_module: &'a wgpu::ShaderModule,
     pub depth_write: bool,
     pub depth_enabled: bool,
+    pub wireframe: bool,
     pub bind_group_layouts: &'a [&'a wgpu::BindGroupLayout],
     pub vertex_buffer_layouts: &'a [wgpu::VertexBufferLayout<'a>],
 }
@@ -69,7 +70,10 @@ impl<'a> Renderer<'a> {
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: None,
-                required_features: wgpu::Features::empty(),
+                required_features: wgpu::Features {
+                    features_wgpu: wgpu::FeaturesWGPU::POLYGON_MODE_LINE,
+                    features_webgpu: wgpu::FeaturesWebGPU::empty(),
+                },
                 required_limits: wgpu::Limits::default(),
                 memory_hints: wgpu::MemoryHints::default(),
                 trace: wgpu::Trace::Off,
@@ -319,11 +323,19 @@ impl<'a> Renderer<'a> {
                 })],
             }),
             primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
+                topology: if params.wireframe {
+                    wgpu::PrimitiveTopology::LineList
+                } else {
+                    wgpu::PrimitiveTopology::TriangleList
+                },
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: None,
-                polygon_mode: wgpu::PolygonMode::Fill,
+                polygon_mode: if params.wireframe {
+                    wgpu::PolygonMode::Line
+                } else {
+                    wgpu::PolygonMode::Fill
+                },
                 unclipped_depth: false,
                 conservative: false,
             },
