@@ -15,12 +15,12 @@ pub struct ColorMaterial {
 }
 
 impl ColorMaterial {
-    pub fn new(rr: &Renderer, assets: &Assets, wireframe: bool) -> Self {
+    pub fn new(rr: &Renderer, assets: &Assets, color: Vec3, wireframe: bool) -> Self {
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[WorldViewProjUniform::default()]));
 
         let (color_uniform_bind_group_layout, color_uniform_bind_group, color_uniform_buf) =
-            rr.new_uniform_bind_group(bytemuck::cast_slice(&[Vec3Uniform::default()]));
+            rr.new_uniform_bind_group(bytemuck::cast_slice(&[Vec3Uniform::new(color)]));
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
             shader_module: assets.shader(assets.color_shader),

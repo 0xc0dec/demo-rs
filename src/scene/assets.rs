@@ -1,13 +1,13 @@
-use futures_lite::future;
-use slotmap::{DefaultKey, SlotMap};
-
 use super::materials::{
     ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
 };
 use crate::file;
+use crate::math::Vec3;
 use crate::render::Mesh;
 use crate::render::Renderer;
 use crate::render::Texture;
+use futures_lite::future;
+use slotmap::{DefaultKey, SlotMap};
 
 pub type MeshHandle = DefaultKey;
 pub type MaterialHandle = DefaultKey;
@@ -107,9 +107,20 @@ impl Assets {
             .insert(future::block_on(Mesh::from_file(rr, "cube.obj")))
     }
 
-    pub fn add_color_material(&mut self, rr: &Renderer, wireframe: bool) -> MaterialHandle {
-        self.materials
-            .insert(Material::Color(ColorMaterial::new(rr, self, wireframe)))
+    pub fn add_texture_2d(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
+        let tex = future::block_on(Texture::new_2d_from_file(path, rr));
+        self.textures.insert(tex.unwrap())
+    }
+
+    pub fn add_color_material(
+        &mut self,
+        rr: &Renderer,
+        color: Vec3,
+        wireframe: bool,
+    ) -> MaterialHandle {
+        self.materials.insert(Material::Color(ColorMaterial::new(
+            rr, self, color, wireframe,
+        )))
     }
 
     pub fn add_skybox_material(&mut self, rr: &Renderer, texture: TextureHandle) -> MaterialHandle {

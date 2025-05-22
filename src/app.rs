@@ -9,8 +9,8 @@ use winit::window::{Window, WindowId};
 use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::render::{Renderer, SurfaceSize};
-use crate::scene::Assets;
 use crate::scene::Scene;
+use crate::scene::{Assets, SceneDef};
 use crate::state::State;
 
 #[derive(Default)]
@@ -79,7 +79,16 @@ impl ApplicationHandler for App<'_> {
             input: Input::new(),
         };
 
-        self.scene = Some(Scene::new(&state, &mut assets));
+        let mut scene = Scene::new(&state, &mut assets);
+        scene.insert_from_definition(
+            &SceneDef::from_yaml(&String::from_utf8_lossy(include_bytes!(
+                "../assets/scene.yml"
+            ))),
+            &state.renderer,
+            &mut assets,
+        );
+
+        self.scene = Some(scene);
         self.frame_time = Some(FrameTime::new());
         self.assets = Some(assets);
         self.state = Some(state);

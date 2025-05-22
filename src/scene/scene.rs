@@ -9,11 +9,11 @@ use crate::scene::scene_definition::{ComponentDef, MaterialDef, SceneDef};
 use crate::state::State;
 
 use super::assets::Assets;
+use super::components;
 use super::components::{
     Camera, Grab, Hud, Material, Mesh, Player, PlayerTarget, RenderOrder, RenderTags,
     Transform, RENDER_TAG_SCENE,
 };
-use super::{components, materials};
 
 pub struct Scene {
     world: World,
@@ -94,14 +94,6 @@ impl Scene {
         );
         scene.spawn_basis(&state.renderer, assets);
 
-        // TODO
-        let def_file_content = String::from_utf8_lossy(include_bytes!("../../assets/scene.yml"));
-        scene.insert_from_definition(
-            &SceneDef::from_yaml(&def_file_content),
-            &state.renderer,
-            assets,
-        );
-
         scene
     }
 
@@ -145,7 +137,7 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets);
     }
 
-    fn insert_from_definition(&mut self, def: &SceneDef, rr: &Renderer, assets: &mut Assets) {
+    pub fn insert_from_definition(&mut self, def: &SceneDef, rr: &Renderer, assets: &mut Assets) {
         let mut materials = HashMap::new();
         for mat in &def.materials {
             match mat {
@@ -156,16 +148,16 @@ impl Scene {
                 } => {
                     materials.insert(
                         name.clone(),
-                        // TODO Color
-                        assets.add_color_material(rr, wireframe.unwrap_or(false)),
+                        assets.add_color_material(
+                            rr,
+                            Vec3::new(*r, *g, *b),
+                            wireframe.unwrap_or(false),
+                        ),
                     );
                 }
                 MaterialDef::Textured { name, texture } => {
-                    materials.insert(
-                        name.clone(),
-                        // TODO Texture
-                        assets.add_textured_material(rr, assets.bricks_texture),
-                    );
+                    let tex = assets.add_texture_2d(rr, texture);
+                    materials.insert(name.clone(), assets.add_textured_material(rr, tex));
                 }
             }
         }
@@ -260,10 +252,7 @@ impl Scene {
     }
 
     fn spawn_basis(&mut self, rr: &Renderer, assets: &mut Assets) {
-        let mat = assets.add_color_material(rr, true);
-        if let materials::Material::Color(m) = assets.material(mat) {
-            m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
-        }
+        let mat = assets.add_color_material(rr, Vec3::new(1.0, 1.0, 0.0), true);
 
         let mut t = Transform::default();
         t.translate(Vec3::new(2.0, 1.0, 2.0));

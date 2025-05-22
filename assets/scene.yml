@@ -3,9 +3,9 @@ materials:
     name: bricks
     texture: bricks.png
   - !Color
-    name: yellow
-    color: [ 1, 1, 0 ]
-    wireframe: true
+    name: red
+    color: [ 1, 0, 0 ]
+
 nodes:
   one:
     render_order: 0
@@ -18,3 +18,15 @@ nodes:
         path: cube.obj
       - !Material
         name: bricks
+
+  two:
+    render_order: 0
+    render_tags: 1
+    components:
+      - !Transform
+        pos: [ -3, 3, -3 ]
+        scale: [ 1, 1, 1 ]
+      - !Mesh
+        path: cube.obj
+      - !Material
+        name: red

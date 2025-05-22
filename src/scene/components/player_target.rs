@@ -3,7 +3,6 @@ use hecs::{With, World};
 use crate::math::Vec3;
 use crate::render::Renderer;
 
-use super::super::materials;
 use super::super::Assets;
 use super::{
     Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
@@ -14,11 +13,7 @@ pub struct PlayerTarget;
 
 impl PlayerTarget {
     pub fn spawn(rr: &Renderer, world: &mut World, assets: &mut Assets) {
-        let mat = assets.add_color_material(rr, false);
-        if let materials::Material::Color(m) = assets.material(mat) {
-            m.set_color(rr, Vec3::new(1.0, 1.0, 0.0))
-        }
-
+        let mat = assets.add_color_material(rr, Vec3::new(1.0, 1.0, 0.0), false);
         world.spawn((
             PlayerTarget,
             Transform::default(),
