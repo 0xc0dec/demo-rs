@@ -1,9 +1,11 @@
 use hecs::{Entity, World};
+use std::collections::HashMap;
 
 use crate::input::InputAction;
 use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render::{Renderer, SurfaceSize, Ui};
+use crate::scene::scene_definition::{ComponentDef, MaterialDef, SceneDef};
 use crate::state::State;
 
 use super::assets::Assets;
@@ -92,6 +94,14 @@ impl Scene {
         );
         scene.spawn_basis(&state.renderer, assets);
 
+        // TODO
+        let def_file_content = String::from_utf8_lossy(include_bytes!("../../assets/scene.yml"));
+        scene.insert_from_definition(
+            &SceneDef::from_yaml(&def_file_content),
+            &state.renderer,
+            assets,
+        );
+
         scene
     }
 
@@ -133,6 +143,64 @@ impl Scene {
     pub fn render(&mut self, rr: &Renderer, assets: &Assets) {
         self.render_with_camera(self.player, rr, assets);
         self.render_with_camera(self.postprocessor, rr, assets);
+    }
+
+    fn insert_from_definition(&mut self, def: &SceneDef, rr: &Renderer, assets: &mut Assets) {
+        let mut materials = HashMap::new();
+        for mat in &def.materials {
+            match mat {
+                MaterialDef::Color {
+                    name,
+                    color: [r, g, b],
+                    wireframe,
+                } => {
+                    materials.insert(
+                        name.clone(),
+                        // TODO Color
+                        assets.add_color_material(rr, wireframe.unwrap_or(false)),
+                    );
+                }
+                MaterialDef::Textured { name, texture } => {
+                    materials.insert(
+                        name.clone(),
+                        // TODO Texture
+                        assets.add_textured_material(rr, assets.bricks_texture),
+                    );
+                }
+            }
+        }
+
+        let mut meshes = HashMap::new();
+
+        for node in def.nodes.values() {
+            let e = self
+                .world
+                .spawn((RenderOrder(node.render_order), RenderTags(node.render_tags)));
+            for cmp in &node.components {
+                match cmp {
+                    ComponentDef::Transform { pos, scale } => {
+                        self.world
+                            .insert(
+                                e,
+                                (Transform::new(
+                                    Vec3::from_row_slice(pos),
+                                    Vec3::from_row_slice(scale),
+                                ),),
+                            )
+                            .unwrap();
+                    }
+                    ComponentDef::Mesh { path } => {
+                        if !meshes.contains_key(path) {
+                            meshes.insert(path, assets.add_mesh(rr, path));
+                        }
+                        self.world.insert(e, (Mesh(meshes[path]),)).unwrap();
+                    }
+                    ComponentDef::Material { name } => {
+                        self.world.insert(e, (Material(materials[name]),)).unwrap();
+                    }
+                }
+            }
+        }
     }
 
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {

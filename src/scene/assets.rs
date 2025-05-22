@@ -102,6 +102,11 @@ impl Assets {
         self.shaders.get(handle).unwrap()
     }
 
+    pub fn add_mesh(&mut self, rr: &Renderer, path: &str) -> MeshHandle {
+        self.meshes
+            .insert(future::block_on(Mesh::from_file(rr, "cube.obj")))
+    }
+
     pub fn add_color_material(&mut self, rr: &Renderer, wireframe: bool) -> MaterialHandle {
         self.materials
             .insert(Material::Color(ColorMaterial::new(rr, self, wireframe)))

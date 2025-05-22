@@ -2,23 +2,42 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
-enum ComponentDef {
+pub enum ComponentDef {
     Transform { pos: [f32; 3], scale: [f32; 3] },
-    Body { weight: f32 },
-    Mesh { name: String },
+    Mesh { path: String },
     Material { name: String },
 }
 
 #[derive(Deserialize, Debug)]
-struct MaterialDef {
-    shader: String,
-    wireframe: Option<bool>,
+pub enum MaterialDef {
+    Color {
+        name: String,
+        color: [f32; 3],
+        wireframe: Option<bool>,
+    },
+    Textured {
+        name: String,
+        texture: String,
+    },
+}
+
+#[derive(Deserialize, Debug)]
+pub struct NodeDef {
+    pub render_order: i32,
+    pub render_tags: u32,
+    pub components: Vec<ComponentDef>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SceneDef {
-    materials: HashMap<String, MaterialDef>,
-    nodes: HashMap<String, Vec<ComponentDef>>,
+    pub materials: Vec<MaterialDef>,
+    pub nodes: HashMap<String, NodeDef>,
+}
+
+impl SceneDef {
+    pub fn from_yaml(yaml: &str) -> Self {
+        serde_yaml::from_str::<SceneDef>(yaml).unwrap()
+    }
 }
 
 mod tests {
@@ -26,26 +45,8 @@ mod tests {
 
     #[test]
     fn smoke() {
-        let config = "
-          materials:
-            textured:
-              shader: textured.wsgl
-            color:
-              shader: color.wsgl
-              wireframe: true
-          nodes:
-            one:
-            - !Transform
-              pos: [1, 2, 3]
-              scale: [1, 1, 1]
-            - !Body
-              weight: 12.3
-            - !Mesh
-              name: cube.obj
-            - !Material
-              name: textured
-        ";
-        let config = serde_yaml::from_str::<SceneDef>(config).unwrap();
+        let def_file_content = String::from_utf8_lossy(include_bytes!("../../assets/scene.yml"));
+        let config = serde_yaml::from_str::<SceneDef>(&def_file_content).unwrap();
         println!("{:?}", config);
     }
 }
