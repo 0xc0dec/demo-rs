@@ -178,6 +178,32 @@ impl Scene {
                 RenderTags(node.render_tags),
             ));
 
+            if let Some(body_def) = &node.body {
+                let movable = body_def.movable.unwrap_or(true);
+                let body_type = if movable {
+                    RigidBodyType::Dynamic
+                } else {
+                    RigidBodyType::Fixed
+                };
+                // TODO Move this logic into the RigidBody cmp
+                let body = RigidBodyBuilder::new(body_type).translation(pos).build();
+                // TODO
+                let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
+                    .restitution(0.2)
+                    .friction(0.7)
+                    .build();
+                let body = self.physics.add_body(body, collider);
+                self.world
+                    .insert(
+                        e,
+                        (components::RigidBody {
+                            handle: body,
+                            movable,
+                        },),
+                    )
+                    .unwrap();
+            }
+
             for cmp in &node.components {
                 match cmp {
                     ComponentDef::Mesh { path } => {
@@ -188,31 +214,6 @@ impl Scene {
                     }
                     ComponentDef::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
-                    }
-                    ComponentDef::Body { shape: _, movable } => {
-                        let movable = movable.unwrap_or_else(|| true);
-                        let body_type = if movable {
-                            RigidBodyType::Dynamic
-                        } else {
-                            RigidBodyType::Fixed
-                        };
-                        // TODO Move this logic into the RigidBody cmp
-                        let body = RigidBodyBuilder::new(body_type).translation(pos).build();
-                        // TODO
-                        let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
-                            .restitution(0.2)
-                            .friction(0.7)
-                            .build();
-                        let body = self.physics.add_body(body, collider);
-                        self.world
-                            .insert(
-                                e,
-                                (components::RigidBody {
-                                    handle: body,
-                                    movable,
-                                },),
-                            )
-                            .unwrap();
                     }
                 }
             }

@@ -14,40 +14,40 @@ nodes:
     render_order: 0
     render_tags: 1
     scale: [ 10, 0.5, 10 ]
+    body:
+      movable: false
+      shape: Cube
     components:
       - !Mesh
         path: cube.obj
       - !Material
         name: bricks
-      - !Body
-        movable: false
-        shape: Cube
 
   crate:
     render_order: 0
     render_tags: 1
     pos: [ 0, 5, 0 ]
+    body:
+      shape: Cube
     components:
       - !Mesh
         path: cube.obj
       - !Material
         name: crate
-      - !Body
-        shape: Cube
 
   colored_box:
     render_order: 0
     render_tags: 1
     pos: [ 3, 3, -3 ]
     scale: [ 1, 1, 1 ]
+    body:
+      movable: true
+      shape: Cube
     components:
       - !Mesh
         path: cube.obj
       - !Material
         name: red
-      - !Body
-        movable: true
-        shape: Cube
 
   # TODO This does not render when floor is present
   test:

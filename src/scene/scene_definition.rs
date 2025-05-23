@@ -14,10 +14,6 @@ pub enum ComponentDef {
     Material {
         name: String,
     },
-    Body {
-        shape: ColliderShapeDef,
-        movable: Option<bool>,
-    },
 }
 
 #[derive(Deserialize, Debug)]
@@ -34,11 +30,18 @@ pub enum MaterialDef {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct BodyDef {
+    pub shape: ColliderShapeDef,
+    pub movable: Option<bool>,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct NodeDef {
     pub render_order: i32,
     pub render_tags: u32,
     pub pos: Option<[f32; 3]>,
     pub scale: Option<[f32; 3]>,
+    pub body: Option<BodyDef>,
     pub components: Vec<ComponentDef>,
 }
 
