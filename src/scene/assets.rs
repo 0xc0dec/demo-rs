@@ -25,10 +25,7 @@ pub struct Assets {
     pub postprocess_shader: ShaderHandle,
     shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
 
-    pub box_mesh: MeshHandle,
-    pub quad_mesh: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
-
     materials: SlotMap<MaterialHandle, Material>,
 }
 
@@ -37,7 +34,6 @@ pub struct Assets {
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
         let (
-            box_mesh,
             skybox_tex,
             crate_tex,
             color_shader,
@@ -46,7 +42,6 @@ impl Assets {
             skybox_shader,
         ) = future::block_on(async {
             (
-                Mesh::from_file(rr, "cube.obj").await,
                 Texture::new_cube_from_file("skybox_bgra.dds", rr)
                     .await
                     .unwrap(),
@@ -57,10 +52,6 @@ impl Assets {
                 new_shader_module(rr, "skybox.wgsl").await,
             )
         });
-
-        let mut meshes = SlotMap::new();
-        let box_mesh = meshes.insert(box_mesh);
-        let quad_mesh = meshes.insert(Mesh::new_quad(rr));
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
@@ -81,9 +72,7 @@ impl Assets {
             textured_shader,
             postprocess_shader,
             skybox_shader,
-            meshes,
-            box_mesh,
-            quad_mesh,
+            meshes: SlotMap::new(),
             materials: SlotMap::new(),
         }
     }

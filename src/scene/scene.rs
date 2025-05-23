@@ -11,11 +11,11 @@ use crate::scene::scene_config::{ComponentCfg, MaterialCfg, MeshPrefabCfg, Scene
 use crate::state::State;
 
 use super::assets::Assets;
-use super::components;
 use super::components::{
     Camera, Grab, Hud, Material, Mesh, Player, PlayerTarget, RenderOrder, RenderTags,
     Transform, RENDER_TAG_SCENE,
 };
+use super::{components, MeshHandle};
 
 pub struct Scene {
     world: World,
@@ -24,6 +24,7 @@ pub struct Scene {
     player: Entity,
     hud: Entity,
     ui: Ui,
+    box_mesh: MeshHandle,
 }
 
 impl Scene {
@@ -39,13 +40,13 @@ impl Scene {
             Vec3::new(7.0, 7.0, 7.0),
         );
 
+        let quad_mesh = assets.add_mesh(render::Mesh::new_quad(&state.renderer));
+
         // Skybox
-        // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
-        // in the background.
         let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
         world.spawn((
             Transform::default(),
-            Mesh(assets.quad_mesh),
+            Mesh(quad_mesh),
             Material(material),
             RenderOrder(-100),
             RenderTags(RENDER_TAG_SCENE),
@@ -67,13 +68,15 @@ impl Scene {
                 components::RENDER_TAG_POST_PROCESS | components::RENDER_TAG_DEBUG_UI,
                 None,
             ),
-            Mesh(assets.quad_mesh),
+            Mesh(quad_mesh),
             Material(material),
             RenderOrder(100),
             RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
 
         let hud = world.spawn((Hud,));
+        let box_mesh = assets.add_mesh_from_file(&state.renderer, "cube.obj");
+        let ui = Ui::new(&state.window, &state.renderer);
 
         Self {
             world,
@@ -81,7 +84,8 @@ impl Scene {
             player,
             postprocessor,
             hud,
-            ui: Ui::new(&state.window, &state.renderer),
+            box_mesh,
+            ui,
         }
     }
 
@@ -257,7 +261,7 @@ impl Scene {
         let material = assets.add_textured_material(rr, assets.crate_texture);
         self.world.spawn((
             Transform::new(pos, scale),
-            Mesh(assets.box_mesh),
+            Mesh(self.box_mesh),
             Material(material),
             body,
             RenderOrder(0),
