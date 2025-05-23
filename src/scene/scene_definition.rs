@@ -2,10 +2,22 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
+pub enum ColliderShapeDef {
+    Cube,
+}
+
+#[derive(Deserialize, Debug)]
 pub enum ComponentDef {
-    Transform { pos: [f32; 3], scale: [f32; 3] },
-    Mesh { path: String },
-    Material { name: String },
+    Mesh {
+        path: String,
+    },
+    Material {
+        name: String,
+    },
+    Body {
+        shape: ColliderShapeDef,
+        movable: Option<bool>,
+    },
 }
 
 #[derive(Deserialize, Debug)]
@@ -25,6 +37,8 @@ pub enum MaterialDef {
 pub struct NodeDef {
     pub render_order: i32,
     pub render_tags: u32,
+    pub pos: Option<[f32; 3]>,
+    pub scale: Option<[f32; 3]>,
     pub components: Vec<ComponentDef>,
 }
 

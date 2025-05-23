@@ -3,14 +3,14 @@ use rapier3d::prelude::*;
 use crate::math::Vec3;
 use crate::physics::Physics;
 
-pub struct RigidBody {
-    handle: RigidBodyHandle,
-    movable: bool,
-}
-
 pub struct RigidBodyParams {
     pub pos: Vec3,
     pub scale: Vec3,
+    pub movable: bool,
+}
+
+pub struct RigidBody {
+    pub handle: RigidBodyHandle,
     pub movable: bool,
 }
 

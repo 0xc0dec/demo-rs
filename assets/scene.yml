@@ -7,13 +7,25 @@ materials:
     color: [ 1, 0, 0 ]
 
 nodes:
+  floor:
+    render_order: 0
+    render_tags: 1
+    scale: [ 10, 0.5, 10 ]
+    components:
+      - !Mesh
+        path: cube.obj
+      - !Material
+        name: bricks
+      - !Body
+        movable: false
+        shape: Cube
+
   one:
     render_order: 0
     render_tags: 1
+    pos: [ 1, 2, 3 ]
+    scale: [ 1, 1, 1 ]
     components:
-      - !Transform
-        pos: [ 1, 2, 3 ]
-        scale: [ 1, 1, 1 ]
       - !Mesh
         path: cube.obj
       - !Material
@@ -22,11 +34,13 @@ nodes:
   two:
     render_order: 0
     render_tags: 1
+    pos: [ -3, 3, -3 ]
+    scale: [ 1, 1, 1 ]
     components:
-      - !Transform
-        pos: [ -3, 3, -3 ]
-        scale: [ 1, 1, 1 ]
       - !Mesh
         path: cube.obj
       - !Material
         name: red
+      - !Body
+        movable: true
+        shape: Cube

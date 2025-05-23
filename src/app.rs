@@ -84,7 +84,7 @@ impl ApplicationHandler for App<'_> {
             &SceneDef::from_yaml(&String::from_utf8_lossy(include_bytes!(
                 "../assets/scene.yml"
             ))),
-            &state.renderer,
+            &state,
             &mut assets,
         );
 

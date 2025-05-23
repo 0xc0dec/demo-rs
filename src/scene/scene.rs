@@ -1,4 +1,6 @@
 use hecs::{Entity, World};
+use rapier3d::dynamics::{RigidBodyBuilder, RigidBodyType};
+use rapier3d::prelude::*;
 use std::collections::HashMap;
 
 use crate::input::InputAction;
@@ -85,7 +87,6 @@ impl Scene {
             ui: Ui::new(&state.window, &state.renderer),
         };
 
-        scene.spawn_floor(&state.renderer, assets);
         scene.spawn_box(
             Vec3::y_axis().xyz() * 5.0,
             Vec3::from_element(1.0),
@@ -137,7 +138,8 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets);
     }
 
-    pub fn insert_from_definition(&mut self, def: &SceneDef, rr: &Renderer, assets: &mut Assets) {
+    // TODO Continue adding other stuff
+    pub fn insert_from_definition(&mut self, def: &SceneDef, state: &State, assets: &mut Assets) {
         let mut materials = HashMap::new();
         for mat in &def.materials {
             match mat {
@@ -149,15 +151,18 @@ impl Scene {
                     materials.insert(
                         name.clone(),
                         assets.add_color_material(
-                            rr,
+                            &state.renderer,
                             Vec3::new(*r, *g, *b),
                             wireframe.unwrap_or(false),
                         ),
                     );
                 }
                 MaterialDef::Textured { name, texture } => {
-                    let tex = assets.add_texture_2d(rr, texture);
-                    materials.insert(name.clone(), assets.add_textured_material(rr, tex));
+                    let tex = assets.add_texture_2d(&state.renderer, texture);
+                    materials.insert(
+                        name.clone(),
+                        assets.add_textured_material(&state.renderer, tex),
+                    );
                 }
             }
         }
@@ -165,30 +170,55 @@ impl Scene {
         let mut meshes = HashMap::new();
 
         for node in def.nodes.values() {
-            let e = self
-                .world
-                .spawn((RenderOrder(node.render_order), RenderTags(node.render_tags)));
+            let pos = node
+                .pos
+                .map(|pos| Vec3::from_row_slice(&pos))
+                .unwrap_or(Vec3::zeros());
+            let scale = node
+                .scale
+                .map(|scale| Vec3::from_row_slice(&scale))
+                .unwrap_or(Vec3::from_element(1.0));
+            let e = self.world.spawn((
+                Transform::new(pos, scale),
+                RenderOrder(node.render_order),
+                RenderTags(node.render_tags),
+            ));
+
             for cmp in &node.components {
                 match cmp {
-                    ComponentDef::Transform { pos, scale } => {
-                        self.world
-                            .insert(
-                                e,
-                                (Transform::new(
-                                    Vec3::from_row_slice(pos),
-                                    Vec3::from_row_slice(scale),
-                                ),),
-                            )
-                            .unwrap();
-                    }
                     ComponentDef::Mesh { path } => {
                         if !meshes.contains_key(path) {
-                            meshes.insert(path, assets.add_mesh(rr, path));
+                            meshes.insert(path, assets.add_mesh(&state.renderer, path));
                         }
                         self.world.insert(e, (Mesh(meshes[path]),)).unwrap();
                     }
                     ComponentDef::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
+                    }
+                    ComponentDef::Body { shape: _, movable } => {
+                        let movable = movable.unwrap_or_else(|| true);
+                        let body_type = if movable {
+                            RigidBodyType::Dynamic
+                        } else {
+                            RigidBodyType::Fixed
+                        };
+                        // TODO Move this logic into the RigidBody cmp
+                        let body = RigidBodyBuilder::new(body_type).translation(pos).build();
+                        // TODO
+                        let collider = ColliderBuilder::cuboid(scale.x, scale.y, scale.z)
+                            .restitution(0.2)
+                            .friction(0.7)
+                            .build();
+                        let body = self.physics.add_body(body, collider);
+                        self.world
+                            .insert(
+                                e,
+                                (components::RigidBody {
+                                    handle: body,
+                                    movable,
+                                },),
+                            )
+                            .unwrap();
                     }
                 }
             }
@@ -207,28 +237,6 @@ impl Scene {
         let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
         assets.remove_material(material.0);
         material.0 = assets.add_postprocess_material(&state.renderer, color_tex);
-    }
-
-    fn spawn_floor(&mut self, rr: &Renderer, assets: &mut Assets) {
-        let pos = Vec3::from_element(0.0);
-        let scale = Vec3::new(10.0, 0.5, 10.0);
-        let body = components::RigidBody::cuboid(
-            components::RigidBodyParams {
-                pos,
-                scale,
-                movable: false,
-            },
-            &mut self.physics,
-        );
-        let material = assets.add_textured_material(rr, assets.bricks_texture);
-        self.world.spawn((
-            Transform::new(pos, scale),
-            Mesh(assets.box_mesh),
-            Material(material),
-            body,
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_SCENE),
-        ));
     }
 
     fn spawn_box(&mut self, pos: Vec3, scale: Vec3, rr: &Renderer, assets: &mut Assets) {
