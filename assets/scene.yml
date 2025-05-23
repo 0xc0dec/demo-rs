@@ -8,6 +8,9 @@ materials:
   - !Color
     name: red
     color: [ 1, 0, 0 ]
+  - !Color
+    name: yellow
+    color: [ 1, 1, 0 ]
 
 nodes:
   floor:
@@ -49,14 +52,12 @@ nodes:
       - !Material
         name: red
 
-  # TODO This does not render when floor is present
-  test:
+  player_target:
     render_order: 0
-    render_tags: 1
-    pos: [ 1, 2, 3 ]
-    scale: [ 1, 1, 1 ]
+    render_tags: 1 # 8 # hidden
     components:
       - !Mesh
         path: cube.obj
       - !Material
-        name: bricks
+        name: yellow
+      - PlayerTarget

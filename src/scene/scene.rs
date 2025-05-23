@@ -39,9 +39,6 @@ impl Scene {
             Vec3::new(7.0, 7.0, 7.0),
         );
 
-        // Player target
-        PlayerTarget::spawn(&state.renderer, &mut world, assets);
-
         // Skybox
         // Spawning skybox somewhere in the middle to ensure the sorting by render order works and it still shows up
         // in the background.
@@ -110,8 +107,8 @@ impl Scene {
         PlayerTarget::update(&mut self.world);
 
         if state.input.action_activated(InputAction::Spawn) {
-            let player_transform = self.world.query_one_mut::<&Transform>(self.player).unwrap();
-            let pos = player_transform.position() + player_transform.forward().xyz() * 5.0;
+            let player_tr = self.world.query_one_mut::<&Transform>(self.player).unwrap();
+            let pos = player_tr.position() + player_tr.forward().xyz() * 5.0;
             self.spawn_box(pos, Vec3::from_element(1.0), &state.renderer, assets);
         }
 
@@ -214,6 +211,9 @@ impl Scene {
                     }
                     ComponentDef::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
+                    }
+                    ComponentDef::PlayerTarget => {
+                        self.world.insert(e, (PlayerTarget,)).unwrap();
                     }
                 }
             }

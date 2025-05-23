@@ -1,29 +1,15 @@
 use hecs::{With, World};
 
 use crate::math::Vec3;
-use crate::render::Renderer;
 
-use super::super::Assets;
 use super::{
-    Material, Mesh, Player, RenderOrder, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
+    Player, RenderTags, Transform, RENDER_TAG_HIDDEN, RENDER_TAG_SCENE,
 };
 
 // A visual guide showing the current focus point of the player
 pub struct PlayerTarget;
 
 impl PlayerTarget {
-    pub fn spawn(rr: &Renderer, world: &mut World, assets: &mut Assets) {
-        let mat = assets.add_color_material(rr, Vec3::new(1.0, 1.0, 0.0), false);
-        world.spawn((
-            PlayerTarget,
-            Transform::default(),
-            Mesh(assets.box_mesh),
-            Material(mat),
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_HIDDEN),
-        ));
-    }
-
     pub fn update(world: &mut World) {
         let (pos, player_pos) = {
             let (_, (player, player_tr)) = world

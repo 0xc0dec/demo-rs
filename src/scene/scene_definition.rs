@@ -8,12 +8,9 @@ pub enum ColliderShapeDef {
 
 #[derive(Deserialize, Debug)]
 pub enum ComponentDef {
-    Mesh {
-        path: String,
-    },
-    Material {
-        name: String,
-    },
+    Mesh { path: String },
+    Material { name: String },
+    PlayerTarget,
 }
 
 #[derive(Deserialize, Debug)]
