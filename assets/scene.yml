@@ -2,6 +2,9 @@ materials:
   - !Textured
     name: bricks
     texture: bricks.png
+  - !Textured
+    name: crate
+    texture: crate.png
   - !Color
     name: red
     color: [ 1, 0, 0 ]
@@ -20,21 +23,22 @@ nodes:
         movable: false
         shape: Cube
 
-  one:
+  crate:
     render_order: 0
     render_tags: 1
-    pos: [ 1, 2, 3 ]
-    scale: [ 1, 1, 1 ]
+    pos: [ 0, 5, 0 ]
     components:
       - !Mesh
         path: cube.obj
       - !Material
-        name: bricks
+        name: crate
+      - !Body
+        shape: Cube
 
-  two:
+  colored_box:
     render_order: 0
     render_tags: 1
-    pos: [ -3, 3, -3 ]
+    pos: [ 3, 3, -3 ]
     scale: [ 1, 1, 1 ]
     components:
       - !Mesh
@@ -44,3 +48,15 @@ nodes:
       - !Body
         movable: true
         shape: Cube
+
+  # TODO This does not render when floor is present, probably because the material is the same
+  test:
+    render_order: 0
+    render_tags: 1
+    pos: [ 1, 2, 3 ]
+    scale: [ 1, 1, 1 ]
+    components:
+      - !Mesh
+        path: cube.obj
+      - !Material
+        name: bricks

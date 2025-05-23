@@ -87,12 +87,6 @@ impl Scene {
             ui: Ui::new(&state.window, &state.renderer),
         };
 
-        scene.spawn_box(
-            Vec3::y_axis().xyz() * 5.0,
-            Vec3::from_element(1.0),
-            &state.renderer,
-            assets,
-        );
         scene.spawn_basis(&state.renderer, assets);
 
         scene
@@ -138,7 +132,7 @@ impl Scene {
         self.render_with_camera(self.postprocessor, rr, assets);
     }
 
-    // TODO Continue adding other stuff
+    // TODO Continue adding other stuff until all scene initialization is done via the file.
     pub fn insert_from_definition(&mut self, def: &SceneDef, state: &State, assets: &mut Assets) {
         let mut materials = HashMap::new();
         for mat in &def.materials {
