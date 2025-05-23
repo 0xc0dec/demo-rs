@@ -32,6 +32,8 @@ pub struct Assets {
     materials: SlotMap<MaterialHandle, Material>,
 }
 
+// TODO Remove hardcoded assets, make scene add them.
+// TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
         let (
