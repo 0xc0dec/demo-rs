@@ -13,13 +13,7 @@ pub enum MeshPrefabCfg {
 
 #[derive(Deserialize, Debug)]
 pub enum ComponentCfg {
-    Mesh {
-        path: Option<String>,
-        prefab: Option<MeshPrefabCfg>,
-    },
-    Material {
-        name: String,
-    },
+    Material { name: String },
     PlayerTarget,
 }
 
@@ -43,12 +37,19 @@ pub struct BodyCfg {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct MeshCfg {
+    pub path: Option<String>,
+    pub prefab: Option<MeshPrefabCfg>,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct NodeCfg {
     pub render_order: i32,
     pub render_tags: u32,
     pub pos: Option<[f32; 3]>,
     pub scale: Option<[f32; 3]>,
     pub body: Option<BodyCfg>,
+    pub mesh: Option<MeshCfg>,
     pub components: Vec<ComponentCfg>,
 }
 

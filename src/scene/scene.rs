@@ -196,22 +196,23 @@ impl Scene {
                     .unwrap();
             }
 
+            if let Some(mesh) = &node.mesh {
+                // TODO Cache, look up if already loaded
+                let mesh = if let Some(path) = &mesh.path {
+                    assets.add_mesh_from_file(&state.renderer, path)
+                } else if let Some(prefab) = &mesh.prefab {
+                    let mesh = match prefab {
+                        MeshPrefabCfg::Basis => render::Mesh::new_basis(&state.renderer),
+                    };
+                    assets.add_mesh(mesh)
+                } else {
+                    panic!("Unable to create mesh");
+                };
+                self.world.insert(e, (Mesh(mesh),)).unwrap();
+            }
+
             for cmp in &node.components {
                 match cmp {
-                    ComponentCfg::Mesh { path, prefab } => {
-                        let mesh = if let Some(path) = path {
-                            // TODO Cache and don't reload
-                            assets.add_mesh_from_file(&state.renderer, path)
-                        } else if let Some(prefab) = prefab {
-                            let mesh = match prefab {
-                                MeshPrefabCfg::Basis => render::Mesh::new_basis(&state.renderer),
-                            };
-                            assets.add_mesh(mesh)
-                        } else {
-                            panic!("Unable to create mesh");
-                        };
-                        self.world.insert(e, (Mesh(mesh),)).unwrap();
-                    }
                     ComponentCfg::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
                     }
