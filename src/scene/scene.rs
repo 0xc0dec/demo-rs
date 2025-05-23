@@ -7,7 +7,7 @@ use crate::input::InputAction;
 use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render::{Renderer, SurfaceSize, Ui};
-use crate::scene::scene_definition::{ComponentDef, MaterialDef, SceneDef};
+use crate::scene::scene_config::{ComponentCfg, MaterialCfg, SceneCfg};
 use crate::state::State;
 
 use super::assets::Assets;
@@ -130,11 +130,11 @@ impl Scene {
     }
 
     // TODO Continue adding other stuff until all scene initialization is done via the file.
-    pub fn insert_from_definition(&mut self, def: &SceneDef, state: &State, assets: &mut Assets) {
+    pub fn insert_from_definition(&mut self, def: &SceneCfg, state: &State, assets: &mut Assets) {
         let mut materials = HashMap::new();
         for mat in &def.materials {
             match mat {
-                MaterialDef::Color {
+                MaterialCfg::Color {
                     name,
                     color: [r, g, b],
                     wireframe,
@@ -148,7 +148,7 @@ impl Scene {
                         ),
                     );
                 }
-                MaterialDef::Textured { name, texture } => {
+                MaterialCfg::Textured { name, texture } => {
                     let tex = assets.add_texture_2d(&state.renderer, texture);
                     materials.insert(
                         name.clone(),
@@ -203,16 +203,16 @@ impl Scene {
 
             for cmp in &node.components {
                 match cmp {
-                    ComponentDef::Mesh { path } => {
+                    ComponentCfg::Mesh { path } => {
                         if !meshes.contains_key(path) {
                             meshes.insert(path, assets.add_mesh(&state.renderer, path));
                         }
                         self.world.insert(e, (Mesh(meshes[path]),)).unwrap();
                     }
-                    ComponentDef::Material { name } => {
+                    ComponentCfg::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
                     }
-                    ComponentDef::PlayerTarget => {
+                    ComponentCfg::PlayerTarget => {
                         self.world.insert(e, (PlayerTarget,)).unwrap();
                     }
                 }

@@ -10,7 +10,7 @@ use crate::frame_time::FrameTime;
 use crate::input::{Input, InputAction};
 use crate::render::{Renderer, SurfaceSize};
 use crate::scene::Scene;
-use crate::scene::{Assets, SceneDef};
+use crate::scene::{Assets, SceneCfg};
 use crate::state::State;
 
 #[derive(Default)]
@@ -81,7 +81,7 @@ impl ApplicationHandler for App<'_> {
 
         let mut scene = Scene::new(&state, &mut assets);
         scene.insert_from_definition(
-            &SceneDef::from_yaml(&String::from_utf8_lossy(include_bytes!(
+            &SceneCfg::from_yaml(&String::from_utf8_lossy(include_bytes!(
                 "../assets/scene.yml"
             ))),
             &state,
