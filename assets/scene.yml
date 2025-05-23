@@ -49,7 +49,7 @@ nodes:
         movable: true
         shape: Cube
 
-  # TODO This does not render when floor is present, probably because the material is the same
+  # TODO This does not render when floor is present
   test:
     render_order: 0
     render_tags: 1
