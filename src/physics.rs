@@ -49,10 +49,12 @@ impl Physics {
         self.colliders.insert(col)
     }
 
-    pub fn add_body(&mut self, body: RigidBody, collider: Collider) -> RigidBodyHandle {
+    pub fn add_body(&mut self, body: RigidBody, collider: Option<Collider>) -> RigidBodyHandle {
         let body = self.bodies.insert(body);
-        self.colliders
-            .insert_with_parent(collider, body, &mut self.bodies);
+        if let Some(collider) = collider {
+            self.colliders
+                .insert_with_parent(collider, body, &mut self.bodies);
+        }
         body
     }
 

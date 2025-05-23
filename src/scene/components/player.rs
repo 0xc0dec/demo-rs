@@ -46,8 +46,8 @@ impl Player {
             Some(rt),
         );
 
-        let mut transform = Transform::from_pos(position);
-        transform.look_at(Vec3::from_element(0.0));
+        let mut tr = Transform::from_pos(position);
+        tr.look_at(Vec3::from_element(0.0));
 
         let collider = physics.add_collider(
             ColliderBuilder::ball(0.5)
@@ -65,7 +65,7 @@ impl Player {
                 focus: None,
             },
             camera,
-            transform,
+            tr,
         ))
     }
 

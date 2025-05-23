@@ -184,7 +184,7 @@ impl Scene {
                     .restitution(0.2)
                     .friction(0.7)
                     .build();
-                let body = self.physics.add_body(body, collider);
+                let body = self.physics.add_body(body, Some(collider));
                 self.world
                     .insert(
                         e,
@@ -227,6 +227,8 @@ impl Scene {
         }
     }
 
+    // TODO Iterate over any camera, check its target and if it's configured to match the screen
+    // size then resize it.
     fn resize(&mut self, new_size: &SurfaceSize, state: &State, assets: &mut Assets) {
         let mut player_cam = self.world.get::<&mut Camera>(self.player).unwrap();
         player_cam.set_aspect(new_size.width as f32 / new_size.height as f32);
