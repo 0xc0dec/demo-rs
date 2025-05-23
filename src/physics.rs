@@ -28,6 +28,7 @@ pub struct RayCastResult {
     pub collider: ColliderHandle,
 }
 
+// TODO Don't expose rapier's types.
 impl Physics {
     pub fn new() -> Self {
         Self {

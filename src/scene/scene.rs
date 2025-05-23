@@ -137,7 +137,7 @@ impl Scene {
                     wireframe,
                 } => {
                     materials.insert(
-                        name.clone(),
+                        name.as_str(),
                         assets.add_color_material(
                             &state.renderer,
                             Vec3::new(*r, *g, *b),
@@ -148,7 +148,7 @@ impl Scene {
                 MaterialCfg::Textured { name, texture } => {
                     let tex = assets.add_texture_2d_from_file(&state.renderer, texture);
                     materials.insert(
-                        name.clone(),
+                        name.as_str(),
                         assets.add_textured_material(&state.renderer, tex),
                     );
                 }
@@ -213,7 +213,7 @@ impl Scene {
 
             if let Some(material) = &node.material {
                 self.world
-                    .insert(e, (Material(materials[&material.name]),))
+                    .insert(e, (Material(materials[material.name.as_str()]),))
                     .unwrap();
             }
 
