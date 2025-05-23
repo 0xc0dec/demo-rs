@@ -7,9 +7,19 @@ pub enum ColliderShapeCfg {
 }
 
 #[derive(Deserialize, Debug)]
+pub enum MeshPrefabCfg {
+    Basis,
+}
+
+#[derive(Deserialize, Debug)]
 pub enum ComponentCfg {
-    Mesh { path: String },
-    Material { name: String },
+    Mesh {
+        path: Option<String>,
+        prefab: Option<MeshPrefabCfg>,
+    },
+    Material {
+        name: String,
+    },
     PlayerTarget,
 }
 
@@ -59,8 +69,8 @@ mod tests {
 
     #[test]
     fn smoke() {
-        let def_file_content = String::from_utf8_lossy(include_bytes!("../../assets/scene.yml"));
-        let config = serde_yaml::from_str::<SceneCfg>(&def_file_content).unwrap();
+        let cfg = String::from_utf8_lossy(include_bytes!("../../assets/scene.yml"));
+        let config = serde_yaml::from_str::<SceneCfg>(&cfg).unwrap();
         println!("{:?}", config);
     }
 }

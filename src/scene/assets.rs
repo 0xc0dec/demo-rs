@@ -15,7 +15,6 @@ pub type ShaderHandle = DefaultKey;
 pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
-    pub bricks_texture: TextureHandle,
     pub crate_texture: TextureHandle,
     pub skybox_texture: TextureHandle,
     textures: SlotMap<TextureHandle, Texture>,
@@ -28,7 +27,6 @@ pub struct Assets {
 
     pub box_mesh: MeshHandle,
     pub quad_mesh: MeshHandle,
-    pub basis_mesh: MeshHandle,
     meshes: SlotMap<MeshHandle, Mesh>,
 
     materials: SlotMap<MaterialHandle, Material>,
@@ -39,7 +37,6 @@ impl Assets {
         let (
             box_mesh,
             skybox_tex,
-            bricks_tex,
             crate_tex,
             color_shader,
             textured_shader,
@@ -51,7 +48,6 @@ impl Assets {
                 Texture::new_cube_from_file("skybox_bgra.dds", rr)
                     .await
                     .unwrap(),
-                Texture::new_2d_from_file("bricks.png", rr).await.unwrap(),
                 Texture::new_2d_from_file("crate.png", rr).await.unwrap(),
                 new_shader_module(rr, "color.wgsl").await,
                 new_shader_module(rr, "textured.wgsl").await,
@@ -63,7 +59,6 @@ impl Assets {
         let mut meshes = SlotMap::new();
         let box_mesh = meshes.insert(box_mesh);
         let quad_mesh = meshes.insert(Mesh::new_quad(rr));
-        let basis_mesh = meshes.insert(Mesh::new_basis(rr));
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
@@ -72,13 +67,11 @@ impl Assets {
         let skybox_shader = shaders.insert(skybox_shader);
 
         let mut textures = SlotMap::new();
-        let bricks_texture = textures.insert(bricks_tex);
         let skybox_texture = textures.insert(skybox_tex);
         let crate_texture = textures.insert(crate_tex);
 
         Self {
             textures,
-            bricks_texture,
             crate_texture,
             skybox_texture,
             shaders,
@@ -89,7 +82,6 @@ impl Assets {
             meshes,
             box_mesh,
             quad_mesh,
-            basis_mesh,
             materials: SlotMap::new(),
         }
     }
@@ -102,12 +94,16 @@ impl Assets {
         self.shaders.get(handle).unwrap()
     }
 
-    pub fn add_mesh(&mut self, rr: &Renderer, path: &str) -> MeshHandle {
+    pub fn add_mesh_from_file(&mut self, rr: &Renderer, path: &str) -> MeshHandle {
         self.meshes
-            .insert(future::block_on(Mesh::from_file(rr, "cube.obj")))
+            .insert(future::block_on(Mesh::from_file(rr, path)))
     }
 
-    pub fn add_texture_2d(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
+    pub fn add_mesh(&mut self, mesh: Mesh) -> MeshHandle {
+        self.meshes.insert(mesh)
+    }
+
+    pub fn add_texture_2d_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
         let tex = future::block_on(Texture::new_2d_from_file(path, rr));
         self.textures.insert(tex.unwrap())
     }

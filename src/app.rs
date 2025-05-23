@@ -80,7 +80,7 @@ impl ApplicationHandler for App<'_> {
         };
 
         let mut scene = Scene::new(&state, &mut assets);
-        scene.insert_from_definition(
+        scene.insert_from_cfg(
             &SceneCfg::from_yaml(&String::from_utf8_lossy(include_bytes!(
                 "../assets/scene.yml"
             ))),

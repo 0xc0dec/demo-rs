@@ -6,8 +6,9 @@ use std::collections::HashMap;
 use crate::input::InputAction;
 use crate::math::Vec3;
 use crate::physics::Physics;
+use crate::render;
 use crate::render::{Renderer, SurfaceSize, Ui};
-use crate::scene::scene_config::{ComponentCfg, MaterialCfg, SceneCfg};
+use crate::scene::scene_config::{ComponentCfg, MaterialCfg, MeshPrefabCfg, SceneCfg};
 use crate::state::State;
 
 use super::assets::Assets;
@@ -75,18 +76,14 @@ impl Scene {
 
         let hud = world.spawn((Hud,));
 
-        let mut scene = Self {
+        Self {
             world,
             physics,
             player,
             postprocessor,
             hud,
             ui: Ui::new(&state.window, &state.renderer),
-        };
-
-        scene.spawn_basis(&state.renderer, assets);
-
-        scene
+        }
     }
 
     pub fn update(
@@ -130,9 +127,9 @@ impl Scene {
     }
 
     // TODO Continue adding other stuff until all scene initialization is done via the file.
-    pub fn insert_from_definition(&mut self, def: &SceneCfg, state: &State, assets: &mut Assets) {
+    pub fn insert_from_cfg(&mut self, cfg: &SceneCfg, state: &State, assets: &mut Assets) {
         let mut materials = HashMap::new();
-        for mat in &def.materials {
+        for mat in &cfg.materials {
             match mat {
                 MaterialCfg::Color {
                     name,
@@ -149,7 +146,7 @@ impl Scene {
                     );
                 }
                 MaterialCfg::Textured { name, texture } => {
-                    let tex = assets.add_texture_2d(&state.renderer, texture);
+                    let tex = assets.add_texture_2d_from_file(&state.renderer, texture);
                     materials.insert(
                         name.clone(),
                         assets.add_textured_material(&state.renderer, tex),
@@ -158,9 +155,7 @@ impl Scene {
             }
         }
 
-        let mut meshes = HashMap::new();
-
-        for node in def.nodes.values() {
+        for node in cfg.nodes.values() {
             let pos = node
                 .pos
                 .map(|pos| Vec3::from_row_slice(&pos))
@@ -203,11 +198,19 @@ impl Scene {
 
             for cmp in &node.components {
                 match cmp {
-                    ComponentCfg::Mesh { path } => {
-                        if !meshes.contains_key(path) {
-                            meshes.insert(path, assets.add_mesh(&state.renderer, path));
-                        }
-                        self.world.insert(e, (Mesh(meshes[path]),)).unwrap();
+                    ComponentCfg::Mesh { path, prefab } => {
+                        let mesh = if let Some(path) = path {
+                            // TODO Cache and don't reload
+                            assets.add_mesh_from_file(&state.renderer, path)
+                        } else if let Some(prefab) = prefab {
+                            let mesh = match prefab {
+                                MeshPrefabCfg::Basis => render::Mesh::new_basis(&state.renderer),
+                            };
+                            assets.add_mesh(mesh)
+                        } else {
+                            panic!("Unable to create mesh");
+                        };
+                        self.world.insert(e, (Mesh(mesh),)).unwrap();
                     }
                     ComponentCfg::Material { name } => {
                         self.world.insert(e, (Material(materials[name]),)).unwrap();
@@ -249,21 +252,6 @@ impl Scene {
             Mesh(assets.box_mesh),
             Material(material),
             body,
-            RenderOrder(0),
-            RenderTags(RENDER_TAG_SCENE),
-        ));
-    }
-
-    fn spawn_basis(&mut self, rr: &Renderer, assets: &mut Assets) {
-        let mat = assets.add_color_material(rr, Vec3::new(1.0, 1.0, 0.0), true);
-
-        let mut t = Transform::default();
-        t.translate(Vec3::new(2.0, 1.0, 2.0));
-
-        self.world.spawn((
-            t,
-            Mesh(assets.basis_mesh),
-            Material(mat),
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
         ));

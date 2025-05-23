@@ -11,6 +11,10 @@ materials:
   - !Color
     name: yellow
     color: [ 1, 1, 0 ]
+  - !Color
+    name: blue
+    wireframe: true
+    color: [ 0, 0, 1 ]
 
 nodes:
   floor:
@@ -52,9 +56,19 @@ nodes:
       - !Material
         name: red
 
+  basis:
+    render_order: 0
+    render_tags: 1
+    pos: [ 2, 1, 2 ]
+    components:
+      - !Mesh
+        prefab: Basis
+      - !Material
+        name: blue
+
   player_target:
     render_order: 0
-    render_tags: 1 # 8 # hidden
+    render_tags: 8 # hidden
     components:
       - !Mesh
         path: cube.obj
