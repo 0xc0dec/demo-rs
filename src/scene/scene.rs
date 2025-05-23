@@ -211,11 +211,14 @@ impl Scene {
                 self.world.insert(e, (Mesh(mesh),)).unwrap();
             }
 
-            for cmp in &node.components {
+            if let Some(material) = &node.material {
+                self.world
+                    .insert(e, (Material(materials[&material.name]),))
+                    .unwrap();
+            }
+
+            for cmp in node.components.as_ref().unwrap_or(&Vec::new()) {
                 match cmp {
-                    ComponentCfg::Material { name } => {
-                        self.world.insert(e, (Material(materials[name]),)).unwrap();
-                    }
                     ComponentCfg::PlayerTarget => {
                         self.world.insert(e, (PlayerTarget,)).unwrap();
                     }

@@ -26,9 +26,8 @@ nodes:
       shape: Cube
     mesh:
       path: cube.obj
-    components:
-      - !Material
-        name: bricks
+    material:
+      name: bricks
 
   crate:
     render_order: 0
@@ -38,9 +37,8 @@ nodes:
       shape: Cube
     mesh:
       path: cube.obj
-    components:
-      - !Material
-        name: crate
+    material:
+      name: crate
 
   colored_box:
     render_order: 0
@@ -52,9 +50,8 @@ nodes:
     body:
       movable: true
       shape: Cube
-    components:
-      - !Material
-        name: red
+    material:
+      name: red
 
   basis:
     render_order: 0
@@ -62,16 +59,15 @@ nodes:
     pos: [ 2, 1, 2 ]
     mesh:
       prefab: Basis
-    components:
-      - !Material
-        name: blue
+    material:
+      name: blue
 
   player_target:
     render_order: 0
     render_tags: 8 # hidden
     mesh:
       path: cube.obj
+    material:
+      name: yellow
     components:
-      - !Material
-        name: yellow
       - PlayerTarget

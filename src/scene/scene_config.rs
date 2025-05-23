@@ -13,7 +13,6 @@ pub enum MeshPrefabCfg {
 
 #[derive(Deserialize, Debug)]
 pub enum ComponentCfg {
-    Material { name: String },
     PlayerTarget,
 }
 
@@ -43,6 +42,11 @@ pub struct MeshCfg {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct NodeMaterialCfg {
+    pub name: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct NodeCfg {
     pub render_order: i32,
     pub render_tags: u32,
@@ -50,7 +54,8 @@ pub struct NodeCfg {
     pub scale: Option<[f32; 3]>,
     pub body: Option<BodyCfg>,
     pub mesh: Option<MeshCfg>,
-    pub components: Vec<ComponentCfg>,
+    pub material: Option<NodeMaterialCfg>,
+    pub components: Option<Vec<ComponentCfg>>,
 }
 
 #[derive(Deserialize, Debug)]
