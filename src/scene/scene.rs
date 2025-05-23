@@ -1,7 +1,6 @@
 use hecs::{Entity, World};
 use rapier3d::dynamics::{RigidBodyBuilder, RigidBodyType};
 use rapier3d::prelude::*;
-use std::collections::HashMap;
 
 use crate::input::InputAction;
 use crate::math::Vec3;
@@ -128,33 +127,6 @@ impl Scene {
 
     // TODO Continue adding other stuff until all scene initialization is done via the file.
     pub fn insert_from_cfg(&mut self, cfg: &SceneCfg, state: &State, assets: &mut Assets) {
-        let mut materials = HashMap::new();
-        for mat in &cfg.materials {
-            match mat {
-                MaterialCfg::Color {
-                    name,
-                    color: [r, g, b],
-                    wireframe,
-                } => {
-                    materials.insert(
-                        name.as_str(),
-                        assets.add_color_material(
-                            &state.renderer,
-                            Vec3::new(*r, *g, *b),
-                            wireframe.unwrap_or(false),
-                        ),
-                    );
-                }
-                MaterialCfg::Textured { name, texture } => {
-                    let tex = assets.add_texture_2d_from_file(&state.renderer, texture);
-                    materials.insert(
-                        name.as_str(),
-                        assets.add_textured_material(&state.renderer, tex),
-                    );
-                }
-            }
-        }
-
         for node in cfg.nodes.values() {
             let pos = node
                 .pos
@@ -211,10 +183,40 @@ impl Scene {
                 self.world.insert(e, (Mesh(mesh),)).unwrap();
             }
 
-            if let Some(material) = &node.material {
-                self.world
-                    .insert(e, (Material(materials[material.name.as_str()]),))
-                    .unwrap();
+            if let Some(mat) = &node.material {
+                // TODO Cache, don't re-create. Currently when several nodes use the same material,
+                // only one of them is rendered, must be smth with how the materials work.
+                let mat = cfg.materials.iter().find_map(|m| match m {
+                    MaterialCfg::Color {
+                        name,
+                        color: [r, g, b],
+                        wireframe,
+                    } => {
+                        if *name == mat.name {
+                            Some(assets.add_color_material(
+                                &state.renderer,
+                                Vec3::new(*r, *g, *b),
+                                wireframe.unwrap_or(false),
+                            ))
+                        } else {
+                            None
+                        }
+                    }
+                    MaterialCfg::Textured { name, texture } => {
+                        if *name == mat.name {
+                            let tex = assets.add_texture_2d_from_file(&state.renderer, texture);
+                            Some(assets.add_textured_material(&state.renderer, tex))
+                        } else {
+                            None
+                        }
+                    }
+                });
+
+                if let Some(mat) = mat {
+                    self.world.insert(e, (Material(mat),)).unwrap();
+                } else {
+                    panic!("Unable to create material");
+                }
             }
 
             for cmp in node.components.as_ref().unwrap_or(&Vec::new()) {

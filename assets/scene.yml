@@ -40,6 +40,17 @@ nodes:
     material:
       name: crate
 
+  crate2:
+    render_order: 0
+    render_tags: 1
+    pos: [ 5, 5, 0 ]
+    body:
+      shape: Cube
+    mesh:
+      path: cube.obj
+    material:
+      name: crate
+
   colored_box:
     render_order: 0
     render_tags: 1
