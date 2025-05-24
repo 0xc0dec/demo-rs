@@ -61,12 +61,12 @@ impl Scene {
             .as_ref()
             .unwrap()
             .color_tex();
-        let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
+        let material = materials::Material::post_process(&state.renderer, assets, pp_src_tex);
         let postprocessor = world.spawn((
             Transform::default(),
             Camera::new(1.0, components::RENDER_TAG_POST_PROCESS, None),
             Mesh(quad_mesh),
-            Material(material),
+            Material(assets.add_material(material)),
             RenderOrder(100),
             RenderTags(components::RENDER_TAG_POST_PROCESS),
         ));
@@ -241,10 +241,12 @@ impl Scene {
             .unwrap()
             .resize((new_size.width, new_size.height), &state.renderer);
 
+        let mut mat_cmp = self.world.get::<&mut Material>(self.postprocessor).unwrap();
+        assets.remove_material(mat_cmp.0);
+
         let color_tex = player_cam.target().as_ref().unwrap().color_tex();
-        let mut material = self.world.get::<&mut Material>(self.postprocessor).unwrap();
-        assets.remove_material(material.0);
-        material.0 = assets.add_postprocess_material(&state.renderer, color_tex);
+        let new_mat = materials::Material::post_process(&state.renderer, assets, color_tex);
+        mat_cmp.0 = assets.add_material(new_mat);
     }
 
     fn spawn_box(&mut self, pos: Vec3, scale: Vec3, rr: &Renderer, assets: &mut Assets) {

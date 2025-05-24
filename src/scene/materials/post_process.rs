@@ -2,20 +2,21 @@ use crate::render::PosTexCoordNormalVertex;
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 
-use super::super::Assets;
-
 pub struct PostProcessMaterial {
     pipeline: wgpu::RenderPipeline,
     texture_bind_group: wgpu::BindGroup,
 }
 
 impl PostProcessMaterial {
-    pub fn new(rr: &Renderer, assets: &Assets, texture: &Texture) -> Self {
+    // TODO Passing shader here is weird because the material should dictate which shader to use.
+    // Either avoid passing it or make the material generic and accept *any* shader.
+    // Same for other materials.
+    pub fn new(rr: &Renderer, shader: &wgpu::ShaderModule, texture: &Texture) -> Self {
         let (texture_bind_group_layout, texture_bind_group) =
             rr.new_texture_bind_group(texture, wgpu::TextureViewDimension::D2);
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.postprocess_shader),
+            shader_module: shader,
             depth_write: true,
             depth_enabled: true,
             wireframe: false,

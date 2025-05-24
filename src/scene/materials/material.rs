@@ -1,7 +1,7 @@
 use super::super::components::{Camera, Transform};
 use super::{ColorMaterial, PostProcessMaterial, SkyboxMaterial, TexturedMaterial};
 use crate::render;
-use crate::render::Renderer;
+use crate::render::{Renderer, Texture};
 use crate::scene::Assets;
 use wgpu::RenderBundleEncoder;
 
@@ -14,15 +14,26 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn textured(rr: &Renderer, assets: &mut Assets, tex_path: &str) -> Material {
+    pub fn textured(rr: &Renderer, assets: &mut Assets, tex_path: &str) -> Self {
         let shader = assets.add_shader_from_file(rr, "textured.wgsl");
         let tex = assets.add_2d_texture_from_file(rr, tex_path);
         // TODO We shouldn't call assets again to get the actual objects, they should be returned
-        // from the Assets' methods that created them.2
-        Material::Textured(TexturedMaterial::new(
+        // from the Assets' methods that created them.
+        Self::Textured(TexturedMaterial::new(
             rr,
             assets.shader(shader),
             assets.texture(tex),
+        ))
+    }
+
+    pub fn post_process(rr: &Renderer, assets: &mut Assets, src_texture: &Texture) -> Self {
+        let shader = assets.add_shader_from_file(rr, "post-process.wgsl");
+        // TODO We shouldn't call assets again to get the actual objects, they should be returned
+        // from the Assets' methods that created them.
+        Self::PostProcess(PostProcessMaterial::new(
+            rr,
+            assets.shader(shader),
+            src_texture,
         ))
     }
 

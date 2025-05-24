@@ -1,4 +1,4 @@
-use super::materials::{ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial};
+use super::materials::{ColorMaterial, Material, SkyboxMaterial};
 use crate::file;
 use crate::math::Vec3;
 use crate::render::Mesh;
@@ -23,24 +23,21 @@ pub struct Assets {
 
     pub color_shader: ShaderHandle,
     pub skybox_shader: ShaderHandle,
-    pub postprocess_shader: ShaderHandle,
 }
 
 // TODO Remove hardcoded assets, make scene add them.
 // TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
-        let (color_shader, postprocess_shader, skybox_shader) = future::block_on(async {
+        let (color_shader, skybox_shader) = future::block_on(async {
             (
                 new_shader_module(rr, "color.wgsl").await,
-                new_shader_module(rr, "post-process.wgsl").await,
                 new_shader_module(rr, "skybox.wgsl").await,
             )
         });
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
-        let postprocess_shader = shaders.insert(postprocess_shader);
         let skybox_shader = shaders.insert(skybox_shader);
 
         Self {
@@ -51,7 +48,6 @@ impl Assets {
             shaders,
             shader_handles: HashMap::new(),
             color_shader,
-            postprocess_shader,
             skybox_shader,
         }
     }
@@ -135,19 +131,6 @@ impl Assets {
             self,
             &self.textures[texture],
         )))
-    }
-
-    pub fn add_postprocess_material(
-        &mut self,
-        rr: &Renderer,
-        src_texture: &Texture,
-    ) -> MaterialHandle {
-        self.materials
-            .insert(Material::PostProcess(PostProcessMaterial::new(
-                rr,
-                self,
-                src_texture,
-            )))
     }
 }
 
