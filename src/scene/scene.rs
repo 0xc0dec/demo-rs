@@ -43,7 +43,8 @@ impl Scene {
         let quad_mesh = assets.add_mesh(render::Mesh::new_quad(&state.renderer));
 
         // Skybox
-        let material = assets.add_skybox_material(&state.renderer, assets.skybox_texture);
+        let texture = assets.add_cube_texture_from_file(&state.renderer, "skybox_bgra.dds");
+        let material = assets.add_skybox_material(&state.renderer, texture);
         world.spawn((
             Transform::default(),
             Mesh(quad_mesh),
@@ -204,7 +205,7 @@ impl Scene {
                     }
                     MaterialCfg::Textured { name, texture } => {
                         if *name == mat.name {
-                            let tex = assets.add_texture_2d_from_file(&state.renderer, texture);
+                            let tex = assets.add_2d_texture_from_file(&state.renderer, texture);
                             Some(assets.add_textured_material(&state.renderer, tex))
                         } else {
                             None
@@ -254,7 +255,8 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let material = assets.add_textured_material(rr, assets.crate_texture);
+        let texture = assets.add_2d_texture_from_file(rr, "crate.png");
+        let material = assets.add_textured_material(rr, texture);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(self.box_mesh),

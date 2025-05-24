@@ -15,8 +15,6 @@ pub type ShaderHandle = DefaultKey;
 pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
-    pub crate_texture: TextureHandle,
-    pub skybox_texture: TextureHandle,
     textures: SlotMap<TextureHandle, Texture>,
 
     pub color_shader: ShaderHandle,
@@ -33,25 +31,15 @@ pub struct Assets {
 // TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
-        let (
-            skybox_tex,
-            crate_tex,
-            color_shader,
-            textured_shader,
-            postprocess_shader,
-            skybox_shader,
-        ) = future::block_on(async {
-            (
-                Texture::new_cube_from_file("skybox_bgra.dds", rr)
-                    .await
-                    .unwrap(),
-                Texture::new_2d_from_file("crate.png", rr).await.unwrap(),
-                new_shader_module(rr, "color.wgsl").await,
-                new_shader_module(rr, "textured.wgsl").await,
-                new_shader_module(rr, "post-process.wgsl").await,
-                new_shader_module(rr, "skybox.wgsl").await,
-            )
-        });
+        let (color_shader, textured_shader, postprocess_shader, skybox_shader) =
+            future::block_on(async {
+                (
+                    new_shader_module(rr, "color.wgsl").await,
+                    new_shader_module(rr, "textured.wgsl").await,
+                    new_shader_module(rr, "post-process.wgsl").await,
+                    new_shader_module(rr, "skybox.wgsl").await,
+                )
+            });
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
@@ -60,13 +48,9 @@ impl Assets {
         let skybox_shader = shaders.insert(skybox_shader);
 
         let mut textures = SlotMap::new();
-        let skybox_texture = textures.insert(skybox_tex);
-        let crate_texture = textures.insert(crate_tex);
 
         Self {
             textures,
-            crate_texture,
-            skybox_texture,
             shaders,
             color_shader,
             textured_shader,
@@ -94,8 +78,13 @@ impl Assets {
         self.meshes.insert(mesh)
     }
 
-    pub fn add_texture_2d_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
+    pub fn add_2d_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
         let tex = future::block_on(Texture::new_2d_from_file(path, rr));
+        self.textures.insert(tex.unwrap())
+    }
+
+    pub fn add_cube_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
+        let tex = future::block_on(Texture::new_cube_from_file(path, rr));
         self.textures.insert(tex.unwrap())
     }
 
