@@ -8,6 +8,7 @@ use crate::render::Renderer;
 use crate::render::Texture;
 use futures_lite::future;
 use slotmap::{DefaultKey, SlotMap};
+use std::collections::HashMap;
 
 pub type MeshHandle = DefaultKey;
 pub type MaterialHandle = DefaultKey;
@@ -16,15 +17,15 @@ pub type TextureHandle = DefaultKey;
 
 pub struct Assets {
     textures: SlotMap<TextureHandle, Texture>,
+    texture_handles: HashMap<String, TextureHandle>,
+    shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
+    meshes: SlotMap<MeshHandle, Mesh>,
+    materials: SlotMap<MaterialHandle, Material>,
 
     pub color_shader: ShaderHandle,
     pub textured_shader: ShaderHandle,
     pub skybox_shader: ShaderHandle,
     pub postprocess_shader: ShaderHandle,
-    shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
-
-    meshes: SlotMap<MeshHandle, Mesh>,
-    materials: SlotMap<MaterialHandle, Material>,
 }
 
 // TODO Remove hardcoded assets, make scene add them.
@@ -47,17 +48,16 @@ impl Assets {
         let postprocess_shader = shaders.insert(postprocess_shader);
         let skybox_shader = shaders.insert(skybox_shader);
 
-        let mut textures = SlotMap::new();
-
         Self {
-            textures,
+            textures: SlotMap::new(),
+            texture_handles: HashMap::new(),
+            meshes: SlotMap::new(),
+            materials: SlotMap::new(),
             shaders,
             color_shader,
             textured_shader,
             postprocess_shader,
             skybox_shader,
-            meshes: SlotMap::new(),
-            materials: SlotMap::new(),
         }
     }
 
@@ -79,13 +79,27 @@ impl Assets {
     }
 
     pub fn add_2d_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
-        let tex = future::block_on(Texture::new_2d_from_file(path, rr));
-        self.textures.insert(tex.unwrap())
+        self.add_texture_from_file(rr, path, || {
+            future::block_on(Texture::new_2d_from_file(path, rr)).unwrap()
+        })
     }
 
     pub fn add_cube_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
-        let tex = future::block_on(Texture::new_cube_from_file(path, rr));
-        self.textures.insert(tex.unwrap())
+        self.add_texture_from_file(rr, path, || {
+            future::block_on(Texture::new_cube_from_file(path, rr)).unwrap()
+        })
+    }
+
+    fn add_texture_from_file(
+        &mut self,
+        rr: &Renderer,
+        path: &str,
+        new_texture: impl FnOnce() -> Texture,
+    ) -> TextureHandle {
+        *self
+            .texture_handles
+            .entry(path.to_string())
+            .or_insert_with(|| self.textures.insert(new_texture()))
     }
 
     pub fn add_color_material(
