@@ -1,4 +1,4 @@
-use crate::render::PosTexCoordNormalVertex;
+use crate::render::PositionUvVertex;
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 
@@ -29,7 +29,7 @@ impl SkyboxMaterial {
             depth_enabled: true,
             wireframe: false,
             bind_group_layouts: &[&uniform_bind_group_layout, &tex_bind_group_layout],
-            vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
+            vertex_buffer_layouts: &[PositionUvVertex::buffer_layout()],
         });
 
         Self {

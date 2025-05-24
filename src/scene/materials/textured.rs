@@ -1,4 +1,4 @@
-use crate::render::PosTexCoordNormalVertex;
+use crate::render::PositionUvNormalVertex;
 use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 
@@ -29,7 +29,7 @@ impl TexturedMaterial {
             depth_enabled: true,
             wireframe: false,
             bind_group_layouts: &[&texture_bind_group_layout, &uniform_bind_group_layout],
-            vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
+            vertex_buffer_layouts: &[PositionUvNormalVertex::buffer_layout()],
         });
 
         Self {

@@ -3,7 +3,7 @@ use wgpu::util::DeviceExt;
 
 use crate::file;
 
-use super::vertex::PosTexCoordNormalVertex;
+use super::vertex::{PositionUvNormalVertex, PositionUvVertex};
 
 struct MeshPart {
     vertex_buffer: wgpu::Buffer,
@@ -12,9 +12,9 @@ struct MeshPart {
 }
 
 impl MeshPart {
-    fn from_buffers(
+    fn from_buffers<T: Copy + Clone + bytemuck::Pod + bytemuck::Zeroable>(
         device: &wgpu::Device,
-        vertices: &[PosTexCoordNormalVertex],
+        vertices: &[T],
         indices: &[u32],
     ) -> Self {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -42,35 +42,30 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    // TODO Use leaner vertex format
     pub fn new_quad(device: &wgpu::Device) -> Self {
         Self {
             parts: vec![MeshPart::from_buffers(
                 device,
                 &[
                     // Bottom left
-                    PosTexCoordNormalVertex {
+                    PositionUvVertex {
                         position: [-1.0, -1.0, 0.0],
                         tex_coords: [0.0, 0.0],
-                        normal: [0.0, 0.0, 0.0], // unused
                     },
                     // Top left
-                    PosTexCoordNormalVertex {
+                    PositionUvVertex {
                         position: [-1.0, 1.0, 0.0],
                         tex_coords: [0.0, 1.0],
-                        normal: [0.0, 0.0, 0.0], // unused
                     },
                     // Top right
-                    PosTexCoordNormalVertex {
+                    PositionUvVertex {
                         position: [1.0, 1.0, 0.0],
                         tex_coords: [1.0, 1.0],
-                        normal: [0.0, 0.0, 0.0], // unused
                     },
                     // Bottom right
-                    PosTexCoordNormalVertex {
+                    PositionUvVertex {
                         position: [1.0, -1.0, 0.0],
                         tex_coords: [1.0, 0.0],
-                        normal: [0.0, 0.0, 0.0], // unused
                     },
                 ],
                 &[0, 1, 2, 0, 2, 3],
@@ -78,28 +73,29 @@ impl Mesh {
         }
     }
 
+    // TODO Use leaner vertex format
     pub fn new_basis(device: &wgpu::Device) -> Self {
         Self {
             parts: vec![
                 MeshPart::from_buffers(
                     device,
                     &[
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
                             tex_coords: [0.0, 0.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [1.0, 0.0, 0.0],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.9, 0.1, 0.0],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.9, 0.0, 0.1],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
@@ -110,22 +106,22 @@ impl Mesh {
                 MeshPart::from_buffers(
                     device,
                     &[
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
                             tex_coords: [0.0, 0.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 1.0, 0.0],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.1, 0.9, 0.0],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.9, 0.1],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
@@ -136,22 +132,22 @@ impl Mesh {
                 MeshPart::from_buffers(
                     device,
                     &[
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
                             tex_coords: [0.0, 0.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.0, 1.0],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.1, 0.0, 0.9],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
-                        PosTexCoordNormalVertex {
+                        PositionUvNormalVertex {
                             position: [0.0, 0.1, 0.9],
                             tex_coords: [0.0, 1.0],  // unused
                             normal: [0.0, 0.0, 0.0], // unused
@@ -188,7 +184,7 @@ impl Mesh {
             .into_iter()
             .map(|m| {
                 let vertices = (0..m.mesh.positions.len() / 3)
-                    .map(|i| PosTexCoordNormalVertex {
+                    .map(|i| PositionUvNormalVertex {
                         position: [
                             m.mesh.positions[i * 3],
                             m.mesh.positions[i * 3 + 1],

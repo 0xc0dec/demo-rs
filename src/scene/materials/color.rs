@@ -1,5 +1,5 @@
 use crate::math::Vec3;
-use crate::render::PosTexCoordNormalVertex;
+use crate::render::PositionUvNormalVertex;
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
@@ -29,7 +29,9 @@ impl ColorMaterial {
                 &matrices_uniform_bind_group_layout,
                 &color_uniform_bind_group_layout,
             ],
-            vertex_buffer_layouts: &[PosTexCoordNormalVertex::buffer_layout()],
+            // TODO Leaner vertex format. Can't use it currently because this material
+            // is used for file-loaded meshes where we currently only support a single vertex format.
+            vertex_buffer_layouts: &[PositionUvNormalVertex::buffer_layout()],
         });
 
         Self {
