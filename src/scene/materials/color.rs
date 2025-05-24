@@ -10,7 +10,6 @@ pub struct ColorMaterial {
     pipeline: wgpu::RenderPipeline,
     matrices_uniform_buf: wgpu::Buffer,
     matrices_uniform_bind_group: wgpu::BindGroup,
-    color_uniform_buf: wgpu::Buffer,
     color_uniform_bind_group: wgpu::BindGroup,
 }
 
@@ -19,7 +18,7 @@ impl ColorMaterial {
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[WorldViewProjUniform::default()]));
 
-        let (color_uniform_bind_group_layout, color_uniform_bind_group, color_uniform_buf) =
+        let (color_uniform_bind_group_layout, color_uniform_bind_group, ..) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[Vec3Uniform::new(color)]));
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
@@ -38,21 +37,12 @@ impl ColorMaterial {
             pipeline,
             matrices_uniform_buf,
             matrices_uniform_bind_group,
-            color_uniform_buf,
             color_uniform_bind_group,
         }
     }
 }
 
 impl ColorMaterial {
-    pub fn set_color(&self, rr: &Renderer, color: Vec3) {
-        rr.queue().write_buffer(
-            &self.color_uniform_buf,
-            0,
-            bytemuck::cast_slice(&[Vec3Uniform::new(color)]),
-        );
-    }
-
     pub fn set_wvp(&self, rr: &Renderer, cam: &Camera, cam_tr: &Transform, tr: &Transform) {
         rr.queue().write_buffer(
             &self.matrices_uniform_buf,

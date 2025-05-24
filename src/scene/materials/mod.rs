@@ -8,4 +8,3 @@ mod uniforms;
 pub use material::Material;
 
 pub use color::*;
-pub use skybox::*;
