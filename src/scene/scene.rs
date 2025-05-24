@@ -7,6 +7,7 @@ use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render;
 use crate::render::{Renderer, SurfaceSize, Ui};
+use crate::scene::materials::TexturedMaterial;
 use crate::scene::scene_config::{ComponentCfg, MaterialCfg, MeshPrefabCfg, SceneCfg};
 use crate::state::State;
 
@@ -15,7 +16,7 @@ use super::components::{
     Camera, Grab, Hud, Material, Mesh, Player, PlayerTarget, RenderOrder, RenderTags,
     Transform, RENDER_TAG_SCENE,
 };
-use super::{components, MeshHandle};
+use super::{components, materials, MeshHandle};
 
 pub struct Scene {
     world: World,
@@ -206,7 +207,15 @@ impl Scene {
                     MaterialCfg::Textured { name, texture } => {
                         if *name == mat.name {
                             let tex = assets.add_2d_texture_from_file(&state.renderer, texture);
-                            Some(assets.add_textured_material(&state.renderer, tex))
+                            let shader =
+                                assets.add_shader_from_file(&state.renderer, "textured.wgsl");
+                            let mat = materials::Material::Textured(TexturedMaterial::new(
+                                &state.renderer,
+                                // TODO `add_shader*` should return the shader.
+                                assets.shader(shader),
+                                assets.texture(tex),
+                            ));
+                            Some(assets.add_material(mat))
                         } else {
                             None
                         }
@@ -255,12 +264,19 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let texture = assets.add_2d_texture_from_file(rr, "crate.png");
-        let material = assets.add_textured_material(rr, texture);
+        let shader = assets.add_shader_from_file(rr, "textured.wgsl");
+        let tex = assets.add_2d_texture_from_file(rr, "crate.png");
+        let mat = materials::Material::Textured(TexturedMaterial::new(
+            rr,
+            // TODO `add_shader*` should return the shader.
+            assets.shader(shader),
+            assets.texture(tex),
+        ));
+        let mat = assets.add_material(mat);
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(self.box_mesh),
-            Material(material),
+            Material(mat),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),

@@ -1,6 +1,4 @@
-use super::materials::{
-    ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial, TexturedMaterial,
-};
+use super::materials::{ColorMaterial, Material, PostProcessMaterial, SkyboxMaterial};
 use crate::file;
 use crate::math::Vec3;
 use crate::render::Mesh;
@@ -19,11 +17,11 @@ pub struct Assets {
     textures: SlotMap<TextureHandle, Texture>,
     texture_handles: HashMap<String, TextureHandle>,
     shaders: SlotMap<ShaderHandle, wgpu::ShaderModule>,
+    shader_handles: HashMap<String, ShaderHandle>,
     meshes: SlotMap<MeshHandle, Mesh>,
     materials: SlotMap<MaterialHandle, Material>,
 
     pub color_shader: ShaderHandle,
-    pub textured_shader: ShaderHandle,
     pub skybox_shader: ShaderHandle,
     pub postprocess_shader: ShaderHandle,
 }
@@ -32,19 +30,16 @@ pub struct Assets {
 // TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
-        let (color_shader, textured_shader, postprocess_shader, skybox_shader) =
-            future::block_on(async {
-                (
-                    new_shader_module(rr, "color.wgsl").await,
-                    new_shader_module(rr, "textured.wgsl").await,
-                    new_shader_module(rr, "post-process.wgsl").await,
-                    new_shader_module(rr, "skybox.wgsl").await,
-                )
-            });
+        let (color_shader, postprocess_shader, skybox_shader) = future::block_on(async {
+            (
+                new_shader_module(rr, "color.wgsl").await,
+                new_shader_module(rr, "post-process.wgsl").await,
+                new_shader_module(rr, "skybox.wgsl").await,
+            )
+        });
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
-        let textured_shader = shaders.insert(textured_shader);
         let postprocess_shader = shaders.insert(postprocess_shader);
         let skybox_shader = shaders.insert(skybox_shader);
 
@@ -54,19 +49,33 @@ impl Assets {
             meshes: SlotMap::new(),
             materials: SlotMap::new(),
             shaders,
+            shader_handles: HashMap::new(),
             color_shader,
-            textured_shader,
             postprocess_shader,
             skybox_shader,
         }
+    }
+
+    pub fn shader(&self, handle: ShaderHandle) -> &wgpu::ShaderModule {
+        self.shaders.get(handle).unwrap()
+    }
+
+    pub fn add_shader_from_file(&mut self, rr: &Renderer, path: &str) -> ShaderHandle {
+        *self
+            .shader_handles
+            .entry(path.to_string())
+            .or_insert_with(|| {
+                self.shaders
+                    .insert(future::block_on(new_shader_module(rr, path)))
+            })
     }
 
     pub fn mesh(&self, handle: MeshHandle) -> &Mesh {
         self.meshes.get(handle).unwrap()
     }
 
-    pub fn shader(&self, handle: ShaderHandle) -> &wgpu::ShaderModule {
-        self.shaders.get(handle).unwrap()
+    pub fn add_mesh(&mut self, mesh: Mesh) -> MeshHandle {
+        self.meshes.insert(mesh)
     }
 
     pub fn add_mesh_from_file(&mut self, rr: &Renderer, path: &str) -> MeshHandle {
@@ -74,32 +83,39 @@ impl Assets {
             .insert(future::block_on(Mesh::from_file(rr, path)))
     }
 
-    pub fn add_mesh(&mut self, mesh: Mesh) -> MeshHandle {
-        self.meshes.insert(mesh)
+    pub fn texture(&self, handle: TextureHandle) -> &Texture {
+        self.textures.get(handle).unwrap()
     }
 
     pub fn add_2d_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
-        self.add_texture_from_file(rr, path, || {
+        self.add_texture(path, || {
             future::block_on(Texture::new_2d_from_file(path, rr)).unwrap()
         })
     }
 
     pub fn add_cube_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
-        self.add_texture_from_file(rr, path, || {
+        self.add_texture(path, || {
             future::block_on(Texture::new_cube_from_file(path, rr)).unwrap()
         })
     }
 
-    fn add_texture_from_file(
-        &mut self,
-        rr: &Renderer,
-        path: &str,
-        new_texture: impl FnOnce() -> Texture,
-    ) -> TextureHandle {
+    fn add_texture(&mut self, key: &str, new_texture: impl FnOnce() -> Texture) -> TextureHandle {
         *self
             .texture_handles
-            .entry(path.to_string())
+            .entry(key.to_string())
             .or_insert_with(|| self.textures.insert(new_texture()))
+    }
+
+    pub fn material(&self, handle: MaterialHandle) -> &Material {
+        &self.materials[handle]
+    }
+
+    pub fn add_material(&mut self, material: Material) -> MaterialHandle {
+        self.materials.insert(material)
+    }
+
+    pub fn remove_material(&mut self, handle: MaterialHandle) {
+        self.materials.remove(handle);
     }
 
     pub fn add_color_material(
@@ -121,19 +137,6 @@ impl Assets {
         )))
     }
 
-    pub fn add_textured_material(
-        &mut self,
-        rr: &Renderer,
-        texture: TextureHandle,
-    ) -> MaterialHandle {
-        self.materials
-            .insert(Material::Textured(TexturedMaterial::new(
-                rr,
-                self,
-                &self.textures[texture],
-            )))
-    }
-
     pub fn add_postprocess_material(
         &mut self,
         rr: &Renderer,
@@ -145,14 +148,6 @@ impl Assets {
                 self,
                 src_texture,
             )))
-    }
-
-    pub fn remove_material(&mut self, handle: MaterialHandle) {
-        self.materials.remove(handle);
-    }
-
-    pub fn material(&self, handle: MaterialHandle) -> &Material {
-        &self.materials[handle]
     }
 }
 
