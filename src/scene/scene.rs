@@ -63,11 +63,7 @@ impl Scene {
         let material = assets.add_postprocess_material(&state.renderer, pp_src_tex);
         let postprocessor = world.spawn((
             Transform::default(),
-            Camera::new(
-                1.0,
-                components::RENDER_TAG_POST_PROCESS | components::RENDER_TAG_DEBUG_UI,
-                None,
-            ),
+            Camera::new(1.0, components::RENDER_TAG_POST_PROCESS, None),
             Mesh(quad_mesh),
             Material(material),
             RenderOrder(100),
