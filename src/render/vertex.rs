@@ -2,7 +2,7 @@
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct PositionUvNormalVertex {
     pub position: [f32; 3],
-    pub tex_coords: [f32; 2],
+    pub uv: [f32; 2],
     pub normal: [f32; 3],
 }
 
@@ -36,7 +36,7 @@ impl PositionUvNormalVertex {
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct PositionUvVertex {
     pub position: [f32; 3],
-    pub tex_coords: [f32; 2],
+    pub uv: [f32; 2],
 }
 
 impl PositionUvVertex {

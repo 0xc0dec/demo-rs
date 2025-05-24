@@ -50,22 +50,22 @@ impl Mesh {
                     // Bottom left
                     PositionUvVertex {
                         position: [-1.0, -1.0, 0.0],
-                        tex_coords: [0.0, 0.0],
+                        uv: [0.0, 0.0],
                     },
                     // Top left
                     PositionUvVertex {
                         position: [-1.0, 1.0, 0.0],
-                        tex_coords: [0.0, 1.0],
+                        uv: [0.0, 1.0],
                     },
                     // Top right
                     PositionUvVertex {
                         position: [1.0, 1.0, 0.0],
-                        tex_coords: [1.0, 1.0],
+                        uv: [1.0, 1.0],
                     },
                     // Bottom right
                     PositionUvVertex {
                         position: [1.0, -1.0, 0.0],
-                        tex_coords: [1.0, 0.0],
+                        uv: [1.0, 0.0],
                     },
                 ],
                 &[0, 1, 2, 0, 2, 3],
@@ -82,22 +82,22 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            tex_coords: [0.0, 0.0],  // unused
+                            uv: [0.0, 0.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [1.0, 0.0, 0.0],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.9, 0.1, 0.0],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.9, 0.0, 0.1],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                     ],
@@ -108,22 +108,22 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            tex_coords: [0.0, 0.0],  // unused
+                            uv: [0.0, 0.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 1.0, 0.0],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.1, 0.9, 0.0],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.9, 0.1],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                     ],
@@ -134,22 +134,22 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            tex_coords: [0.0, 0.0],  // unused
+                            uv: [0.0, 0.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 1.0],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.1, 0.0, 0.9],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.1, 0.9],
-                            tex_coords: [0.0, 1.0],  // unused
+                            uv: [0.0, 1.0],          // unused
                             normal: [0.0, 0.0, 0.0], // unused
                         },
                     ],
@@ -190,7 +190,7 @@ impl Mesh {
                             m.mesh.positions[i * 3 + 1],
                             m.mesh.positions[i * 3 + 2],
                         ],
-                        tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
+                        uv: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
                         normal: [
                             m.mesh.normals[i * 3],
                             m.mesh.normals[i * 3 + 1],
