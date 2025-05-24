@@ -3,7 +3,6 @@ use crate::render::PosTexCoordNormalVertex;
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
-use super::super::Assets;
 use super::uniforms::{Vec3Uniform, WorldViewProjUniform};
 
 pub struct ColorMaterial {
@@ -14,7 +13,7 @@ pub struct ColorMaterial {
 }
 
 impl ColorMaterial {
-    pub fn new(rr: &Renderer, assets: &Assets, color: Vec3, wireframe: bool) -> Self {
+    pub fn new(rr: &Renderer, shader: &wgpu::ShaderModule, color: Vec3, wireframe: bool) -> Self {
         let (matrices_uniform_bind_group_layout, matrices_uniform_bind_group, matrices_uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[WorldViewProjUniform::default()]));
 
@@ -22,7 +21,7 @@ impl ColorMaterial {
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[Vec3Uniform::new(color)]));
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.color_shader),
+            shader_module: shader,
             depth_write: true,
             depth_enabled: true,
             wireframe,

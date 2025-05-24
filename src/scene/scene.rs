@@ -193,11 +193,13 @@ impl Scene {
                         wireframe,
                     } => {
                         if *name == mat.name {
-                            Some(assets.add_color_material(
+                            let mat = materials::Material::color(
                                 &state.renderer,
+                                assets,
                                 Vec3::new(*r, *g, *b),
                                 wireframe.unwrap_or(false),
-                            ))
+                            );
+                            Some(assets.add_material(mat))
                         } else {
                             None
                         }

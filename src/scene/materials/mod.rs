@@ -6,5 +6,3 @@ mod textured;
 mod uniforms;
 
 pub use material::Material;
-
-pub use color::*;

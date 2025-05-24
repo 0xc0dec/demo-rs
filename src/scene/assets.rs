@@ -1,6 +1,5 @@
-use super::materials::{ColorMaterial, Material};
+use super::materials::Material;
 use crate::file;
-use crate::math::Vec3;
 use crate::render::Mesh;
 use crate::render::Renderer;
 use crate::render::Texture;
@@ -20,28 +19,17 @@ pub struct Assets {
     shader_handles: HashMap<String, ShaderHandle>,
     meshes: SlotMap<MeshHandle, Mesh>,
     materials: SlotMap<MaterialHandle, Material>,
-
-    pub color_shader: ShaderHandle,
 }
 
-// TODO Remove hardcoded assets, make scene add them.
-// TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
-    pub fn load(rr: &Renderer) -> Self {
-        let (color_shader,) =
-            future::block_on(async { (new_shader_module(rr, "color.wgsl").await,) });
-
-        let mut shaders = SlotMap::new();
-        let color_shader = shaders.insert(color_shader);
-
+    pub fn new() -> Self {
         Self {
             textures: SlotMap::new(),
             texture_handles: HashMap::new(),
             meshes: SlotMap::new(),
             materials: SlotMap::new(),
-            shaders,
+            shaders: SlotMap::new(),
             shader_handles: HashMap::new(),
-            color_shader,
         }
     }
 
@@ -105,17 +93,6 @@ impl Assets {
 
     pub fn remove_material(&mut self, handle: MaterialHandle) {
         self.materials.remove(handle);
-    }
-
-    pub fn add_color_material(
-        &mut self,
-        rr: &Renderer,
-        color: Vec3,
-        wireframe: bool,
-    ) -> MaterialHandle {
-        self.materials.insert(Material::Color(ColorMaterial::new(
-            rr, self, color, wireframe,
-        )))
     }
 }
 

@@ -71,7 +71,7 @@ impl ApplicationHandler for App<'_> {
         window.request_redraw();
 
         let rr = future::block_on(Renderer::new(Arc::clone(&window)));
-        let mut assets = Assets::load(&rr);
+        let mut assets = Assets::new();
 
         let state = State {
             window,

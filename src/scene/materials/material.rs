@@ -1,9 +1,10 @@
 use super::super::components::{Camera, Transform};
 use super::super::Assets;
+use super::color::ColorMaterial;
 use super::post_process::PostProcessMaterial;
 use super::skybox::SkyboxMaterial;
 use super::textured::TexturedMaterial;
-use super::ColorMaterial;
+use crate::math::Vec3;
 use crate::render;
 use crate::render::{Renderer, Texture};
 
@@ -48,6 +49,18 @@ impl Material {
             rr,
             assets.shader(shader),
             assets.texture(tex),
+        ))
+    }
+
+    pub fn color(rr: &Renderer, assets: &mut Assets, color: Vec3, wireframe: bool) -> Self {
+        let shader = assets.add_shader_from_file(rr, "color.wgsl");
+        // TODO We shouldn't call assets again to get the actual objects, they should be returned
+        // from the Assets' methods that created them.
+        Self::Color(ColorMaterial::new(
+            rr,
+            assets.shader(shader),
+            color,
+            wireframe,
         ))
     }
 
