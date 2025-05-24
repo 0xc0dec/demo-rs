@@ -1,5 +1,5 @@
 #[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(Default, Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct PositionUvNormalVertex {
     pub position: [f32; 3],
     pub uv: [f32; 2],
@@ -33,7 +33,7 @@ impl PositionUvNormalVertex {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+#[derive(Default, Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct PositionUvVertex {
     pub position: [f32; 3],
     pub uv: [f32; 2],

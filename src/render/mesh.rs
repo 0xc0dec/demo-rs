@@ -82,23 +82,23 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            uv: [0.0, 0.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [1.0, 0.0, 0.0],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.9, 0.1, 0.0],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.9, 0.0, 0.1],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                     ],
                     &[0, 1, 1, 2, 1, 3],
@@ -108,23 +108,23 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            uv: [0.0, 0.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 1.0, 0.0],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.1, 0.9, 0.0],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.9, 0.1],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                     ],
                     &[0, 1, 1, 2, 1, 3],
@@ -134,23 +134,23 @@ impl Mesh {
                     &[
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 0.0],
-                            uv: [0.0, 0.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.0, 1.0],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.1, 0.0, 0.9],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                         PositionUvNormalVertex {
                             position: [0.0, 0.1, 0.9],
-                            uv: [0.0, 1.0],          // unused
-                            normal: [0.0, 0.0, 0.0], // unused
+                            uv: Default::default(),     // unused
+                            normal: Default::default(), // unused
                         },
                     ],
                     &[0, 1, 1, 2, 1, 3],
