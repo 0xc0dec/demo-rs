@@ -1,4 +1,4 @@
-use super::materials::{ColorMaterial, Material, SkyboxMaterial};
+use super::materials::{ColorMaterial, Material};
 use crate::file;
 use crate::math::Vec3;
 use crate::render::Mesh;
@@ -22,23 +22,17 @@ pub struct Assets {
     materials: SlotMap<MaterialHandle, Material>,
 
     pub color_shader: ShaderHandle,
-    pub skybox_shader: ShaderHandle,
 }
 
 // TODO Remove hardcoded assets, make scene add them.
 // TODO Add lookup by name/path. Should return handles for further faster lookup.
 impl Assets {
     pub fn load(rr: &Renderer) -> Self {
-        let (color_shader, skybox_shader) = future::block_on(async {
-            (
-                new_shader_module(rr, "color.wgsl").await,
-                new_shader_module(rr, "skybox.wgsl").await,
-            )
-        });
+        let (color_shader,) =
+            future::block_on(async { (new_shader_module(rr, "color.wgsl").await,) });
 
         let mut shaders = SlotMap::new();
         let color_shader = shaders.insert(color_shader);
-        let skybox_shader = shaders.insert(skybox_shader);
 
         Self {
             textures: SlotMap::new(),
@@ -48,7 +42,6 @@ impl Assets {
             shaders,
             shader_handles: HashMap::new(),
             color_shader,
-            skybox_shader,
         }
     }
 
@@ -122,14 +115,6 @@ impl Assets {
     ) -> MaterialHandle {
         self.materials.insert(Material::Color(ColorMaterial::new(
             rr, self, color, wireframe,
-        )))
-    }
-
-    pub fn add_skybox_material(&mut self, rr: &Renderer, texture: TextureHandle) -> MaterialHandle {
-        self.materials.insert(Material::Skybox(SkyboxMaterial::new(
-            rr,
-            self,
-            &self.textures[texture],
         )))
     }
 }

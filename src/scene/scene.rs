@@ -43,12 +43,11 @@ impl Scene {
         let quad_mesh = assets.add_mesh(render::Mesh::new_quad(&state.renderer));
 
         // Skybox
-        let texture = assets.add_cube_texture_from_file(&state.renderer, "skybox_bgra.dds");
-        let material = assets.add_skybox_material(&state.renderer, texture);
+        let material = materials::Material::skybox(&state.renderer, assets, "skybox_bgra.dds");
         world.spawn((
             Transform::default(),
             Mesh(quad_mesh),
-            Material(material),
+            Material(assets.add_material(material)),
             RenderOrder(-100),
             RenderTags(RENDER_TAG_SCENE),
         ));

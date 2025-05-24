@@ -5,8 +5,7 @@ mod skybox;
 mod textured;
 mod uniforms;
 
+pub use material::Material;
+
 pub use color::*;
-pub use material::*;
-pub use post_process::*;
 pub use skybox::*;
-pub use textured::*;

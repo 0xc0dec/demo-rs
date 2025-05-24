@@ -3,7 +3,6 @@ use crate::render::Texture;
 use crate::render::{RenderPipelineParams, Renderer};
 
 use super::super::components::{Camera, Transform};
-use super::super::Assets;
 use super::uniforms::ViewInvProjUniform;
 
 pub struct SkyboxMaterial {
@@ -14,7 +13,10 @@ pub struct SkyboxMaterial {
 }
 
 impl SkyboxMaterial {
-    pub fn new(rr: &Renderer, assets: &Assets, texture: &Texture) -> Self {
+    // TODO Passing shader here is weird because the material should dictate which shader to use.
+    // Either avoid passing it or make the material generic and accept *any* shader.
+    // Same for other materials.
+    pub fn new(rr: &Renderer, shader: &wgpu::ShaderModule, texture: &Texture) -> Self {
         let (uniform_bind_group_layout, uniform_bind_group, uniform_buf) =
             rr.new_uniform_bind_group(bytemuck::cast_slice(&[ViewInvProjUniform::default()]));
 
@@ -22,7 +24,7 @@ impl SkyboxMaterial {
             rr.new_texture_bind_group(texture, wgpu::TextureViewDimension::Cube);
 
         let pipeline = rr.new_render_pipeline(RenderPipelineParams {
-            shader_module: assets.shader(assets.skybox_shader),
+            shader_module: shader,
             depth_write: false,
             depth_enabled: true,
             wireframe: false,
