@@ -7,7 +7,6 @@ use crate::math::Vec3;
 use crate::physics::Physics;
 use crate::render;
 use crate::render::{Renderer, SurfaceSize, Ui};
-use crate::scene::materials::TexturedMaterial;
 use crate::scene::scene_config::{ComponentCfg, MaterialCfg, MeshPrefabCfg, SceneCfg};
 use crate::state::State;
 
@@ -206,15 +205,8 @@ impl Scene {
                     }
                     MaterialCfg::Textured { name, texture } => {
                         if *name == mat.name {
-                            let tex = assets.add_2d_texture_from_file(&state.renderer, texture);
-                            let shader =
-                                assets.add_shader_from_file(&state.renderer, "textured.wgsl");
-                            let mat = materials::Material::Textured(TexturedMaterial::new(
-                                &state.renderer,
-                                // TODO `add_shader*` should return the shader.
-                                assets.shader(shader),
-                                assets.texture(tex),
-                            ));
+                            let mat =
+                                materials::Material::textured(&state.renderer, assets, texture);
                             Some(assets.add_material(mat))
                         } else {
                             None
@@ -264,19 +256,11 @@ impl Scene {
             },
             &mut self.physics,
         );
-        let shader = assets.add_shader_from_file(rr, "textured.wgsl");
-        let tex = assets.add_2d_texture_from_file(rr, "crate.png");
-        let mat = materials::Material::Textured(TexturedMaterial::new(
-            rr,
-            // TODO `add_shader*` should return the shader.
-            assets.shader(shader),
-            assets.texture(tex),
-        ));
-        let mat = assets.add_material(mat);
+        let mat = materials::Material::textured(rr, assets, "crate.png");
         self.world.spawn((
             Transform::new(pos, scale),
             Mesh(self.box_mesh),
-            Material(mat),
+            Material(assets.add_material(mat)),
             body,
             RenderOrder(0),
             RenderTags(RENDER_TAG_SCENE),
