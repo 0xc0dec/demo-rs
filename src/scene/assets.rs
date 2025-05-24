@@ -66,13 +66,15 @@ impl Assets {
 
     pub fn add_2d_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
         self.add_texture(path, || {
-            future::block_on(Texture::new_2d_from_file(path, rr)).unwrap()
+            let data = future::block_on(file::read_binary_asset(path)).unwrap();
+            Texture::new_2d(rr, &data).unwrap()
         })
     }
 
     pub fn add_cube_texture_from_file(&mut self, rr: &Renderer, path: &str) -> TextureHandle {
         self.add_texture(path, || {
-            future::block_on(Texture::new_cube_from_file(path, rr)).unwrap()
+            let data = future::block_on(file::read_binary_asset(path)).unwrap();
+            Texture::new_cube(rr, &data).unwrap()
         })
     }
 

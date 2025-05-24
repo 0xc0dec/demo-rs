@@ -2,8 +2,6 @@ use anyhow::*;
 use image::GenericImageView;
 use wgpu::util::{DeviceExt, TextureDataOrder};
 
-use crate::file;
-
 use super::Renderer;
 
 pub type TextureSize = (u32, u32);
@@ -67,16 +65,6 @@ impl Texture {
         }
     }
 
-    pub async fn new_2d_from_file(file_name: &str, rr: &Renderer<'_>) -> Result<Self> {
-        let data = file::read_binary_asset(file_name).await?;
-        Self::new_2d_from_mem(rr, &data)
-    }
-
-    pub async fn new_cube_from_file(file_name: &str, rr: &Renderer<'_>) -> Result<Self> {
-        let data = file::read_binary_asset(file_name).await?;
-        Self::new_cube_from_mem(rr, &data)
-    }
-
     pub fn view(&self) -> &wgpu::TextureView {
         &self.view
     }
@@ -89,7 +77,7 @@ impl Texture {
         self.format
     }
 
-    fn new_2d_from_mem(rr: &Renderer, data: &[u8]) -> Result<Self> {
+    pub fn new_2d(rr: &Renderer, data: &[u8]) -> Result<Self> {
         let img = image::load_from_memory(data)?;
         let rgba = img.to_rgba8();
         let dimensions = img.dimensions();
@@ -128,7 +116,7 @@ impl Texture {
         })
     }
 
-    fn new_cube_from_mem(rr: &Renderer, data: &[u8]) -> Result<Self> {
+    pub fn new_cube(rr: &Renderer, data: &[u8]) -> Result<Self> {
         let image = ddsfile::Dds::read(&mut std::io::Cursor::new(&data))?;
 
         let size = wgpu::Extent3d {
